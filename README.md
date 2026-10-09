@@ -1,4 +1,4 @@
-# 임대관리 독립앱 2.0.2 — 지속 보완 중인 로컬 릴리스 후보
+# 임대관리 독립앱 2.0.3 — 지속 보완 중인 로컬 릴리스 후보
 
 2026-10-09 원본 Git `ldjkorea/rental-app-v1.4.0-private`의 `2b01a2e`에서 전체 소스와 이력을 복제했습니다. 별도의 Google 시트·문서·GAS 프로젝트·소유자 전용 배포·계약 캘린더를 연결했습니다. 원본 저장소와 원본 Google 파일에는 쓰지 않습니다.
 
@@ -8,8 +8,8 @@
 - [UX 리디자인](docs/UX_REDESIGN_V2.md) · [데이터 무결성 감사](docs/DATA_INTEGRITY_AUDIT.md) · [Android/업데이트](docs/ANDROID_UPDATE_STRATEGY.md)
 - [기존 1.0 연결 대상·실제 운영 검증 기록](docs/INDEPENDENT_APP.md)
 
-운영 주소는 아직 1.0 배포 버전 4입니다. 웹 2.0.2 소스와 기존 서명 Android 2.0.0 APK는 로컬 릴리스 후보이며 실제 GAS 배포 교체는 별도 승인 후 진행합니다.
-- 최신 2.0.2 예시 미리보기: `http://127.0.0.1:4277/?demo=1` (외부 Google 연결 없음)
+운영 주소는 아직 1.0 배포 버전 4입니다. 웹 2.0.3 소스와 기존 서명 Android 2.0.0 APK는 로컬 릴리스 후보이며 실제 GAS 배포 교체는 별도 승인 후 진행합니다.
+- 최신 2.0.3 예시 미리보기: `http://127.0.0.1:4278/?demo=1` (외부 Google 연결 없음)
 - 로컬 실행: `npm start`, `http://127.0.0.1:4274/`
 - 독립성 검증: `npm run test:independent` (Playwright가 설치된 환경)
 

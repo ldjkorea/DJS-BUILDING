@@ -1,0 +1,109 @@
+{
+  "legacyReaderProof": {
+    "baseline": "1cfc6fc",
+    "oldReaderDropsLocalMetadata": true,
+    "domainUnchanged": true
+  },
+  "version": "2.0.3",
+  "baseline": "1cfc6fc",
+  "validatedAt": "2026-10-09T19:15:15.379Z",
+  "unit": {
+    "tests": 103,
+    "passed": 103,
+    "failed": 0
+  },
+  "browserSuites": [
+    {
+      "suite": "browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "audit-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "pwa-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "single-file-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "integrity-v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "independent-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ],
+  "addedDraftRecoveryScenarios": [
+    {
+      "name": "draft recovery preserves malformed local text before subsequent draft writes",
+      "status": "pass"
+    },
+    {
+      "name": "draft recovery reads mixed records without writing and preserves unsupported values on update",
+      "status": "pass"
+    },
+    {
+      "name": "draft recovery blocks source overwrite on archive quota failure and retains new inputs for export",
+      "status": "pass"
+    },
+    {
+      "name": "draft recovery imports malformed metadata only after review and keeps it out of domain state",
+      "status": "pass"
+    },
+    {
+      "name": "draft recovery import archive failure keeps domain and previous undo point while raw remains exportable",
+      "status": "pass"
+    },
+    {
+      "name": "draft recovery JSON round trip and undo retain raw records without duplicating archives",
+      "status": "pass"
+    },
+    {
+      "name": "draft recovery archives concurrent tab sources independently and keeps original and demo journals isolated",
+      "status": "pass"
+    },
+    {
+      "name": "draft recovery notices and raw downloads remain usable across PC mobile and large text",
+      "status": "pass"
+    }
+  ],
+  "liveReadOnlyProof": {
+    "checkedAt": "2026-10-09T19:13:52.371Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e"
+  },
+  "archive": {
+    "file": "rental-independent-gas-2.0.3.zip",
+    "sha256": "6c4d4acdf787f78df9f6ab383963c0f8513760cb34585e9f6fc61eed865bbed4",
+    "verifiedFiles": 8,
+    "archiveContentsMatchManifest": true
+  },
+  "previousCandidatePreserved": true,
+  "deploymentPerformed": false,
+  "androidNativeChanged": false,
+  "androidOwnerLogin": "NOT TESTED",
+  "remotePushPerformed": false,
+  "sourceCommit": "4f857a7"
+}
