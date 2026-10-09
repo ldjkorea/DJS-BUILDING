@@ -403,6 +403,70 @@ test('draft recovery notices and raw downloads remain usable across PC mobile an
  }
 });
 
+test('keyboard workflow selection keeps focus visible after closing mobile more navigation',async()=>{
+ const {page}=await open(sample(),{viewport:{width:390,height:844}});await page.locator('#nav-more').focus();await page.keyboard.press('Enter');await page.locator('#nav-settings').focus();await page.keyboard.press('Enter');
+ assert.equal(await page.evaluate(()=>document.activeElement.id),'page-title');assert.equal(await page.locator('#secondary-nav').isVisible(),false);assert.equal(await page.evaluate(()=>document.activeElement.getClientRects().length>0),true);
+});
+
+test('keyboard workflow covers seven destinations and skips directly to main content without startup focus theft',async()=>{
+ for(const width of [390,1366]){
+  const {page,context}=await open(sample(),{viewport:{width,height:844}});const before=await page.evaluate(()=>currentData());assert.equal(await page.evaluate(()=>document.activeElement===document.body),true);
+  await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.className),'skip-link');const bounds=await page.locator('.skip-link').boundingBox();assert.ok(bounds.y>=0&&bounds.x>=0);await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>document.activeElement.id),'workspace-main');await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>!!document.activeElement.closest('#workspace-main')),true);
+  for(const tab of ['home','history','settlement','tenants','building','tax','settings']){
+   if(!await page.locator('#nav-'+tab).isVisible()){await page.locator('#nav-more').focus();await page.keyboard.press('Enter');}
+   await page.locator('#nav-'+tab).focus();await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>document.activeElement.id),'page-title');assert.equal(await page.locator('#nav-'+tab).getAttribute('aria-current'),'page');assert.equal(await page.getByRole('main').getAttribute('aria-labelledby'),'page-title');assert.equal(await page.locator('#section-'+tab+'.active').isVisible(),true);
+  }
+  assert.deepEqual(await page.evaluate(()=>currentData()),before);await page.reload();await page.locator('#section-settings.active').waitFor();assert.equal(await page.evaluate(()=>document.activeElement===document.body),true);await context.close();
+ }
+});
+
+test('keyboard workflow seven dialog types contain Tab focus and isolate the background',async()=>{
+ for(const width of [390,1366]){
+  const {page,context}=await open(sample(),{viewport:{width,height:844}});await history(page);const before=await page.evaluate(()=>currentData());
+  const dialogs=[['tenant','openAddTenant'],['loan','openAddLoan'],['expense','openAddExpense'],['month','openMonthPicker'],['receipt','previewKakao'],['stamp','stampBill']];
+  for(const [id,fn] of dialogs){
+   await page.evaluate(({fn})=>window[fn](...(fn==='stampBill'?['rent']:[])),{fn});const modal=page.locator('#modal-'+id+'.open');await modal.waitFor();assert.equal(await modal.getAttribute('aria-modal'),'true');assert.ok(await modal.getAttribute('aria-label'));assert.equal(await page.evaluate(()=>document.getElementById('workspace-main').inert),true);assert.equal(await page.evaluate(()=>activeModal().contains(document.activeElement)),true);
+   await page.evaluate(()=>document.getElementById('nav-home').focus());assert.equal(await page.evaluate(()=>activeModal().contains(document.activeElement)),true);
+   await modal.locator('.modal-close').focus();await page.keyboard.press('Shift+Tab');assert.equal(await page.evaluate(()=>activeModal().contains(document.activeElement)),true);await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.classList.contains('modal-close')),true);await page.keyboard.press('Escape');await modal.waitFor({state:'hidden'});assert.equal(await page.evaluate(()=>document.getElementById('workspace-main').inert),false);
+  }
+  const incoming=sample();incoming.tenants[0].name='키보드 검토 예시';await page.locator('#import-file').setInputFiles({name:'keyboard.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});await page.locator('#modal-data-replacement.open').waitFor();assert.equal(await page.evaluate(()=>document.activeElement.classList.contains('modal-title')),true);await page.keyboard.press('Shift+Tab');assert.equal(await page.evaluate(()=>document.activeElement.id),'replacement-apply');await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.classList.contains('modal-close')),true);await page.keyboard.press('Escape');await page.locator('#modal-data-replacement.open').waitFor({state:'hidden'});assert.deepEqual(await page.evaluate(()=>currentData()),before);await context.close();
+ }
+});
+
+test('keyboard workflow includes dialog links summaries and excludes hidden disabled controls',async()=>{
+ const {page}=await open();await page.evaluate(()=>openAddLoan());await page.evaluate(()=>{const modal=document.getElementById('modal-loan').querySelector('.modal');const link=document.createElement('a');link.href='#dialog-reference';link.id='dialog-test-link';link.textContent='검사 안내';const details=document.createElement('details');details.innerHTML='<summary id="dialog-test-summary">검사 상세</summary><input id="dialog-hidden-field">';const disabled=document.createElement('input');disabled.id='dialog-disabled-field';disabled.disabled=true;modal.append(link,details,disabled);});
+ await page.locator('#dialog-test-link').focus();await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.id),'dialog-test-summary');await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.id||document.activeElement.className),'modal-close','closed summary next');await page.keyboard.press('Shift+Tab');assert.equal(await page.evaluate(()=>document.activeElement.id),'dialog-test-summary');
+ await page.locator('#dialog-test-summary').press('Enter');await page.waitForFunction(()=>document.getElementById('dialog-test-summary').parentElement.open);await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.id),'dialog-hidden-field');await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.className),'modal-close','focus after expanded details');await page.keyboard.press('Escape');
+});
+
+test('keyboard workflow restores edited tenant loan expense and receipt callers after rerender',async()=>{
+ const data=sample();data.loans=[{id:'focusloan',name:'예시 대출',principal:100000,rate:0}];data.expenses[key]=[{id:'focusexpense',name:'예시 지출',amount:1000,date:key.replace('-','/')+'/01',memo:''}];
+ const {page}=await open(data);await navigateV2(page,'tenants');await page.locator('[data-focus-key="tenant-edit-audit1"]').click();await page.locator('#inp-name').fill('포커스 확인 임차인');await page.locator('#save-tenant-button').focus();await page.keyboard.press('Enter');await page.waitForFunction(()=>document.activeElement.dataset.focusKey==='tenant-edit-audit1');assert.equal(await page.evaluate(()=>tenants[0].name),'포커스 확인 임차인');
+ await navigateV2(page,'home');for(const [kind,identity,input] of [['loan','focusloan','inp-loan-name'],['expense','focusexpense','inp-exp-name']]){
+  const opener=page.locator('[data-focus-key="'+kind+'-edit-'+identity+'"]');await opener.evaluate(el=>{for(let parent=el.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;});await opener.click();await page.locator('#'+input).fill('포커스 확인 '+kind);if(kind==='loan')await page.locator('#inp-loan-rate').fill('0');await page.locator('#modal-'+kind+' .btn-primary').focus();await page.keyboard.press('Enter');await page.waitForFunction(key=>document.activeElement.dataset.focusKey===key,kind+'-edit-'+identity);
+ }
+ await history(page);const stamp=page.locator('[data-focus-key="stamp-rent"]');await stamp.click();await page.locator('#stamp-date').fill(receipt.replaceAll('.','-'));await page.locator('#modal-stamp .btn-primary').focus();await page.keyboard.press('Enter');await page.waitForFunction(()=>document.activeElement.dataset.focusKey==='stamp-rent');assert.equal(await page.evaluate(past=>bills[past].audit1.stampedRentDate,past),receipt);
+});
+
+test('keyboard workflow fallback and nested dialogs restore focus and preexisting inert state',async()=>{
+ const {page}=await open();await page.evaluate(()=>{document.getElementById('toast').inert=true;const button=document.createElement('button');button.id='temporary-dialog-opener';button.textContent='검사 입력';document.getElementById('workspace-main').append(button);button.focus();openAddTenant();button.remove();});await page.keyboard.press('Escape');await page.waitForFunction(()=>document.activeElement.id==='page-title');assert.equal(await page.evaluate(()=>document.getElementById('toast').inert),true);
+ await page.evaluate(()=>openAddTenant());await page.locator('#inp-name').fill('유지할 첫 입력');await page.evaluate(()=>openAddLoan());assert.equal(await page.evaluate(()=>document.getElementById('modal-tenant').inert),true);await page.keyboard.press('Escape');await page.locator('#modal-loan.open').waitFor({state:'hidden'});await page.waitForFunction(()=>document.getElementById('modal-tenant').contains(document.activeElement));assert.equal(await page.locator('#inp-name').inputValue(),'유지할 첫 입력');assert.equal(await page.evaluate(()=>document.getElementById('workspace-main').inert),true);await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>document.getElementById('workspace-main').inert),false);
+});
+
+test('keyboard workflow save failures remain readable inside the dialog with editable input retained',async()=>{
+ for(const width of [390,1366])for(const scale of [1,2]){
+  const {page,context}=await open(sample(),{viewport:{width,height:844}});await page.evaluate(scale=>document.documentElement.style.fontSize=(16*scale)+'px',scale);await navigateV2(page,'tenants');await page.locator('[data-focus-key="tenant-edit-audit1"]').click();await page.locator('#modal-tenant .modal').evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished)));await page.locator('#inp-name').fill('실패 후 유지 입력');await failStorage(page,core.STATE_KEY);await page.locator('#save-tenant-button').focus();await page.keyboard.press('Enter');await page.locator('#modal-tenant .modal-status:not([hidden])').waitFor();assert.match(await page.locator('#modal-tenant .modal-status').innerText(),/저장/);assert.equal(await page.locator('#modal-tenant .modal-status').getAttribute('role'),'status');
+  assert.equal(await page.locator('#modal-tenant .modal-status').evaluate(el=>{const box=el.getBoundingClientRect(),modal=el.closest('.modal').getBoundingClientRect();return box.top>=Math.max(0,modal.top)&&box.bottom<=Math.min(innerHeight,modal.bottom)&&el.contains(document.elementFromPoint(box.x+box.width/2,box.y+box.height/2));}),true,'save error is visible inside the scrolled dialog');
+  assert.equal(await page.locator('#save-tenant-button').evaluate(el=>{const box=el.getBoundingClientRect(),modal=el.closest('.modal').getBoundingClientRect();return box.top>=Math.max(0,modal.top)&&box.bottom<=Math.min(innerHeight,modal.bottom)&&el.contains(document.elementFromPoint(box.x+box.width/2,box.y+box.height/2));}),true,'focused save button remains visible after the error appears');
+  assert.equal(await page.locator('#inp-name').inputValue(),'실패 후 유지 입력');assert.equal(await page.evaluate(()=>activeModal().contains(document.activeElement)),true);assert.equal(await page.evaluate(()=>document.getElementById('data-notice').closest('[inert]')!==null),true);await page.keyboard.press('Escape');await page.waitForFunction(()=>document.activeElement.dataset.focusKey==='tenant-edit-audit1');await context.close();
+ }
+});
+
+test('keyboard workflow busy replacement and mobile Escape shortcuts keep modal focus boundaries',async()=>{
+ const {page}=await open(sample(),{viewport:{width:390,height:844}});await page.locator('#nav-more').click();await page.evaluate(()=>openAddLoan());await page.keyboard.press('Escape');assert.equal(await page.locator('.workspace-sidebar').evaluate(el=>el.classList.contains('more-open')),true);await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>document.activeElement.id),'nav-more');
+ const incoming=sample();incoming.tenants[0].name='잠금 대기 후보';await page.locator('#import-file').setInputFiles({name:'busy-keyboard.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});await page.locator('#modal-data-replacement.open').waitFor();await page.evaluate(()=>{window.keyboardLockEntered=false;void navigator.locks.request('rentalIndependent20261009.rentalApp.write',()=>new Promise(resolve=>{window.releaseKeyboardLock=resolve;window.keyboardLockEntered=true;}));});await page.waitForFunction(()=>window.keyboardLockEntered);await page.getByRole('button',{name:'이 백업으로 복원',exact:true}).click();await page.waitForFunction(()=>persistenceBusy);for(let i=0;i<6;i++){await page.keyboard.press(i%2?'Shift+Tab':'Tab');assert.equal(await page.evaluate(()=>activeModal().contains(document.activeElement)),true);}await page.keyboard.press('Escape');assert.equal(await page.locator('#modal-data-replacement.open').isVisible(),true);await page.evaluate(()=>window.releaseKeyboardLock());await page.locator('#modal-data-replacement.open').waitFor({state:'hidden'});await page.waitForFunction(()=>document.activeElement.id==='nav-more');assert.equal(await page.evaluate(()=>document.getElementById('workspace-main').inert),false);
+});
+
 (async()=>{
   browser=await chromium.launch({headless:true,executablePath:process.env.RENTAL_BROWSER||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
   try {

@@ -79,6 +79,8 @@ test('partial payment stamping and intelligent kakao notice message generation',
   });
 
   const kakaoTextEl = makeDummyEl();
+  // Dialog status messages use the same minimal DOM element surface as forms.
+  env.document.createElement = () => makeDummyEl();
   Object.defineProperty(kakaoTextEl, 'innerText', {
     get() { return kakaoTextContent; },
     set(v) { kakaoTextContent = v; },

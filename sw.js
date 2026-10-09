@@ -1,7 +1,7 @@
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg', './assets/styles.css', './assets/core.js', './assets/app.js', './assets/billing.js', './assets/enhancements.js', './assets/workspace.css', './assets/mobile.css', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png'];
 const scope = new URL(self.registration.scope);
 const CACHE_PREFIX = 'rental-independent-20261009-'+encodeURIComponent(scope.pathname)+'-';
-const CACHE_NAME = CACHE_PREFIX+'2.0.3';
+const CACHE_NAME = CACHE_PREFIX+'2.0.4';
 const allowedPaths = new Set(ASSETS.map(path => new URL(path, scope).pathname));
 
 self.addEventListener('install', e => {

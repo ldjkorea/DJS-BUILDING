@@ -336,7 +336,7 @@ function rememberWorkspace(){
 for(const type of ['input','change'])document.addEventListener(type,event=>{if(event.target.closest('#sett-step1')){settlementDraftEdited=true;captureSettlementDraft();}if(event.target.id==='tenant-search')rememberWorkspace();});
 window.addEventListener('pagehide',()=>{captureSettlementDraft();rememberWorkspace();});
 const baseRenderSett=renderSettTab;renderSettTab=function(){baseRenderSett();applySettlementDraft();};
-const baseSwitchTab=switchTab;switchTab=function(tab){captureSettlementDraft();baseSwitchTab(tab);toggleMoreNav(false);document.getElementById('nav-more').classList.toggle('active',['building','tax','settings'].includes(tab));renderSyncCenter();rememberWorkspace();};
+const baseSwitchTab=switchTab;switchTab=function(tab,options){captureSettlementDraft();baseSwitchTab(tab,options);toggleMoreNav(false);document.getElementById('nav-more').classList.toggle('active',['building','tax','settings'].includes(tab));renderSyncCenter();rememberWorkspace();};
 for(const name of ['changeMonth','quickPick','applyMonthPicker','jumpToSettlementMonth']){
   const fn=window[name];window[name]=function(...args){captureSettlementDraft();const result=fn(...args);rememberWorkspace();return result;};
 }
@@ -350,7 +350,7 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.0.3';
+const APPLICATION_VERSION='2.0.4';
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
   const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';
@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     cY=initialWorkspace.year;cM=initialWorkspace.month;histY=cY;histM=cM;updateMonthLabel();renderAll();
     if(BUILDING_FILTERS[initialWorkspace.buildingFilter])buildingFilter=initialWorkspace.buildingFilter;
     if(historyTenants().some(t=>t.id===initialWorkspace.tenant))selTenantId=initialWorkspace.tenant;
-    switchTab(TABS.includes(initialWorkspace.tab)?initialWorkspace.tab:'home');
+    switchTab(TABS.includes(initialWorkspace.tab)?initialWorkspace.tab:'home',{focus:false});
     const search=document.getElementById('tenant-search');if(search&&typeof initialWorkspace.search==='string'){search.value=initialWorkspace.search.slice(0,200);renderTenants();}
   }
   renderSyncCenter();

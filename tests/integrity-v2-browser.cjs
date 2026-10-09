@@ -13,7 +13,7 @@ async function client(bus,viewport={width:1366,height:768}){
   if(!request.url().startsWith('https://script.google.com/'))return route.abort();
   bus.calls.push({method:request.method(),body:request.method()==='POST'?request.postDataJSON():null});
   const capabilities={conditionalWrite:true,currentStatus:true,contractCalendar:true};
-  if(request.method()!=='POST'){const reply={status:'ok',revision:bus.revision,data:bus.data,appVersion:'2.0.3',capabilities};if(bus.readHook)await bus.readHook();return route.fulfill({json:reply});}
+  if(request.method()!=='POST'){const reply={status:'ok',revision:bus.revision,data:bus.data,appVersion:'2.0.4',capabilities};if(bus.readHook)await bus.readHook();return route.fulfill({json:reply});}
   const req=request.postDataJSON(),prior=bus.receipts.get(req.requestId);
   if(prior)return route.fulfill({json:{...prior,duplicate:true}});
   if(bus.race){bus.revision='rev-race';bus.data={...bus.data,otherDevice:'변경'};bus.race=false;}

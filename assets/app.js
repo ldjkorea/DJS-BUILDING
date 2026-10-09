@@ -289,6 +289,7 @@ function refreshDataViews() {
   if (document.getElementById('section-settlement').classList.contains('active')) renderSettTab();
 }
 function showDataNotice(message, actions = []) {
+  announceModalNotice(message);
   const el = document.getElementById('data-notice');
   if (!el) return;
   el.hidden = !message;
@@ -742,7 +743,8 @@ function applyMonthPicker(){
    탭 전환
 ════════════════════════════════════════ */
 const TABS=['home','building','history','tenants','settlement','tax','settings'];
-function switchTab(tab){
+function switchTab(tab,options={}){
+  if(!TABS.includes(tab))return;
   if(typeof flushBillDraft==='function')flushBillDraft();
   document.body.dataset.tab=tab;
   document.getElementById('page-title').textContent=({home:'이번 달 한눈에',building:'건물 운영현황',tenants:'세입자 관리',history:'월별 고지서',settlement:'공용 비용 정산',tax:'분기별 세무 집계',settings:'설정과 데이터'})[tab];
@@ -766,6 +768,7 @@ function switchTab(tab){
   if(tab==='tax')renderTaxSummary();
   if(tab==='history'){renderHistChips();if(selTenantId)renderHistContent();}
   TABS.forEach(t=>document.getElementById('nav-'+t)?.setAttribute('aria-current', t===tab?'page':'false'));
+  if(options.focus!==false)document.getElementById('page-title')?.focus();
 }
 function renderAll(){renderHome();renderBuildingOperations();renderTenants();renderLoanList();}
 
@@ -869,7 +872,7 @@ function renderBuildingOperations(asOf=new Date()) {
         <div><dt>계약만료</dt><dd>해당없음</dd></div><div><dt>월차임</dt><dd>해당없음</dd></div><div><dt>총 미납금액</dt><dd>해당없음</dd></div>
       </dl>
     </div>`;
-    const action=clickable?` role="button" tabindex="0" aria-label="${row.floor}층 임차인 수정 열기" onclick="openBuildingTenant('${row.occupants[0].id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openBuildingTenant('${row.occupants[0].id}')}"`:'';
+    const action=clickable?` role="button" tabindex="0" data-focus-key="building-${row.floor}" aria-label="${row.floor}층 임차인 수정 열기" onclick="openBuildingTenant('${row.occupants[0].id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openBuildingTenant('${row.occupants[0].id}')}"`:'';
     return `<article class="building-card${clickable?' is-clickable':''}" data-floor="${row.floor}"${action}>
       <div class="building-floor"><span>${row.floor}</span><small>층</small></div><div class="building-card-body">${details}</div>
     </article>`;
@@ -1668,7 +1671,7 @@ function renderTenants(){
         ${history.length?`<details class="audit-details" style="overflow-wrap:anywhere;"><summary>임차인 변경 이력 ${history.length}건</summary>${[...history].reverse().map(entry=>`<p><time>${esc(new Date(entry.at).toLocaleString('ko-KR'))}</time> ${esc(entry.action)} · ${esc(entry.detail)}</p>`).join('')}</details>`:''}
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0;">
-        <button onclick="editTenant('${t.id}')" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:5px 9px;border-radius:7px;font-size:11px;cursor:pointer;">수정</button>
+        <button data-focus-key="tenant-edit-${t.id}" onclick="editTenant('${t.id}')" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:5px 9px;border-radius:7px;font-size:11px;cursor:pointer;">수정</button>
         <button onclick="${t.archived?'restoreTenant':'deleteTenant'}('${t.id}')" style="background:var(--redbg);border:1px solid rgba(192,57,43,.3);color:var(--red);padding:5px 9px;border-radius:7px;font-size:11px;cursor:pointer;">${t.archived?'보관 해제':'삭제 / 보관'}</button>
       </div>
     </div>`;
@@ -1904,7 +1907,7 @@ function renderLoanList(){
           <div style="font-family:'DM Mono',monospace;font-size:15px;color:var(--red);">${fmt(m)}</div></div>
       </div>
       <div style="display:flex;gap:6px;margin-top:8px;">
-        <button onclick="editLoan('${l.id}')" style="flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:6px;border-radius:7px;font-size:11px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">수정</button>
+        <button data-focus-key="loan-edit-${l.id}" onclick="editLoan('${l.id}')" style="flex:1;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:6px;border-radius:7px;font-size:11px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">수정</button>
         <button onclick="deleteLoan('${l.id}')" style="flex:1;background:var(--redbg);border:1px solid rgba(192,57,43,.3);color:var(--red);padding:6px;border-radius:7px;font-size:11px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">삭제</button>
       </div>
     </div>`;
@@ -2012,7 +2015,7 @@ function renderExpenseList(){
     <div><div style="font-size:13px;font-weight:700;color:var(--text);">${esc(item.name)}</div><div style="font-size:11px;color:var(--text2);margin-top:1px;">${esc(item.date||'날짜없음')}${esc(item.memo?' · '+item.memo:'')}</div></div>
     <div style="display:flex;align-items:center;gap:6px;">
       <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--red);font-weight:700;">${fmt(item.amount)}</div>
-      <button onclick="editExpense('${item.id}')" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:4px 7px;border-radius:6px;font-size:10px;cursor:pointer;">수정</button>
+      <button data-focus-key="expense-edit-${item.id}" onclick="editExpense('${item.id}')" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:4px 7px;border-radius:6px;font-size:10px;cursor:pointer;">수정</button>
       <button onclick="deleteExpense('${item.id}')" style="background:var(--redbg);border:1px solid rgba(192,57,43,.3);color:var(--red);padding:4px 7px;border-radius:6px;font-size:10px;cursor:pointer;">삭제</button>
     </div>
   </div>`).join('');
@@ -2067,7 +2070,7 @@ function renderHistContent() {
   const stamp=(type,label)=>{
     const group=state.groups[type],amount=group.total;
       const flag=type==='rent'?'stampedRent':'stampedMgmt';
-      return `<div class="payment-card ${group.complete?'is-paid':''}"><div class="payment-heading"><span>${label}</span><span class="status-tag">${group.exempt?'미부과':group.complete?'완납':group.received>0?'일부 확인':'미확인'}</span></div><strong>${fmt(amount)}</strong><div class="payment-date">${group.dates.length?esc(group.dates.join(' · ')):'입금 날짜를 지정해주세요'}</div><button class="btn btn-secondary" onclick="stampBill('${type}')">${bill[flag]?'완납 날짜 변경':'날짜 지정 · 완납 처리'}</button></div>`;
+      return `<div class="payment-card ${group.complete?'is-paid':''}"><div class="payment-heading"><span>${label}</span><span class="status-tag">${group.exempt?'미부과':group.complete?'완납':group.received>0?'일부 확인':'미확인'}</span></div><strong>${fmt(amount)}</strong><div class="payment-date">${group.dates.length?esc(group.dates.join(' · ')):'입금 날짜를 지정해주세요'}</div><button data-focus-key="stamp-${type}" class="btn btn-secondary" onclick="stampBill('${type}')">${bill[flag]?'완납 날짜 변경':'날짜 지정 · 완납 처리'}</button></div>`;
     };
     const subStamp=(itemKey,label)=>{
       const info=state.items[itemKey];
@@ -2080,7 +2083,7 @@ function renderHistContent() {
           <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:${isPaid?'rgba(76,175,125,.15)':'rgba(235,87,87,.1)'};color:${isPaid?'var(--green)':'var(--red)'};font-weight:700;white-space:nowrap;">${isPaid?'✓ 완납':'미확인'}</span>
           ${isPaid&&info.date?`<span style="font-size:10.5px;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap;">(${esc(info.date)})</span>`:''}
         </div>
-        <button type="button" class="btn" onclick="stampBill('${itemKey}')" style="padding:4px 9px;font-size:11px;background:${isPaid?'var(--surface)':'var(--goldbg2)'};color:${isPaid?'var(--text2)':'var(--gold)'};border:1px solid ${isPaid?'var(--border2)':'var(--gold)'};border-radius:6px;cursor:pointer;white-space:nowrap;">
+        <button type="button" data-focus-key="stamp-${itemKey}" class="btn" onclick="stampBill('${itemKey}')" style="padding:4px 9px;font-size:11px;background:${isPaid?'var(--surface)':'var(--goldbg2)'};color:${isPaid?'var(--text2)':'var(--gold)'};border:1px solid ${isPaid?'var(--border2)':'var(--gold)'};border-radius:6px;cursor:pointer;white-space:nowrap;">
           ${isPaid?'날짜 변경':'완납 처리'}
         </button>
       </div>`;
@@ -3615,37 +3618,114 @@ async function resetAllData() {
   try { await replaceData(RentalCore.empty(), '초기화 전'); showToast('초기화 완료 · 백업 / 복원에서 되돌릴 수 있습니다.'); }
   catch (error) { showToast('초기화 실패: ' + error.message); }
 }
-let previousFocus = null;
+const modalContexts=new Map(),backgroundInertState=new Map();
+let modalStack=[],restoringModalFocus=false;
+function activeModal(){return modalStack.at(-1)||null;}
+function usableFocus(element){
+  if(!element||element===document.body||!element.isConnected||element.matches(':disabled')||element.closest('[inert]'))return false;
+  // Chromium can report rectangles for controls inside a closed details panel.
+  for(let ancestor=element.parentElement;ancestor;ancestor=ancestor.parentElement){
+    if(ancestor.tagName==='DETAILS'&&!ancestor.open){
+      const summary=[...ancestor.children].find(child=>child.tagName==='SUMMARY');
+      if(!summary?.contains(element))return false;
+    }
+  }
+  return element.getClientRects().length>0&&getComputedStyle(element).visibility!=='hidden';
+}
+function modalTabStops(modal){
+  return [...modal.querySelectorAll('a[href],button,input:not([type="hidden"]),select,textarea,summary,[tabindex],[contenteditable="true"]')]
+    .filter(element=>element.tabIndex>=0&&usableFocus(element));
+}
+function updateModalIsolation(){
+  const top=activeModal();
+  if(!top){
+    for(const [element,inert] of backgroundInertState)element.inert=inert;
+    backgroundInertState.clear();return;
+  }
+  for(const element of document.body?.children||[]){
+    if(!backgroundInertState.has(element))backgroundInertState.set(element,element.inert);
+    element.inert=element!==top;
+  }
+}
+function focusModalStart(modal){
+  const form=modalTabStops(modal).find(element=>element.matches('input,select,textarea:not([readonly])'));
+  const title=modal.querySelector('.modal-title');
+  if(title)title.setAttribute('tabindex','-1');
+  (form||title||modal).focus({preventScroll:true});
+}
+function announceModalNotice(message){
+  const modal=activeModal();if(!modal)return;
+  let notice=modal.querySelector('.modal-status');
+  if(!notice){
+    notice=document.createElement('p');notice.className='modal-status hint-box';notice.setAttribute('role','status');
+    const title=modal.querySelector('.modal-title');if(title)title.after(notice);else modal.appendChild(notice);
+  }
+  notice.hidden=!message;notice.textContent=message||'';
+  // Adding the notice can push the focused save control below a long form.
+  const focused=document.activeElement;
+  if(modal.contains?.(focused))focused.scrollIntoView?.({block:'nearest'});
+}
 function openModal(id) {
   const modal = document.getElementById(id);
-  previousFocus = document.activeElement;
+  if(!modal)return;
+  modal.querySelector('.modal-status')?.remove();
+  if(!modalContexts.has(id)){
+    const opener=document.activeElement;
+    modalContexts.set(id,{opener,key:opener?.closest('[data-focus-key]')?.dataset.focusKey,tab:document.body?.dataset.tab,zIndex:modal.style.zIndex});
+  }
+  modalStack=modalStack.filter(element=>element!==modal);modalStack.push(modal);
   modal.classList.add('open');
   modal.setAttribute('role', 'dialog'); modal.setAttribute('aria-modal', 'true');
   modal.setAttribute('aria-label', modal.querySelector('.modal-title')?.textContent || '상세 입력');
-  modal.querySelector('input, select, button')?.focus();
+  modal.setAttribute('tabindex','-1');modal.style.zIndex=String(300+modalStack.length);
+  const body=modal.querySelector('.modal');if(body)body.scrollTop=0;
+  updateModalIsolation();focusModalStart(modal);
 }
 function closeModal(id) {
   if (id === 'modal-data-replacement' && replacementReview) { finishReplacementReview(false); return; }
-  document.getElementById(id).classList.remove('open');
-  previousFocus?.focus();
+  const modal=document.getElementById(id);if(!modal)return;
+  const context=modalContexts.get(id),wasTop=activeModal()===modal;
+  modal.classList.remove('open');modal.setAttribute('aria-modal','false');
+  modal.style.zIndex=context?.zIndex||'';modalContexts.delete(id);
+  modalStack=modalStack.filter(element=>element!==modal);updateModalIsolation();
+  if(!wasTop)return;
+  const parent=activeModal();
+  const restore=()=>{
+    if(activeModal()!==parent)return;
+    const current=document.activeElement;
+    if(current&&current!==document.body&&!modal.contains(current)&&usableFocus(current))return;
+    const replacement=context?.key?document.querySelector('[data-focus-key="'+CSS.escape(context.key)+'"]'):null;
+    if(replacement&&context.tab===document.body?.dataset.tab){
+      for(let ancestor=replacement.parentElement;ancestor;ancestor=ancestor.parentElement)if(ancestor.tagName==='DETAILS')ancestor.open=true;
+    }
+    const target=usableFocus(context?.opener)?context.opener:usableFocus(replacement)?replacement:parent||document.getElementById('page-title');
+    target?.focus({preventScroll:true});
+  };
+  (window.requestAnimationFrame||(callback=>setTimeout(callback,0)))(restore);
 }
 document.querySelectorAll('.modal-overlay').forEach(modal => modal.addEventListener('click', event => {
   if (event.target === modal) closeModal(modal.id);
 }));
 document.addEventListener('keydown', event => {
-  const modal = document.querySelector('.modal-overlay.open'); if (!modal) return;
-  if (event.key === 'Escape') { closeModal(modal.id); return; }
+  const modal = activeModal(); if (!modal) return;
+  if (event.key === 'Escape') { event.preventDefault();event.stopImmediatePropagation();closeModal(modal.id); return; }
   if (event.key !== 'Tab') return;
-  const items = [...modal.querySelectorAll('button, input, select, textarea, [tabindex="0"]')]
-    .filter(el => !el.disabled && el.getClientRects().length);
+  const items=modalTabStops(modal);
   const first = items[0], last = items.at(-1);
-  if (event.shiftKey && document.activeElement === first) { last?.focus(); event.preventDefault(); }
+  if(!first){modal.focus({preventScroll:true});event.preventDefault();return;}
+  if(!items.includes(document.activeElement)){(event.shiftKey?last:first).focus();event.preventDefault();return;}
+  if (event.shiftKey && document.activeElement === first) { last.focus(); event.preventDefault(); }
   else if (!event.shiftKey && document.activeElement === last) { first?.focus(); event.preventDefault(); }
+});
+document.addEventListener('focusin',event=>{
+  const modal=activeModal();if(!modal||modal.contains(event.target)||restoringModalFocus)return;
+  restoringModalFocus=true;focusModalStart(modal);restoringModalFocus=false;
 });
 let toastTimer;
 function showToast(message) {
   const toast = document.getElementById('toast');
   toast.textContent = storageFault || conflictingTab ? '저장 상태를 확인해주세요. 상단 안내를 참고하세요.' : message;
+  announceModalNotice(toast.textContent);
   toast.classList.add('show'); clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove('show'), 4500);
 }
@@ -3677,7 +3757,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('cloud-enabled').checked = cloudEnabled;
   document.getElementById('cloud-enabled').disabled=isDemo;
   document.getElementById('demo-banner').hidden=!isDemo;
-  switchTab('home');
+  switchTab('home',{focus:false});
   if(storageFault){
     const reason=storageFault?.message?` (${storageFault.message})`:'';
     showDataNotice(`저장된 데이터를 읽지 못했습니다${reason}. 원본은 보존했습니다. 백업 파일로 복원하거나 손상 원본을 내보내주세요.`);
