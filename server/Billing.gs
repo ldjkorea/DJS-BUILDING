@@ -229,6 +229,50 @@
     }
     return {billId:ledger.billId,asOf:cutoff,knownAt:knowledge,items,total,received,legacyConfirmed,newReceived,unpaid:total-received,exempt,complete:total>0&&total===received};
   }
+  function receiptEqual(left,right){
+    if(left===right)return true;
+    if(!left||!right||typeof left!=='object'||typeof right!=='object'||Array.isArray(left)!==Array.isArray(right))return false;
+    const keys=Object.keys(left);return keys.length===Object.keys(right).length&&keys.every(key=>Object.hasOwn(right,key)&&receiptEqual(left[key],right[key]));
+  }
+  const receiptAnchorKeys=['monthSnapshot','rent','mgmt','elevator','elevatorTotal','electricity','water','waste',
+    'electricityNA','waterNA','wasteNA','unitSnapshot','paydaySnapshot','tenantSnapshot','snapshotEstimated','mgmtItems',
+    'stampedRent','stampedRentDate','stampedMgmt','stampedMgmtDate','paid'];
+  const receiptAnchor=bill=>Object.fromEntries(receiptAnchorKeys.filter(key=>Object.hasOwn(bill,key)).map(key=>[key,bill[key]]));
+  function hasReceiptLedgers(data){
+    return Object.values(data?.bills||{}).some(rows=>Object.values(rows||{}).some(bill=>bill&&typeof bill==='object'&&Object.hasOwn(bill,'receiptLedger')));
+  }
+  function validateReceiptBill(tenant,bill,billId){
+    if(!journalObject(bill)||!Object.hasOwn(bill,'receiptLedger'))journalError('고지서의 원장 필드가 필요합니다.');
+    const ledger=validateReceiptLedger(bill.receiptLedger);
+    if(ledger.billId!==billId)journalError('원장과 고지서 식별자가 다릅니다.');
+    const original={...bill};delete original.receiptLedger;
+    const opening=openReceiptLedger(tenant,original,billId,ledger.openedAt,{reviewEstimated:true});
+    if(!receiptEqual(opening.charges,ledger.charges)||!receiptEqual(opening.legacy,ledger.legacy)||!receiptEqual(opening.estimatedFields,ledger.estimatedFields))journalError('고지서 금액·제외 상태·과거 확인 근거와 원장 snapshot이 다릅니다.');
+    return ledger;
+  }
+  function receiptOwner(data,bill,id){
+    return (data.tenants||[]).find(tenant=>tenant.id===id)||{id,name:bill.tenantSnapshot?.name||'',unit:bill.unitSnapshot||'',rent:0,mgmt:0,elevator:0};
+  }
+  function assertReceiptDataTransition(before,after){
+    // Persistence boundaries call this against the actual stored preimage, never a cached view.
+    for(const [month,rows] of Object.entries(after?.bills||{}))for(const [id,bill] of Object.entries(rows||{})){
+      if(!bill||!Object.hasOwn(bill,'receiptLedger'))continue;
+      validateReceiptBill(receiptOwner(after,bill,id),bill,month+':'+id);
+      const prior=before?.bills?.[month]?.[id];
+      if(prior&&!Object.hasOwn(prior,'receiptLedger')&&!receiptEqual(receiptAnchor(prior),receiptAnchor(bill)))journalError('원장 개시와 기존 고지서 금액·확인 근거 변경을 함께 저장할 수 없습니다.');
+    }
+    for(const [month,rows] of Object.entries(before?.bills||{}))for(const [id,bill] of Object.entries(rows||{})){
+      if(!bill||!Object.hasOwn(bill,'receiptLedger'))continue;
+      validateReceiptBill(receiptOwner(before,bill,id),bill,month+':'+id);
+      const next=after?.bills?.[month]?.[id];
+      if(!next||!Object.hasOwn(next,'receiptLedger'))journalError('기존 입금 원장 또는 고지서를 제거할 수 없습니다.');
+      if(!receiptEqual(receiptAnchor(bill),receiptAnchor(next)))journalError('원장 고지서의 청구 기준 또는 과거 확인을 변경할 수 없습니다.');
+      const oldLedger=bill.receiptLedger,newLedger=next.receiptLedger;
+      const header=value=>Object.fromEntries(Object.entries(value).filter(([key])=>key!=='events'));
+      if(!receiptEqual(header(oldLedger),header(newLedger))||newLedger.events.length<oldLedger.events.length||oldLedger.events.some((event,index)=>!receiptEqual(event,newLedger.events[index])))journalError('기존 원장 snapshot이나 입금 기록을 삭제·변경할 수 없습니다. 취소 기록을 추가해주세요.');
+    }
+    return after;
+  }
   function payment(tenant, bill = {}, asOf = new Date(), year) {
     const amounts=charges(tenant,bill), items={}, cutoff=asOfKey(asOf);
     const paymentYear=year || Number(bill.monthSnapshot?.slice(0,4)) || Number(cutoff.slice(0,4));
@@ -471,6 +515,7 @@
   root.RentalBilling = {won, withVat, floorOf, distribute, calculate, reconcile, charges, payment,
     dateISO, contractEndDate, contractDeadline, period, dueDate, historicalPayment, arrears, itemKeys, naFields,
     materializeGroup, invalidateChangedPayments, freezeBill, effectiveTenant, collectionStatus,
-    RECEIPT_FORMAT,openReceiptLedger,validateReceiptLedger,appendReceiptEvent,receiptLedgerState};
+    RECEIPT_FORMAT,openReceiptLedger,validateReceiptLedger,appendReceiptEvent,receiptLedgerState,
+    hasReceiptLedgers,validateReceiptBill,assertReceiptDataTransition};
   if (typeof module !== 'undefined') module.exports = root.RentalBilling;
 })(globalThis);

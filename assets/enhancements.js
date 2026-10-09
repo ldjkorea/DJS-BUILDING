@@ -181,7 +181,7 @@ function renderBackupFileReport(parsed){
       return;
     }
     if(Object.hasOwn(parsed,'recoveryRaw')){
-      document.getElementById('backup-check-status').textContent='손상 원본 보관 파일입니다. 전체 자료 복원에 바로 사용할 수 없습니다.';return;
+      document.getElementById('backup-check-status').textContent=parsed.reason==='receipt-interface-pending'?'입금 원장 원본 보관 파일입니다. 지원되는 앱에서 원본을 확인해주세요.':'손상 원본 보관 파일입니다. 전체 자료 복원에 바로 사용할 수 없습니다.';return;
     }
   }
   const data=RentalCore.validateData(parsed);backupCheckData=data;
@@ -192,6 +192,7 @@ function renderBackupFileReport(parsed){
     backupCheckLine('임차인 (보관 포함)',data.tenants.length+'명'),backupCheckLine('고지서',countRows(data.bills)+'건 · '+Object.keys(data.bills).length+'개월'),
     backupCheckLine('대출',data.loans.length+'건'),backupCheckLine('지출',countRows(data.expenses)+'건'),backupCheckLine('정산',Object.keys(data.settInputs).length+'개월'));
   const warnings=[];
+  if(RentalCore.hasReceiptLedgers(data))warnings.push('입금 원장 형식은 확인했지만 이 버전에서는 자료 적용과 수납 표시를 지원하지 않습니다. 원본 파일을 보관해주세요.');
   const metadata=new Set(['schemaVersion','exportedAt','localMeta','localDrafts','localSettlementDrafts','reason']);
   const original=Object.fromEntries(Object.entries(parsed).filter(([key])=>!metadata.has(key)));
   if(cloudDifferences(original,data).length)warnings.push('기존 복원 규칙에 따라 기본값이 추가되거나 일부 값이 정규화됩니다. 적용 전 파일 가져오기의 비교 화면을 확인해주세요.');

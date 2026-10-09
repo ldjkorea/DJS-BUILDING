@@ -32,6 +32,11 @@ if(isDemo) {
 let loadedState;
 try { loadedState = RentalCore.load(appStorage); }
 catch (error) { loadedState = {data: RentalCore.empty(), error}; }
+// Stage guard: do not render legacy payment amounts for a recognized receipt journal.
+if(!loadedState.error&&RentalCore.hasReceiptLedgers(loadedState.data)){
+  const error=new Error('입금 원장 자료가 있어 이 버전에서는 편집을 중단했습니다. 원본을 파일로 보관하고 지원되는 앱에서 열어주세요.');
+  error.code='RECEIPT_INTERFACE_PENDING';loadedState={data:RentalCore.empty(),error,meta:loadedState.meta};
+}
 let {tenants, bills, loans, expenses, renewalDone, settInputs, waterRatio, floorOperations} = loadedState.data;
 const domainExtras=data=>Object.fromEntries(Object.entries(data).filter(([key])=>!RentalCore.KEYS.includes(key)));
 let extraDomainData=domainExtras(loadedState.data);
@@ -274,7 +279,12 @@ function historyTenants() {
 let saveTimer=null;
 
 function currentData() { return {...extraDomainData,tenants, bills, loans, expenses, renewalDone, settInputs, waterRatio, floorOperations}; }
+function assertReceiptInterface(data) {
+  if(RentalCore.hasReceiptLedgers(data))throw new Error('입금 원장을 사용하는 자료입니다. 입금 화면 연결이 완료된 버전에서 열어주세요. 현재 기기 자료는 유지됩니다.');
+  return data;
+}
 function assignData(data) {
+  assertReceiptInterface(data);
   extraDomainData=domainExtras(data);
   ({tenants, bills, loans, expenses, renewalDone, settInputs, waterRatio, floorOperations} = data);
   selTenantId = null;
@@ -329,6 +339,8 @@ async function writeLocal(data, dirty, baseRevision, beforeWrite) {
   return withStorageLock(() => {
     assertCurrentStorage();
     const validated=RentalCore.validateData(data);
+    assertReceiptInterface(validated);
+    RentalCore.assertReceiptStorage(appStorage,validated);
     if(beforeWrite)beforeWrite();
     expectedStorageToken=RentalCore.persistChecked(appStorage,validated,expectedStorageToken,
       {cloudPending:dirty,cloudBaseRevision:baseRevision});
@@ -512,6 +524,7 @@ async function doSync(options = {}) {
     assertCurrentStorage();syncUI('saving');
     const remote=await cloudRequest();
     const remoteData=RentalCore.validateData(remote.data);
+    assertReceiptInterface(remoteData);
     if(!supportsSafeSync(remote))throw new Error('기존 서버가 버전 비교 저장을 지원하지 않아 업로드를 차단했습니다. 불러오기는 가능합니다.');
     const localData=RentalCore.validateData(currentData());
     if(!cloudBaseRevision) {
@@ -3429,7 +3442,8 @@ function exportData() {
     if (loadedState.error) {
       const raw = {};
       [RentalCore.STATE_KEY, ...RentalCore.KEYS].forEach(key => raw[key] = appStorage.getItem(key));
-      downloadJson({recoveryRaw: raw,localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts(),localMeta:{draftRecovery:collectDraftRecovery()}}, '손상원본');
+      const receiptPending=loadedState.error.code==='RECEIPT_INTERFACE_PENDING';
+      downloadJson({recoveryRaw: raw,...(receiptPending?{reason:'receipt-interface-pending'}:{}),localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts(),localMeta:{draftRecovery:collectDraftRecovery()}}, receiptPending?'입금원장_보관원본':'손상원본');
     } else downloadJson({...RentalCore.envelope(failedSaveData||currentData()),localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts(),localMeta:{draftRecovery:collectDraftRecovery()}}, failedSaveData?'미저장작업_복구':'백업');
     showToast('백업 파일 다운로드를 시작했습니다.');
   } catch (error) { showToast('내보내기 실패: ' + error.message); }
@@ -3509,6 +3523,8 @@ function replacementLabel(path, before, after) {
   return parts.map(part => labels[part] || part).join(' › ');
 }
 async function reviewDataReplacement(data, label, drafts = {}, settlementDrafts = {}, options = {}) {
+  if(loadedState.error?.code==='RECEIPT_INTERFACE_PENDING')throw loadedState.error;
+  if(RentalCore.hasReceiptLedgers(data))throw new Error('이 버전에서는 입금 원장 자료를 적용할 수 없습니다. 파일을 보관하고 지원되는 앱에서 다시 가져와주세요.');
   const fromGoogle=options.source==='google';
   if (replacementReview || (syncBusy&&!fromGoogle) || persistenceBusy || document.querySelector('.modal-overlay.open')) {
     throw new Error('진행 중인 저장이나 입력창을 마친 뒤 다시 가져와주세요.');
@@ -3761,7 +3777,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   switchTab('home',{focus:false});
   if(storageFault){
     const reason=storageFault?.message?` (${storageFault.message})`:'';
-    showDataNotice(`저장된 데이터를 읽지 못했습니다${reason}. 원본은 보존했습니다. 백업 파일로 복원하거나 손상 원본을 내보내주세요.`);
+    showDataNotice(storageFault.code==='RECEIPT_INTERFACE_PENDING'
+      ? storageFault.message+' 설정의 파일로 내보내기로 원장 원문을 보관할 수 있습니다.'
+      : `저장된 데이터를 읽지 못했습니다${reason}. 원본은 보존했습니다. 백업 파일로 복원하거나 손상 원본을 내보내주세요.`);
   }
   updateLiveDate();
   setInterval(updateLiveDate, 60000);
@@ -3779,6 +3797,7 @@ async function checkBackgroundCloudSync() {
     if(startedRead!==backgroundReadSequence||revision!==startedRevision||draftVersion!==startedDraft||syncBusy||cloudDirty||replacementReview)return;
     if (!supportsSafeSync(remote)) return;
     const remoteData = RentalCore.validateData(remote.data);
+    assertReceiptInterface(remoteData);
     const localData = RentalCore.validateData(currentData());
     const isIdentical = JSON.stringify(remoteData) === JSON.stringify(localData);
 
@@ -3819,7 +3838,9 @@ async function checkBackgroundCloudSync() {
         syncUI('saved');
       }
     }
-  } catch (ignored) {}
+  } catch (error) {
+    if(/입금 원장/.test(error.message))showDataNotice(error.message);
+  }
 }
 
 document.addEventListener('visibilitychange', () => {

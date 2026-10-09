@@ -62,11 +62,45 @@ function server(options={}) {
   });
   for(const file of ['Billing.gs','CurrentStatus.gs','CalendarSync.gs','Code.gs'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../server',file),'utf8'),c,{filename:file});
   c.INDEPENDENT_CONTRACT_CALENDAR_ID='independent-calendar';
-  const get=()=>JSON.parse(c.doGet({parameter:{api:'1'}})),post=req=>JSON.parse(c.doPost({postData:{contents:JSON.stringify(req)}}));
-  const request=(data={tenants:[],bills:{}})=>({protocol:'rental-sync-v2',expectedRevision:get().revision,requestId:crypto.randomUUID(),data});
+  const get=(params={})=>JSON.parse(c.doGet({parameter:{api:'1',...params}})),post=req=>JSON.parse(c.doPost({postData:{contents:JSON.stringify(req)}}));
+  const request=(data={tenants:[],bills:{}})=>({protocol:'rental-sync-v2',expectedRevision:get({receiptLedgerProtocol:'rental-receipts-v1'}).revision,requestId:crypto.randomUUID(),data});
   return {get,post,request,writes:()=>writes,backupRows,body,props,dropEvent:id=>calendarEvents.delete(id),loseMarker:()=>calendarEvents.forEach(event=>{event.description=event.description.split('\n[RENTAL_INDEPENDENT_CONTRACT:')[0];}),events:()=>[...calendarEvents.values()].map(event=>({...event})),raw:()=>targetRows.map(row=>String(row[0]||'')).join(''),fail:value=>{fail=value;},hold:value=>{held=value;},corrupt:value=>{targetRows.splice(0,targetRows.length,[value]);}};
 }
 
+const receiptBilling=require('../assets/billing.js');
+const receiptProtocol={receiptLedgerProtocol:receiptBilling.RECEIPT_FORMAT};
+const receiptClone=x=>JSON.parse(JSON.stringify(x));
+function receiptFixture(adopt=true){
+ const tenant={id:'receipt1',name:'원장 서버 검증',unit:'201호',rent:100000,mgmt:10000,elevator:0,payday:'15일'},bill=receiptBilling.freezeBill(tenant,{water:10000,paid:{pay_water:{date:null,na:null,extension:{nullable:null}}}},'2026-10');
+ if(adopt)bill.receiptLedger=receiptBilling.openReceiptLedger(tenant,bill,'2026-10:receipt1','2026-10-01T00:00:00.000Z');return {tenants:[tenant],bills:{'2026-10':{receipt1:bill}}};
+}
+function receiptAppend(data,id='r1',amount=30000){const next=receiptClone(data),bill=next.bills['2026-10'].receipt1;bill.receiptLedger=receiptBilling.appendReceiptEvent(bill.receiptLedger,{kind:'receipt',id,billId:'2026-10:receipt1',item:'pay_rent',amount,receivedOn:'2026-10-02',recordedAt:'2026-10-10T00:00:00.000Z',note:'검증 입금'});return next;}
+test('receipt server requires explicit reader and writer support before exposing or replacing journals',()=>{
+ const data=receiptFixture(),s=server({raw:JSON.stringify(data)}),raw=s.raw();assert.equal(s.get().status,'unsupported');assert.equal(s.get().data,undefined);assert.equal(s.get({receiptLedgerProtocol:'future'}).data,undefined);assert.deepEqual(s.get(receiptProtocol).data,data);
+ for(const candidate of [data,receiptFixture(false),{tenants:[],bills:{}}]){assert.equal(s.post(s.request(candidate)).status,'unsupported');assert.equal(s.raw(),raw);assert.equal(s.writes(),0);assert.equal(s.backupRows.length,0);}
+ const old=server({raw:JSON.stringify(receiptFixture(false))});assert.equal(old.post(old.request(data)).status,'unsupported');assert.equal(old.writes(),0);
+});
+test('receipt adoption append cancellation readback and request retries preserve exact history and nullable evidence',()=>{
+ const original=receiptFixture(false),s=server({raw:JSON.stringify(original)}),docs=s.body.children.map(p=>p.value);let data=receiptFixture();let req={...s.request(data),...receiptProtocol};let ack=s.post(req);assert.equal(ack.status,'ok');assert.equal(ack.docs.status,'unsupported');assert.deepEqual(s.get(receiptProtocol).data,data);assert.deepEqual(s.body.children.map(p=>p.value),docs);
+ data=receiptAppend(data);req={...s.request(data),...receiptProtocol};ack=s.post(req);const count=s.backupRows.length;const retry=s.post(req);assert.equal(retry.status,'ok');assert.equal(retry.duplicate,true);assert.equal(s.writes(),2);assert.equal(s.backupRows.length,count);assert.equal(s.get(receiptProtocol).revision,ack.revision);
+ const corrected=receiptClone(data),bill=corrected.bills['2026-10'].receipt1;bill.receiptLedger=receiptBilling.appendReceiptEvent(bill.receiptLedger,{kind:'void',id:'v1',billId:'2026-10:receipt1',reference:'r1',recordedAt:'2026-10-11T00:00:00.000Z',reason:'오입력'});assert.equal(s.post({...s.request(corrected),...receiptProtocol}).status,'ok');assert.deepEqual(s.get(receiptProtocol).data,corrected);assert.equal(s.writes(),3);
+ const result=s.post({...s.request(),action:'regenerateCurrentStatus',data:undefined});assert.equal(result.status,'ok');assert.equal(result.docs.status,'unsupported');assert.deepEqual(s.body.children.map(p=>p.value),docs);
+});
+test('typed receipt writer rejects history removal snapshot changes and valid-but-mutated prefixes before recovery writes',()=>{
+ const original=receiptAppend(receiptFixture()),mutations=[x=>delete x.bills['2026-10'].receipt1.receiptLedger,x=>x.bills={},x=>x.bills['2026-10'].receipt1.receiptLedger.events=[],x=>x.bills['2026-10'].receipt1.receiptLedger.events[0].note='변경',x=>x.bills['2026-10'].receipt1.receiptLedger.openedAt='2026-09-30T00:00:00.000Z',x=>x.bills['2026-10'].receipt1.paydaySnapshot='20일',x=>{const bill=x.bills['2026-10'].receipt1;bill.rent=200000;bill.receiptLedger.charges.pay_rent.amount=220000;}];
+ for(const mutate of mutations){const s=server({raw:JSON.stringify(original)}),data=receiptClone(original);mutate(data);const before=s.raw();assert.equal(s.post({...s.request(data),...receiptProtocol}).status,'error');assert.equal(s.writes(),0);assert.equal(s.backupRows.length,0);assert.equal(s.props.has('INDEPENDENT_SYNC_WRITE_JOURNAL'),false);assert.equal(s.raw(),before);}
+});
+test('receipt concurrency stale revision and altered retry enforce one acknowledged append',()=>{
+ const original=receiptFixture(),s=server({raw:JSON.stringify(original)}),a={...s.request(receiptAppend(original,'a')),...receiptProtocol},other={...s.request(receiptAppend(original,'b',40000)),...receiptProtocol};assert.equal(s.post(a).status,'ok');assert.equal(s.post(other).status,'conflict');assert.equal(s.post({...a,data:receiptAppend(original,'a',29999)}).status,'error');assert.equal(s.post(a).duplicate,true);assert.equal(s.writes(),1);
+});
+test('receipt invalid binding malformed ledgers and simultaneous adoption changes never touch DB or recovery',()=>{
+ for(const mutate of [x=>x.bills['2026-10'].receipt1.receiptLedger=null,x=>x.bills['2026-10'].receipt1.receiptLedger.billId='2026-10:other',x=>x.bills['2026-10'].receipt1.receiptLedger.format='future',x=>x.bills['2026-10'].receipt1.rent=200000]){const s=server(),data=receiptFixture();mutate(data);assert.equal(s.post({...s.request(data),...receiptProtocol}).status,'error');assert.equal(s.writes(),0);assert.equal(s.backupRows.length,0);}
+ const before=receiptFixture(false);before.bills['2026-10'].receipt1.stampedRent=true;const s=server({raw:JSON.stringify(before)});assert.equal(s.post({...s.request(receiptFixture()),...receiptProtocol}).status,'error');assert.equal(s.writes(),0);
+});
+test('large receipt payload and storage failure retain full recovery and reject silent historical overwrite',()=>{
+ const original={...receiptFixture(),extra:'보관'.repeat(20000)},s=server({raw:JSON.stringify(original)}),data=receiptAppend(original);const raw=s.raw();const ack=s.post({...s.request(data),...receiptProtocol});assert.equal(ack.status,'ok');assert.equal(s.backupRows.map(row=>row[2]).join(''),raw);assert.deepEqual(s.get(receiptProtocol).data,data);
+ const failure=server({raw:JSON.stringify(original)});failure.fail('write');assert.equal(failure.post({...failure.request(data),...receiptProtocol}).status,'error');assert.equal(failure.raw(),raw);assert.equal(failure.get(receiptProtocol).status,'ok');
+});
 test('GET is read-only and advertises conditional writes, current status and contract calendar',()=>{const s=server(),before=s.raw(),result=s.get();assert.equal(result.capabilities.conditionalWrite,true);assert.equal(result.capabilities.currentStatus,true);assert.equal(result.capabilities.contractCalendar,true);assert.equal(s.raw(),before);assert.equal(s.writes(),0);});
 test('save writes a complete recovery set and returns persisted revision and docs result',()=>{const s=server(),before=s.raw(),r=s.request({tenants:[],bills:{},expenses:{},historical:'preserve'}),ack=s.post(r);assert.equal(ack.status,'ok');assert.equal(ack.requestId,r.requestId);assert.equal(ack.docs.status,'ok');assert.equal(s.get().revision,ack.revision);assert.deepEqual(s.get().data,r.data);assert.equal(s.backupRows.map(row=>row[2]).join(''),before);assert.equal(s.backupRows[0][6],'rental-recovery-v2');});
 test('optional empty-floor operations round-trip without creating a tenant',()=>{const s=server(),data={tenants:[],bills:{},floorOperations:{5:{leaseStatus:'공실(정리중)'}}},ack=s.post(s.request(data));assert.equal(ack.status,'ok');assert.deepEqual(s.get().data,data);assert.equal(s.get().data.tenants.length,0);for(const floorOperations of [{6:{leaseStatus:'공실(정리중)'}},{5:{leaseStatus:'추정 상태'}}]){const invalid=server(),result=invalid.post(invalid.request({tenants:[],bills:{},floorOperations}));assert.equal(result.status,'error');assert.equal(invalid.writes(),0);}});

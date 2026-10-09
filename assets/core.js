@@ -11,6 +11,23 @@
     settInputs: {}, waterRatio: {r2: 19, r3: 10, r4: 5}, floorOperations: {5: {leaseStatus: '공실(정리중)'}}});
   const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
   const fail = message => { throw new Error(message); };
+  function receiptRules(){
+    const rules=root.RentalBilling||(typeof require==='function'?require('./billing.js'):null);
+    if(!rules?.validateReceiptBill||!rules?.assertReceiptDataTransition)fail('입금 원장 검증을 지원하는 최신 앱이 필요합니다.');
+    return rules;
+  }
+  const hasReceiptLedgers=data=>Object.values(data?.bills||{}).some(rows=>Object.values(rows||{}).some(bill=>isObject(bill)&&Object.hasOwn(bill,'receiptLedger')));
+  function assertReceiptStorage(storage,data){
+    const raw=storage.getItem(STATE_KEY);let previous;
+    if(raw!==null){
+      try{previous=JSON.parse(raw);}catch{
+        if(/"receiptLedger"\s*:/.test(raw))fail('입금 원장 원문을 읽지 못해 덮어쓰기를 중단했습니다. 원본을 보관해주세요.');
+      }
+    }else{
+      const bills=storage.getItem('bills');if(bills!==null){try{previous={bills:JSON.parse(bills)};}catch{if(/"receiptLedger"\s*:/.test(bills))fail('기존 입금 원장 원문을 보관해주세요.');}}
+    }
+    if(hasReceiptLedgers(previous)||hasReceiptLedgers(data))receiptRules().assertReceiptDataTransition(previous,data);
+  }
   const record = (value, label) => isObject(value) || fail(`${label}: 객체 형식이 필요합니다.`);
   const id = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(value)
     && !['__proto__', 'constructor', 'prototype', 'toString', 'valueOf', 'hasOwnProperty'].includes(value);
@@ -151,6 +168,7 @@
     Object.entries(data.bills).forEach(([billMonth, rows]) => Object.entries(rows).forEach(([tenantId, bill]) => {
       if (!id(tenantId)) fail('고지서 식별자를 확인해주세요.');
       record(bill, '고지서');
+      const receiptOriginal=Object.hasOwn(bill,'receiptLedger')?JSON.stringify(bill):null;
       if (bill.mgmtItems != null) validateMgmtItems(bill.mgmtItems);
       for (const key of ['rent', 'mgmt', 'elevator', 'elevatorTotal', 'electricity', 'water', 'waste', 'waterMeter']) {
         if (bill[key] != null) number(bill[key], `고지서.${key}`, key !== 'waterMeter');
@@ -176,6 +194,11 @@
       if (bill.snapshotEstimated != null && (!Array.isArray(bill.snapshotEstimated) || bill.snapshotEstimated.some(x => typeof x !== 'string'))) fail('snapshot 보완 이력을 확인해주세요.');
       if (bill.audit != null) {
         validateAudit(bill.audit);
+      }
+      if(receiptOriginal!==null){
+        if(JSON.stringify(bill)!==receiptOriginal)fail('원장 고지서를 자동 보정할 수 없습니다. 원본 파일을 유지해주세요.');
+        const tenant=data.tenants.find(row=>row.id===tenantId)||{id:tenantId,name:bill.tenantSnapshot?.name||'',unit:bill.unitSnapshot||'',rent:0,mgmt:0,elevator:0};
+        receiptRules().validateReceiptBill(tenant,bill,billMonth+':'+tenantId);
       }
     }));
     record(data.renewalDone, '갱신 상태');
@@ -213,7 +236,8 @@
   }
   function persist(storage, data, meta = {}) {
     // A single setItem is atomic: no partial writes across separate collections.
-    storage.setItem(STATE_KEY, JSON.stringify({...envelope(data), localMeta: meta}));
+    const snapshot=envelope(data);assertReceiptStorage(storage,snapshot);
+    storage.setItem(STATE_KEY, JSON.stringify({...snapshot, localMeta: meta}));
   }
   function storageToken(storage) {
     const raw = storage.getItem(STATE_KEY);
@@ -238,6 +262,6 @@
     return m >= 1 && m <= 12 && d >= 1 && d <= new Date(year, m, 0).getDate();
   }
   root.RentalCore = {STATE_KEY, BACKUP_KEY, KEYS, LEASE_STATUSES, leaseStatus, empty, validateData, envelope, load, persist,
-    backup, escapeHtml, validMeterDate, storageToken, persistChecked};
+    backup, escapeHtml, validMeterDate, storageToken, persistChecked,hasReceiptLedgers,assertReceiptStorage};
   if (typeof module !== 'undefined') module.exports = root.RentalCore;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

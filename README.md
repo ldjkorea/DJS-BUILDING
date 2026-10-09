@@ -8,7 +8,7 @@
 - [UX 리디자인](docs/UX_REDESIGN_V2.md) · [데이터 무결성 감사](docs/DATA_INTEGRITY_AUDIT.md) · [Android/업데이트](docs/ANDROID_UPDATE_STRATEGY.md)
 - [기존 1.0 연결 대상·실제 운영 검증 기록](docs/INDEPENDENT_APP.md)
 
-운영 주소는 아직 1.0 배포 버전 4입니다. 마지막 검증 후보는 `candidate/independent-v206-18237dc`의 웹 2.0.6이며 해당 ZIP은 보존했습니다. 현재 2.1.0 개발 소스에는 [부분입금 원장 계산 기반](docs/RECEIPT_LEDGER.md)을 구현했지만 입금 화면·공식 저장·전체 수납 계산 연결은 아직 남아 있습니다. 현재 개발 소스를 사용 가능한 2.1.0 릴리스 후보로 간주하지 않습니다. 기존 서명 Android 2.0.0 APK도 유지합니다.
+운영 주소는 아직 1.0 배포 버전 4입니다. 마지막 검증 후보는 `candidate/independent-v206-18237dc`의 웹 2.0.6이며 해당 ZIP은 보존했습니다. 현재 2.1.0 개발 소스에는 [부분입금 원장 계산과 공식 저장 보호](docs/RECEIPT_LEDGER.md)를 구현했습니다. 입금 화면과 전체 수납 계산 연결은 남아 있으며, 이 단계의 UI는 원장 자료의 편집·적용을 중단하고 원문 보관을 안내합니다. 현재 개발 소스를 사용 가능한 2.1.0 릴리스 후보로 간주하지 않습니다. 기존 서명 Android 2.0.0 APK도 유지합니다.
 - 현재 개발 예시 미리보기: `http://127.0.0.1:4282/?demo=1` (외부 Google 연결 없음, 기존 납부 UI 사용)
 - 로컬 실행: `npm start`, `http://127.0.0.1:4274/`
 - 독립성 검증: `npm run test:independent` (Playwright가 설치된 환경)

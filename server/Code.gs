@@ -4,7 +4,7 @@ var INDEPENDENT_SHEET_ID = 0;
 var SYNC_FORMAT = 'rental-sync-storage-v2';
 var SYNC_JOURNAL_PROPERTY = 'INDEPENDENT_SYNC_WRITE_JOURNAL';
 var LEASE_STATUSES = ['임대중','재계약예정','계약종료예정','명도소송중','강제집행중','공실(정리중)','임대모집중'];
-function capabilities_() { return {conditionalWrite:true, currentStatus:true, contractCalendar:true}; }
+function capabilities_() { return {conditionalWrite:true, currentStatus:true, contractCalendar:true,receiptLedgerStorage:'rental-receipts-v1'}; }
 function json_(value) {
   return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON);
 }
@@ -58,6 +58,10 @@ function validate_(data) {
       moneyFields(bill,['rent','mgmt','elevator','elevatorTotal','electricity','water','waste'],'고지서');
       amount(bill.waterMeter,'수도 계량기',true);
       (bill.mgmtItems || []).forEach(function(item) { amount(item.amount,'고지서 관리비 항목'); });
+      if(Object.prototype.hasOwnProperty.call(bill,'receiptLedger')) {
+        var tenant=data.tenants.filter(function(row){return row.id===id;})[0]||{id:id,name:bill.tenantSnapshot&&bill.tenantSnapshot.name||'',unit:bill.unitSnapshot||'',rent:0,mgmt:0,elevator:0};
+        RentalBilling.validateReceiptBill(tenant,bill,month+':'+id);
+      }
     });
   });
   (data.loans || []).forEach(function(row) { amount(row.principal,'대출 원금'); amount(row.rate,'대출 이율',true); });
@@ -117,6 +121,8 @@ function doGet(e) {
   }
   return locked_(function() {
     var state = read_(source_().sheet);
+    if(RentalBilling.hasReceiptLedgers(state.data)&&e.parameter.receiptLedgerProtocol!==RentalBilling.RECEIPT_FORMAT)
+      return {status:'unsupported',message:'입금 원장 자료는 이를 지원하는 최신 앱에서 불러와주세요.',capabilities:capabilities_()};
     return {status:'ok', data:state.data, revision:state.revision, appVersion:'2.1.0', capabilities:capabilities_(), protocol:'rental-sync-v2'};
   });
 }
@@ -165,6 +171,7 @@ function inspectRecovery_(target) {
   return {revision:tail[1],batch:tail[3],at:tail[0],chunks:count,tenants:data.tenants.length,billMonths:Object.keys(data.bills).length};
 }
 function currentStatusResult_(state) {
+  if(RentalBilling.hasReceiptLedgers(state.data))return {status:'unsupported',message:'이 버전에서는 입금 원장 현황 문서를 갱신할 수 없습니다. 최신 서버에서 다시 생성해주세요.'};
   // This catch is intentionally outside the DB save transaction result.
   try { return generateCurrentStatus_(state.data, state.revision); }
   catch (err) {
@@ -204,6 +211,8 @@ function doPost(e) {
     }
     if (req.action !== undefined && req.action !== 'save') return {status:'unsupported', message:'지원하지 않는 동기화 작업입니다.'};
     validate_(req.data);
+    if((RentalBilling.hasReceiptLedgers(state.data)||RentalBilling.hasReceiptLedgers(req.data))&&req.receiptLedgerProtocol!==RentalBilling.RECEIPT_FORMAT)
+      return {status:'unsupported',message:'입금 원장을 유지하는 최신 앱에서 저장해주세요.',capabilities:capabilities_()};
     var fingerprint = hash_(JSON.stringify({expectedRevision:req.expectedRevision, data:req.data}));
     var duplicate = state.receipts.filter(function(r) { return r.id === req.requestId; })[0];
     if (duplicate) {
@@ -212,6 +221,7 @@ function doPost(e) {
       return {status:'ok', revision:state.revision, requestId:req.requestId, capabilities:capabilities_(), duplicate:true, docs:currentStatusResult_(state)};
     }
     if (req.expectedRevision !== state.revision) return {status:'conflict', message:'다른 기기에서 변경된 자료입니다. 현재 자료를 유지합니다.'};
+    RentalBilling.assertReceiptDataTransition(state.data,req.data);
     var receipts = state.receipts.slice(-15).concat([{id:req.requestId, hash:fingerprint}]);
     var raw = JSON.stringify({format:SYNC_FORMAT, version:Utilities.getUuid(), data:req.data, receipts:receipts});
     if (raw.length > 5000000) throw new Error('자료 크기가 안전 한도(5MB)를 초과했습니다.');
