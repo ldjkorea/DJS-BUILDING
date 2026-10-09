@@ -1,0 +1,247 @@
+{
+  "appVersion": "2.1.3",
+  "phase": "pre-journal-bill-basis-correction",
+  "sourceCommit": "e08f91527eb3389e5a5b0917b9baeb73fedbb151",
+  "releaseCandidate": false,
+  "recordedAt": "2026-10-09T22:51:48.427Z",
+  "behavior": {
+    "selectedSavedInvoiceOnly": true,
+    "currentTenantAndOtherLegacyMonthsPreserved": true,
+    "sharedBillingRules": true,
+    "grossNetElevatorAndFirstFloorPreserved": true,
+    "reviewThenSeparateAtomicSave": true,
+    "reasonRequired": true,
+    "originalBillInExistingAudit": true,
+    "estimateProvenancePreserved": true,
+    "changedPaymentReview": true,
+    "undatedGroupReviewVisible": true,
+    "futureGroupDatesPreservedWithoutCurrentCash": true,
+    "quotaFailureRetainsInputs": true,
+    "staleTabAndLockWaitBlocked": true,
+    "existingJournalImmutable": true,
+    "journalOpeningSeparate": true,
+    "schemaVersion": 1
+  },
+  "validation": {
+    "command": "npm run test:all",
+    "unit": {
+      "total": 158,
+      "passed": 158,
+      "newBasisTests": 11
+    },
+    "browser": {
+      "startedAt": "2026-10-09T22:46:10.007Z",
+      "finishedAt": "2026-10-09T22:51:14.814Z",
+      "url": "http://127.0.0.1:9256/",
+      "node": "v24.18.0",
+      "results": [
+        {
+          "suite": "browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "audit-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "bill-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "quarter-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "pwa-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "single-file-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "integrity-v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "independent-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        }
+      ],
+      "suiteCount": 11,
+      "newBasisCases": [
+        {
+          "name": "correction PC mobile preview cancel preserves raw originals and two stage save changes only selected invoice",
+          "status": "pass"
+        },
+        {
+          "name": "correction validates integers reason limits zero values and resets reviewed candidate before edits",
+          "status": "pass"
+        },
+        {
+          "name": "correction gross net first floor and settlement recheck retain exact totals and exemptions",
+          "status": "pass"
+        },
+        {
+          "name": "correction dated future groups keep unrelated dates and undated groups visibly require recheck",
+          "status": "pass"
+        },
+        {
+          "name": "correction blocked legacy route separately saves corrected basis then opens journal preserving original audit",
+          "status": "pass"
+        },
+        {
+          "name": "correction failed atomic storage leaves state and inputs intact and retry records only one audit",
+          "status": "pass"
+        },
+        {
+          "name": "correction another tab after preview blocks stale save and retains newer state",
+          "status": "pass"
+        },
+        {
+          "name": "correction preserves other legacy months exactly in storage and unchanged numeric strings",
+          "status": "pass"
+        },
+        {
+          "name": "correction rechecks the candidate after a real lock wait and keeps the review open while saving",
+          "status": "pass"
+        },
+        {
+          "name": "correction blocks incidental normalization of another invoice and preserves its raw data",
+          "status": "pass"
+        },
+        {
+          "name": "correction orphan archived records escaped text keyboard and six viewports work without implicit saves",
+          "status": "pass"
+        }
+      ]
+    },
+    "auditCases": 69,
+    "receiptCases": 11,
+    "receiptBasisCases": 8,
+    "quarterCases": 8,
+    "syntax": "pass",
+    "build": "pass",
+    "generatedSources": "match",
+    "actualPhone": false,
+    "actualPrinter": false,
+    "actualScreenReader": false
+  },
+  "reproduction": {
+    "checkedAt": "2026-10-09T22:45:09.919Z",
+    "baselineCommit": "d1da662",
+    "baselineFutureWaterDate": null,
+    "correctedFutureWaterDate": "2199.07.05",
+    "currentReceived": 0,
+    "externalRequests": 0,
+    "shortDateYearRegression": {
+      "interimCommit": "edeeb8f",
+      "interimDate": "2200.07.05",
+      "correctedDate": "2026.07.05",
+      "deployed": false
+    }
+  },
+  "operating": {
+    "checkedAt": "2026-10-09T22:42:09.825Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e",
+    "appVersion": "1.0.0",
+    "deploymentVersion": 4,
+    "verification": "GET source and deployments only",
+    "liveDataWrites": false,
+    "googleDocsRegeneration": false,
+    "calendarSync": false,
+    "deployed": false,
+    "pushed": false,
+    "androidRebuilt": false
+  },
+  "preservedCandidate": {
+    "version": "2.0.6",
+    "path": "releases/rental-independent-gas-2.0.6.zip",
+    "sha256": "fc03fdf04b43da7e9870e6c0e37ccf3ef5fd5cfadb82d318d8ebefecf1aeadd7"
+  },
+  "sourceHashes": {
+    "assets/app.js": "640a5b755fbc2c4a32baa0e053386bace3be5a171973585be82e4a4c1f77ced5",
+    "assets/billing.js": "1250de59157d5a0853561b7cbd70fb21925c27d60c33ff83783f07da5b7faf00",
+    "assets/workspace.css": "7498f6ed527a78e2a9e3f4ed559ee7f3264df46411b587fc7049d83a35edba46",
+    "src/index.template.html": "55145fd726f1e771063ba6b8d160177e0d9aeb800dbb522636685fba3ec3b7b3",
+    "tests/bill-basis-browser.cjs": "a186d4b84c1b1cf2ef66e6667db9e93c1791ad4f5248a19e8ed46d97f75539a9",
+    "tests/bill-basis.test.cjs": "60586273b9194e1b375d6d7ebb615eabe3583d7498fb5bf19126f0fbfc934783",
+    "scripts/test-browser.cjs": "a4bdade9dcda93a23b54d35162a8a518a3bd041b6d2e9329a9be7325aced0510",
+    "assets/core.js": "b10b52212c0b6bec7d7173ed2321ef4d392852e0265d54d64453f299692e7f17",
+    "assets/enhancements.js": "88bf9dbb08b9423ef2c8fba422dfc715cffcbf7a1ad5ece45f87b3e1e23e314d",
+    "index.html": "9cec30c135162c95b1a3978b12557d4668410aee54fa61f92643db153ca93c50",
+    "server/Billing.gs": "a20d4072e65d8bc129d1b5e9c5e0a2d171595ba623d4d8fc9c080a5d9dab20fc",
+    "server/Code.gs": "efdafb7cf306830846cbb8cd7e45a5b95d242569c388cb130786246ae0209211",
+    "sw.js": "aa4f20f81cf8dde92c3c7db858e44b6e3437acc96bf6194fa6f3aa7f59c19bd5",
+    "package.json": "ac4ae98508135be4f818d529a62242082a98fa43ef4a89b323a0a67e5abcc233"
+  },
+  "screenshots": {
+    "docs/screenshots/bill-basis-input-390.png": {
+      "sha256": "5570d48ed96bfdd67e009802694e88e749c5bd4816dac93b4eda4da97af65127",
+      "anonymous": true,
+      "storageUnchanged": true
+    },
+    "docs/screenshots/bill-basis-review-390.png": {
+      "sha256": "1bd19a5faf6360249fe3d6e86e9af0793f9b7ad63710102c5448026747a92de7",
+      "anonymous": true,
+      "storageUnchanged": true
+    },
+    "docs/screenshots/bill-basis-confirm-390.png": {
+      "sha256": "1bd19a5faf6360249fe3d6e86e9af0793f9b7ad63710102c5448026747a92de7",
+      "anonymous": true,
+      "storageUnchanged": true
+    },
+    "docs/screenshots/bill-basis-input-1366.png": {
+      "sha256": "106b6958682398e7e8d7b839dfd7847c656f97ac3937ce63643f7dc8c61853f6",
+      "anonymous": true,
+      "storageUnchanged": true
+    },
+    "docs/screenshots/bill-basis-review-1366.png": {
+      "sha256": "ec23a89d34035e7731c9c9a3b015e6478342bd325b9275acfe414d72461f86e6",
+      "anonymous": true,
+      "storageUnchanged": true
+    },
+    "docs/screenshots/bill-basis-confirm-1366.png": {
+      "sha256": "ec23a89d34035e7731c9c9a3b015e6478342bd325b9275acfe414d72461f86e6",
+      "anonymous": true,
+      "storageUnchanged": true
+    }
+  },
+  "remaining": [
+    "Policy for changing invoice basis after a receipt journal is opened",
+    "Reconcile complete actual operating dataset against source records",
+    "Package a new candidate after migration policy review",
+    "Explicitly authorized independent Google write and readback with Docs and Calendar verification",
+    "Physical phone offline update printing and screen reader verification"
+  ]
+}
