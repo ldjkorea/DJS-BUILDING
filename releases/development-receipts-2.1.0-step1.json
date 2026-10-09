@@ -1,0 +1,125 @@
+{
+  "version": "2.1.0",
+  "stage": "receipt journal foundation only",
+  "releaseCandidate": false,
+  "partialPaymentFeatureComplete": false,
+  "sourceCommit": "da275ab3ea0d91c318db1620704cc70888590283",
+  "baseline": "18237dc",
+  "validatedAt": "2026-10-09T20:43:03.915Z",
+  "unit": {
+    "tests": 118,
+    "passed": 118,
+    "failed": 0,
+    "addedReceiptJournalTests": 15
+  },
+  "browserSuites": [
+    {
+      "suite": "browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "audit-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "pwa-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "single-file-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "integrity-v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "independent-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ],
+  "audit": {
+    "tests": 65,
+    "passed": 65
+  },
+  "foundationBrowserCalls": {
+    "checkedAt": "2026-10-09T20:40:22.330Z",
+    "results": [
+      {
+        "width": 390,
+        "partialRentReceived": 30000,
+        "partialRentUnpaid": 80000,
+        "completeRentReceived": 110000,
+        "wholeBillComplete": false,
+        "correctedRentReceived": 80000,
+        "originalBillUnchanged": true,
+        "legacyPaymentUnchanged": true,
+        "originalEntryRetained": true,
+        "version": "2.1.0",
+        "browser": "local Edge",
+        "sourceDataAndStorageUnchanged": true,
+        "newPartialPaymentForm": false,
+        "production": false,
+        "physicalDevice": false
+      },
+      {
+        "width": 1366,
+        "partialRentReceived": 30000,
+        "partialRentUnpaid": 80000,
+        "completeRentReceived": 110000,
+        "wholeBillComplete": false,
+        "correctedRentReceived": 80000,
+        "originalBillUnchanged": true,
+        "legacyPaymentUnchanged": true,
+        "originalEntryRetained": true,
+        "version": "2.1.0",
+        "browser": "local Edge",
+        "sourceDataAndStorageUnchanged": true,
+        "newPartialPaymentForm": false,
+        "production": false,
+        "physicalDevice": false
+      }
+    ]
+  },
+  "generatedGasParity": "Local Node VM only; not a live Apps Script execution",
+  "hashes": {
+    "billing": "561c4c348817a6da03e12568709abe7412cbe8c9294f9d527066efb4ac66fbce",
+    "generatedGasBilling": "271ed245f7e7d6af9b0ba1e28f0b010dcd21af47bf07fef71ec0c3ee1629e40f",
+    "singleFile": "7d2f6f08e63cff4a19a222ce4d1696459e4d9e4eaae26d647097fb9a610cec7c"
+  },
+  "previousCandidate": {
+    "version": "2.0.6",
+    "file": "rental-independent-gas-2.0.6.zip",
+    "sha256": "fc03fdf04b43da7e9870e6c0e37ccf3ef5fd5cfadb82d318d8ebefecf1aeadd7",
+    "preserved": true
+  },
+  "liveReadOnlyProof": {
+    "checkedAt": "2026-10-09T20:36:30.218Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e"
+  },
+  "uiIntegration": false,
+  "officialStorageIntegration": false,
+  "appendOnlyServerProtection": false,
+  "productionDeployment": false,
+  "remotePush": false,
+  "physicalDevice": "NOT TESTED",
+  "screenReader": "NOT TESTED"
+}
