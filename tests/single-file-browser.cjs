@@ -1,3 +1,4 @@
+const {applyReplacement,restoreRecovery:restoreRecoveryV2}=require('./navigation.cjs');
 const {navigate:navigateV2}=require('./navigation.cjs');
 /* Isolated release validation: only index.html exists beside the file URL.
    HTTP also serves only index.html; all other requests are recorded and refused. */
@@ -131,11 +132,14 @@ async function workflow(page, label) {
   const backupPath=path.join(out,label+'-backup.json');
   await download.saveAs(backupPath);
   await page.locator('#import-file').setInputFiles({name:'legacy.json',mimeType:'application/json',buffer:Buffer.from('{"tenants":[],"bills":{}}')});
+  await applyReplacement(page);
   await page.waitForFunction(()=>tenants.length===0&&!persistenceBusy);
   await page.getByRole('button',{name:'↩ 직전 복원 지점으로 되돌리기'}).click();
+  await applyReplacement(page);
   await page.waitForFunction(()=>tenants.length===5&&!persistenceBusy);
   assert.deepEqual(await page.evaluate(()=>currentData()),expected);
   await page.locator('#import-file').setInputFiles(backupPath);
+  await applyReplacement(page);
   await page.waitForFunction(()=>!persistenceBusy&&document.querySelector('#toast').textContent.includes('가져오기 완료'));
   await page.reload();
   assert.deepEqual(await page.evaluate(()=>currentData()),expected);

@@ -1,3 +1,4 @@
+const {applyReplacement,restoreRecovery:restoreRecoveryV2}=require('./navigation.cjs');
 const {navigate:navigateV2}=require('./navigation.cjs');
 /* Operational regressions use disposable browser contexts and mock cloud responses. */
 const {chromium}=require('playwright');
@@ -70,7 +71,7 @@ test('reset and recovery round trip retains unfinished bill drafts',async()=>{
   const {page}=await open();await history(page,'audit1',past,true);
   await page.locator('#bill-electricity').fill('65432');
   await page.evaluate(()=>flushBillDraft());await page.evaluate(()=>resetAllData());
-  await page.evaluate(()=>restoreRecovery());await history(page,'audit1',past,true);
+  await restoreRecoveryV2(page);await history(page,'audit1',past,true);
   assert.equal(await page.locator('#bill-electricity').inputValue(),'65432');
 });
 test('imported drafts remain exportable and warning visible when draft storage fails',async()=>{
@@ -87,7 +88,7 @@ test('cloud import recovery retains the local draft it replaced',async()=>{
   const {page,context}=await open();await history(page,'audit1',past,true);
   await page.locator('#bill-electricity').fill('77777');await page.evaluate(()=>flushBillDraft());
   await context.route('https://script.google.com/**',r=>r.fulfill({json:{status:'ok',data:core.empty()}}));
-  await page.evaluate(()=>syncFromSheet());await page.evaluate(()=>restoreRecovery());
+  await page.evaluate(()=>syncFromSheet());await restoreRecoveryV2(page);
   await history(page,'audit1',past,true);assert.equal(await page.locator('#bill-electricity').inputValue(),'77777');
 });
 test('orphan historical bill supports receipt confirmation and reload',async()=>{
@@ -199,7 +200,52 @@ test('CSV escapes formula-like tenant names and uses historical identity',async(
   assert.ok(csv.includes('"\'=2+3"'));assert.ok(!csv.includes('changed'));assert.ok(csv.includes('110000'));
 });
 test('settlement draft backup restores inputs and remains exportable after storage failure',async()=>{
- const {page}=await open();await navigateV2(page,'settlement');await page.locator('#sett-elec').fill('76543');const backup=await exportBackup(page);assert.equal(backup.localSettlementDrafts[key].fields['sett-elec'].value,'76543');assert.equal(core.validateData(backup).localSettlementDrafts,undefined);await page.evaluate(()=>resetAllData());await page.evaluate(()=>restoreRecovery());await navigateV2(page,'settlement');assert.equal(await page.locator('#sett-elec').inputValue(),'76543');await failStorage(page,'rentalApp.settlementDrafts.v2');await page.evaluate(async backup=>replaceData(RentalCore.validateData(backup),'정산 초안 격리 복원',{},backup.localSettlementDrafts),backup);assert.match(await page.locator('#data-notice').innerText(),/초안을 저장하지 못/);assert.equal((await exportBackup(page)).localSettlementDrafts[key].fields['sett-elec'].value,'76543');
+ const {page}=await open();await navigateV2(page,'settlement');await page.locator('#sett-elec').fill('76543');const backup=await exportBackup(page);assert.equal(backup.localSettlementDrafts[key].fields['sett-elec'].value,'76543');assert.equal(core.validateData(backup).localSettlementDrafts,undefined);await page.evaluate(()=>resetAllData());await restoreRecoveryV2(page);await navigateV2(page,'settlement');assert.equal(await page.locator('#sett-elec').inputValue(),'76543');await failStorage(page,'rentalApp.settlementDrafts.v2');await page.evaluate(async backup=>replaceData(RentalCore.validateData(backup),'정산 초안 격리 복원',{},backup.localSettlementDrafts),backup);assert.match(await page.locator('#data-notice').innerText(),/초안을 저장하지 못/);assert.equal((await exportBackup(page)).localSettlementDrafts[key].fields['sett-elec'].value,'76543');
+});
+
+test('backup replacement waits for visible review and cancel preserves current data',async()=>{
+ const {page}=await open();const before=await page.evaluate(()=>currentData());const incoming=sample();incoming.tenants[0].name='복원할 익명 자료';await page.locator('#import-file').setInputFiles({name:'review.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});await page.waitForTimeout(150);assert.deepEqual(await page.evaluate(()=>currentData()),before);await page.locator('#modal-data-replacement.open').waitFor();assert.match(await page.locator('#replacement-details').innerText(),/복원할 익명 자료/);await page.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await page.evaluate(()=>currentData()),before);
+});
+
+test('backup replacement applies only after review and keeps complete undo data on PC and mobile',async()=>{
+ for(const viewport of [{width:1366,height:768},{width:390,height:844}]){
+  const {page}=await open(sample(),{viewport});const before=await page.evaluate(()=>currentData());const incoming=sample();incoming.tenants[0].name='<img src=x onerror="window.reviewInjection=1">';incoming.tenants[0].audit=[{at:'2026-10-10',action:'검증',detail:'보증금 이력',changes:{deposit:{from:null,to:0}}}];incoming.futureFields={nullValue:null,blank:'',zero:0};
+  await page.locator('#import-file').setInputFiles({name:'verified.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});await page.locator('#modal-data-replacement.open').waitFor();assert.equal(await page.locator('#replacement-details img').count(),0);assert.equal(await page.evaluate(()=>window.reviewInjection),undefined);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  await page.locator('.replacement-review').evaluate(async el=>{await Promise.all(el.getAnimations().map(a=>a.finished));});await page.screenshot({path:path.join(out,'backup-review-'+viewport.width+'.png'),fullPage:false});await applyReplacement(page);assert.deepEqual(await page.evaluate(()=>currentData()),core.validateData(incoming));assert.deepEqual(await page.evaluate(()=>RentalCore.validateData(JSON.parse(appStorage.getItem(RentalCore.BACKUP_KEY)))),before);
+  await page.reload();assert.deepEqual(await page.evaluate(()=>currentData()),core.validateData(incoming));await restoreRecoveryV2(page);assert.deepEqual(await page.evaluate(()=>currentData()),before);
+ }
+});
+
+test('backup replacement rejects edits and another tab changing the reviewed baseline',async()=>{
+ for(const mode of ['input','data','other-tab']){
+  const {page,context}=await open();const incoming=sample();incoming.tenants[0].name='복원 후보';await page.locator('#import-file').setInputFiles({name:'stale.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});await page.locator('#modal-data-replacement.open').waitFor();
+  let other;
+  if(mode==='input')await page.evaluate(()=>{draftVersion++;});
+  if(mode==='data')await page.evaluate(()=>{tenants[0].name='미리보기 중 현재 수정';});
+  if(mode==='other-tab'){other=await context.newPage();await other.goto(TEST_URL);await other.evaluate(async()=>{tenants[0].name='다른 창의 최신 자료';await save();});await page.waitForFunction(()=>conflictingTab);}
+  const raw=await page.evaluate(()=>appStorage.getItem(RentalCore.STATE_KEY));await applyReplacement(page);assert.equal(await page.evaluate(()=>appStorage.getItem(RentalCore.STATE_KEY)),raw);assert.notEqual(await page.evaluate(()=>tenants[0].name),'복원 후보');if(other)await other.close();
+ }
+});
+
+test('backup replacement Escape cancels and cloud synchronization stays paused while reviewing',async()=>{
+ const {page,requests}=await open();const before=await page.evaluate(()=>currentData());const incoming=sample();incoming.tenants[0].name='취소할 후보';await page.locator('#import-file').setInputFiles({name:'cancel.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});await page.locator('#modal-data-replacement.open').waitFor();await page.evaluate(async()=>{cloudEnabled=true;cloudDirty=true;await doSync();await checkBackgroundCloudSync();});assert.equal(requests.length,0);await page.keyboard.press('Escape');await page.locator('#modal-data-replacement.open').waitFor({state:'hidden'});assert.deepEqual(await page.evaluate(()=>currentData()),before);assert.equal(await page.evaluate(()=>replacementReview),null);
+});
+
+test('backup replacement keeps its review open while waiting for a lock and preserves data on quota failure',async()=>{
+ const {page}=await open();const before=await page.evaluate(()=>currentData());const incoming=sample();incoming.tenants[0].name='실패할 복원 후보';await page.locator('#import-file').setInputFiles({name:'quota.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});await page.locator('#modal-data-replacement.open').waitFor();
+ await page.evaluate(()=>{window.reviewLockEntered=false;void navigator.locks.request('rentalIndependent20261009.rentalApp.write',()=>new Promise(resolve=>{window.releaseReviewLock=resolve;window.reviewLockEntered=true;}));});await page.waitForFunction(()=>window.reviewLockEntered);await page.getByRole('button',{name:'이 백업으로 복원',exact:true}).click();await page.waitForFunction(()=>persistenceBusy);assert.equal(await page.locator('#replacement-cancel').isDisabled(),true);assert.equal(await page.locator('#modal-data-replacement.open').isVisible(),true);assert.deepEqual(await page.evaluate(()=>currentData()),before);await page.keyboard.press('Escape');assert.equal(await page.locator('#modal-data-replacement.open').isVisible(),true);
+ await failStorage(page,core.STATE_KEY);await page.evaluate(()=>window.releaseReviewLock());await page.locator('#modal-data-replacement.open').waitFor({state:'hidden'});assert.deepEqual(await page.evaluate(()=>currentData()),before);assert.equal(await page.evaluate(()=>replacementReview),null);
+});
+
+test('backup replacement review keeps its actions visible across six viewports and 200 percent text',async()=>{
+ for(const [width,height] of [[360,800],[390,844],[412,915],[768,1024],[1366,768],[1920,1080]]){
+  for(const size of ['100%','200%']){const {page,context}=await open(sample(),{viewport:{width,height}});await page.evaluate(size=>{document.documentElement.style.fontSize=size;},size);const incoming=sample();incoming.tenants[0].name='복원 확인용 예시';incoming.futureFields={nullValue:null,blank:'',zero:0};await page.locator('#import-file').setInputFiles({name:'예시백업.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});await page.locator('#modal-data-replacement.open').waitFor();await page.locator('.replacement-review').evaluate(async el=>{await Promise.all(el.getAnimations().map(a=>a.finished));});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));for(const id of ['replacement-cancel','replacement-backup','replacement-apply']){const r=await page.locator('#'+id).boundingBox();assert.ok(r.y>=0&&r.y+r.height<=height+1,'action outside viewport '+width+' '+size+' '+id);assert.ok(r.height>=44);}
+   if(size==='100%'&&(width===390||width===1366))await page.screenshot({path:path.join(out,'backup-review-clean-'+width+'.png'),fullPage:false});await page.getByRole('button',{name:'취소',exact:true}).click();await context.close();}
+ }
+});
+
+test('backup replacement counts valid drafts and keeps legacy domain data when draft metadata is malformed',async()=>{
+ const {page}=await open();const incoming=sample();incoming.localSettlementDrafts='x'.repeat(200000);await page.locator('#import-file').setInputFiles({name:'old-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});await page.locator('#modal-data-replacement.open').waitFor();assert.match(await page.locator('.replacement-body').innerText(),/초안 0개/);await applyReplacement(page);assert.deepEqual(await page.evaluate(()=>currentData()),core.validateData(incoming));assert.deepEqual(await page.evaluate(()=>readSettlementDrafts()),{});
 });
 
 (async()=>{

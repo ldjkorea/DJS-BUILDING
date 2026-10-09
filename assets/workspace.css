@@ -80,3 +80,19 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 @media print{body{background:#fff;padding:0!important;color:#111}.workspace-sidebar,.header{display:none!important}body.printing-bill .section:not(#section-history),body.printing-bill #hist-nav,body.printing-bill #hist-chips,body.printing-bill .section-label,body.printing-bill .bill-actions,body.printing-bill .invoice-check,body.printing-bill .audit-details,body.printing-bill .modal-overlay,body.printing-bill .toast,body.printing-bill .data-notice{display:none!important}body.printing-bill .content{padding:0;max-width:none}body.printing-bill #section-history{display:block!important}body.printing-bill .payment-card button{display:none}.charge-row,.payment-card{break-inside:avoid}@page{size:A4;margin:15mm}}
 
 [style*="font-family"],.charge-row,.result-tbl td{font-family:var(--font)!important}.sett-live-card,.bill-actions-modern .btn-kakao-primary{background:var(--accentbg);color:var(--text);border-color:var(--border)}.reconcile-details,.building-fields dt,.attention-date time,.building-identity>span{color:var(--text2);font-size:0.75rem}.building-fields dd,.attention-item strong{font-size:0.875rem}.chip-badge.unpaid{color:var(--red);background:var(--redbg)}.section-toolbar p,.draft-state{color:var(--text2)}#home-sett-status{display:none}
+#modal-data-replacement{align-items:center;padding:16px}
+.replacement-review{max-width:900px;width:100%;font-size:0.875rem;max-height:calc(100dvh - 32px);display:flex;flex-direction:column;overflow:hidden}
+.replacement-body{overflow:auto;min-height:0}
+.replacement-review>.card-header{flex-shrink:0}
+.replacement-review p{margin:12px 0;overflow-wrap:anywhere}
+.replacement-review .hint-box{color:var(--text2);font-size:0.8125rem}
+.replacement-review .modal-title{margin:0}
+.replacement-review summary{min-height:44px;padding:8px 0;cursor:pointer}
+.replacement-summary{width:100%;border-collapse:collapse;font-size:0.8125rem}
+.replacement-summary caption{text-align:left;padding:10px 0;color:var(--text2)}
+.replacement-summary th,.replacement-summary td{border:1px solid var(--border);padding:10px;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+.replacement-summary th{font-weight:600;background:var(--surface2)}
+#replacement-details table{table-layout:fixed;min-width:500px}
+.replacement-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:14px;margin-top:14px;border-top:1px solid var(--border);flex-shrink:0}
+.replacement-actions .btn{flex:1;min-width:130px;width:auto;margin:0}
+@media(max-width:800px){#modal-data-replacement{align-items:flex-end;padding:0}.replacement-review{max-height:90dvh;border-radius:20px 20px 0 0}.replacement-actions .btn-primary{flex-basis:100%}}

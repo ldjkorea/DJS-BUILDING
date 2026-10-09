@@ -249,7 +249,7 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.0.0';
+const APPLICATION_VERSION='2.0.1';
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
   const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';
@@ -280,13 +280,17 @@ labelObserver.observe(document.body,{childList:true,subtree:true});
 attachInputLabels();
 
 }
-function storeSettlementDrafts(source){
+function validateSettlementDrafts(source){
   const clean={};
   if(source&&typeof source==='object'&&!Array.isArray(source))for(const [month,d] of Object.entries(source)){
     if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)||!d||typeof d.baseline!=='string'||d.baseline.length>5000000||!d.fields||typeof d.fields!=='object')continue;
     const fields={};for(const [id,v] of Object.entries(d.fields)){if(/^sett-[a-z0-9-]{1,80}$/.test(id)&&v&&typeof v.value==='string'&&v.value.length<1000)fields[id]={value:v.value,checked:v.checked===true};}
     clean[month]={fields,baseline:d.baseline,at:typeof d.at==='string'?d.at:''};
   }
+  return clean;
+}
+function storeSettlementDrafts(source){
+  const clean=validateSettlementDrafts(source);
   retainedSettlementDrafts=clean;
   try{appStorage.setItem(SETT_DRAFT_KEY,JSON.stringify(clean));retainedSettlementDrafts=null;settlementDraftError=false;return true;}catch{settlementDraftError=true;return false;}
 }

@@ -7,6 +7,17 @@ const root = path.resolve(__dirname, '..');
 function build() {
   let html = fs.readFileSync(path.join(root, 'src/index.template.html'), 'utf8');
   const read = name => fs.readFileSync(path.join(root, name), 'utf8');
+  const version = JSON.parse(read('package.json')).version;
+  const releaseVersions = {
+    '화면 메타데이터': html.match(/<meta name="application-version" content="([^"]+)">/)?.[1],
+    '클라이언트': read('assets/enhancements.js').match(/const APPLICATION_VERSION='([^']+)'/)?.[1],
+    'GAS 응답': read('server/Code.gs').match(/appVersion:'([^']+)'/)?.[1],
+    'PWA 캐시': read('sw.js').match(/CACHE_NAME = CACHE_PREFIX\+'([^']+)'/)?.[1]
+  };
+  for (const [label, actual] of Object.entries(releaseVersions)) {
+    if (actual !== version) throw new Error(label + ' 버전 ' + actual + '이 package.json ' + version + '과 다릅니다.');
+  }
+  if (!html.includes('INDEPENDENT ' + version)) throw new Error('내비게이션 버전 표시가 오래되었습니다.');
   const icon = fs.readFileSync(path.join(root, 'icon.svg')).toString('base64');
   html = html.replace(/href="icon.svg"/g, 'href="data:image/svg+xml;base64,' + icon + '"');
   if (fs.existsSync(path.join(root, 'icons/icon-180.png'))) {

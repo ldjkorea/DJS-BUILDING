@@ -117,7 +117,7 @@ function doGet(e) {
   }
   return locked_(function() {
     var state = read_(source_().sheet);
-    return {status:'ok', data:state.data, revision:state.revision, appVersion:'2.0.0', capabilities:capabilities_(), protocol:'rental-sync-v2'};
+    return {status:'ok', data:state.data, revision:state.revision, appVersion:'2.0.1', capabilities:capabilities_(), protocol:'rental-sync-v2'};
   });
 }
 function ensureRows_(sheet, count) {

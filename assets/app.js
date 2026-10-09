@@ -500,7 +500,7 @@ async function regenerateCurrentStatus() {
 }
 
 async function doSync(options = {}) {
-  if(!cloudEnabled || storageFault || conflictingTab || persistenceBusy || syncBusy)return;
+  if(!cloudEnabled || storageFault || conflictingTab || persistenceBusy || syncBusy || replacementReview)return;
   if(!navigator.onLine){syncUI('offline');return;}
   syncBusy=true;
   let success=false;
@@ -580,7 +580,7 @@ async function manualSync() {
 }
 async function syncFromSheet() {
   if(isDemo){showToast('예시 모드에서는 구글 저장소에 연결하지 않습니다.');return;}
-  if(syncBusy||persistenceBusy||storageFault||conflictingTab){showToast('저장 상태를 확인한 뒤 다시 시도해주세요.');return;}
+  if(syncBusy||persistenceBusy||storageFault||conflictingTab||replacementReview){showToast('저장 상태를 확인한 뒤 다시 시도해주세요.');return;}
   if(!confirm('구글 데이터를 불러와 현재 데이터를 교체할까요? 교체 전 복원 지점을 남깁니다.'))return;
   clearTimeout(saveTimer);
   const startedRevision=revision, startedDraft=draftVersion;
@@ -3434,16 +3434,123 @@ async function replaceData(data, reason, drafts = {}, settlementDrafts = {}) {
   } finally {persistenceBusy=false;}
 }
 
+let replacementReview = null;
+function finishReplacementReview(accepted) {
+  if (!replacementReview || replacementReview.applying) return;
+  const pending = replacementReview;
+  if (accepted) {
+    pending.applying = true;
+    document.querySelectorAll('#modal-data-replacement button').forEach(button => { button.disabled = true; });
+    document.getElementById('replacement-apply').textContent = '복원 확인 중…';
+    pending.resolve(true);
+    return;
+  }
+  endReplacementReview();
+  pending.resolve(false);
+}
+function endReplacementReview() {
+  replacementReview = null;
+  closeModal('modal-data-replacement');
+}
+function replacementValue(value) {
+  if (value === undefined) return '항목 없음';
+  if (value === null) return '미입력 (null)';
+  if (value === '') return '빈 문자열';
+  const text = JSON.stringify(value);
+  return text.length > 500 ? text.slice(0, 500) + ' … (일부 표시)' : text;
+}
+function replacementLabel(path, before, after) {
+  const labels = {tenants:'임차인',bills:'고지서',loans:'대출',expenses:'지출',settInputs:'정산',
+    renewalDone:'계약 갱신',waterRatio:'수도 배분 비율',floorOperations:'층별 운영',name:'이름',
+    biz:'상호',unit:'호실',rent:'월세',mgmt:'관리비',deposit:'보증금',contract:'계약기간',
+    contract_first:'최초 계약기간',payday:'납기',elevator:'승강기',electricity:'개별 전기',
+    elecCommon:'공용 전기',water:'수도',waste:'오물비',archived:'보관 여부',audit:'변경 이력',
+    tenantSnapshot:'발행 당시 임차인',paid:'납부 상태',date:'입금일',pay_rent:'월세 납부',
+    pay_mgmt:'관리·공과금 납부',from:'변경 전',to:'변경 후',id:'구분값'};
+  const parts = path.split('.');
+  if (parts[0] === 'tenants' && /^\d+$/.test(parts[1] || '')) {
+    const index = Number(parts[1]), tenant = before.tenants[index] || after.tenants[index];
+    parts.splice(0, 2, '임차인 ' + (index + 1) + (tenant ? ' · ' + (tenant.biz || tenant.name) : ''));
+  } else if (parts[0] === 'bills' && parts.length > 2) {
+    const tenant = before.tenants.find(t => t.id === parts[2]) || after.tenants.find(t => t.id === parts[2]);
+    parts[2] = tenant ? tenant.biz || tenant.name : '보관된 기록';
+  }
+  return parts.map(part => labels[part] || part).join(' › ');
+}
+async function reviewDataReplacement(data, label, drafts = {}, settlementDrafts = {}) {
+  if (replacementReview || syncBusy || persistenceBusy || document.querySelector('.modal-overlay.open')) {
+    throw new Error('진행 중인 저장이나 입력창을 마친 뒤 다시 가져와주세요.');
+  }
+  assertCurrentStorage();
+  flushBillDraft();
+  captureSettlementDraft();
+  const baseline = JSON.stringify(currentData());
+  const startedRevision = revision, startedDraft = draftVersion;
+  const current = JSON.parse(baseline), changes = cloudDifferences(current, data);
+  const countBills = value => Object.values(value.bills).reduce((sum, rows) => sum + Object.keys(rows).length, 0);
+  const metrics = value => [value.tenants.length, countBills(value), Object.keys(value.bills).length,
+    value.loans.length, Object.keys(value.expenses).length];
+  const before = metrics(current), after = metrics(data);
+  const metricNames = ['임차인 (보관 포함)', '고지서 기록', '고지서 월', '대출 기록', '지출 월'];
+  let overlay = document.getElementById('modal-data-replacement');
+  if (!overlay) {
+    overlay = document.createElement('section');
+    overlay.id = 'modal-data-replacement'; overlay.className = 'modal-overlay';
+    overlay.addEventListener('click', event => { if (event.target === overlay) finishReplacementReview(false); });
+    document.body.appendChild(overlay);
+  }
+  const incomingDrafts = Object.keys(drafts || {}).length + Object.keys(settlementDrafts || {}).length;
+  overlay.innerHTML = '<div class="modal replacement-review"><div class="card-header"><h2 class="modal-title">복원할 자료 미리보기</h2>' +
+    '<button type="button" class="modal-close" aria-label="복원 미리보기 닫기">×</button></div>' +
+    '<div class="replacement-body"><p>' + esc(label) + '</p><p class="hint-box">적용하면 이 기기의 자료가 아래 백업으로 바뀝니다. 적용 직전 현재 자료를 복원 지점으로 보관하며, Google 저장은 별도로 실행합니다.</p>' +
+    (loadedState.error ? '<p class="data-warning">현재 저장 자료가 손상되어 기존 건수를 확인할 수 없습니다. 복원할 때 손상 원문을 별도로 보관합니다.</p>' : '') +
+    '<details class="replacement-counts"><summary>기록 수 비교 · 임차인 ' + (loadedState.error ? '?' : before[0]) + ' → ' + after[0] + '명 · 고지서 ' + (loadedState.error ? '?' : before[1]) + ' → ' + after[1] + '건</summary><div class="table-scroll"><table class="replacement-summary"><caption>현재 자료와 백업의 기록 수</caption><thead><tr><th scope="col">항목</th><th scope="col">현재</th><th scope="col">백업</th></tr></thead><tbody>' +
+    metricNames.map((name, i) => '<tr><th scope="row">' + name + '</th><td>' + (loadedState.error ? '확인 불가' : before[i]) + '</td><td>' + after[i] + '</td></tr>').join('') + '</tbody></table></div></details>' +
+    '<p>자료 차이 ' + changes.length + '개 · 백업의 고지서/정산 초안 ' + incomingDrafts + '개</p>' +
+    '<details id="replacement-details" open><summary>변경되는 항목 확인</summary><p>최대 100개 항목을 표시합니다. 긴 값은 일부만 표시하므로 전체 자료는 JSON 백업으로 확인하세요.</p>' +
+    '<div class="table-scroll"><table class="replacement-summary"><thead><tr><th scope="col">항목</th><th scope="col">현재 자료</th><th scope="col">복원할 자료</th></tr></thead><tbody>' +
+    changes.slice(0, 100).map(row => '<tr><th scope="row">' + esc(replacementLabel(row.path, current, data)) + '</th><td>' + esc(replacementValue(row.remote)) + '</td><td>' + esc(replacementValue(row.local)) + '</td></tr>').join('') +
+    '</tbody></table></div>' + (changes.length ? '' : '<p>임대 자료는 동일합니다. 백업에 포함된 초안과 복원 기준도 적용됩니다.</p>') + '</details>' +
+    '</div><div class="replacement-actions"><button type="button" class="btn btn-secondary" id="replacement-cancel">취소</button>' +
+    '<button type="button" class="btn btn-secondary" id="replacement-backup">현재 자료 백업</button>' +
+    '<button type="button" class="btn btn-primary" id="replacement-apply">이 백업으로 복원</button></div></div>';
+  clearTimeout(saveTimer);
+  backgroundReadSequence++;
+  const accepted = await new Promise(resolve => {
+    replacementReview = {resolve};
+    overlay.querySelector('.modal-close').onclick = () => finishReplacementReview(false);
+    overlay.querySelector('#replacement-cancel').onclick = () => finishReplacementReview(false);
+    overlay.querySelector('#replacement-backup').onclick = exportData;
+    overlay.querySelector('#replacement-apply').onclick = () => finishReplacementReview(true);
+    openModal(overlay.id);
+  });
+  if (!accepted) {
+    if (cloudEnabled && cloudDirty) saveTimer = setTimeout(doSync, 2000);
+    return false;
+  }
+  if (revision !== startedRevision || draftVersion !== startedDraft || JSON.stringify(currentData()) !== baseline) {
+    endReplacementReview();
+    showDataNotice('미리보기를 확인하는 동안 자료나 입력이 바뀌어 복원을 중단했습니다. 현재 내용을 백업한 뒤 다시 비교해주세요.');
+    throw new Error('미리보기 이후 자료 또는 입력이 변경됐습니다. 다시 비교해주세요.');
+  }
+  try { assertCurrentStorage(); } catch (error) { endReplacementReview(); throw error; }
+  return true;
+}
 async function restoreRecovery() {
+  let reviewed = false;
   try {
     const raw = appStorage.getItem(RentalCore.BACKUP_KEY);
     if (!raw) { showToast('아직 복원 지점이 없습니다.'); return; }
     const backup = JSON.parse(raw);
     const data = RentalCore.validateData(backup);
-    if (!confirm(`${backup.reason || '이전 데이터'} (${backup.exportedAt || ''})로 되돌릴까요?`)) return;
-    await replaceData(data, '복원 지점으로 되돌리기 전',validateDrafts(backup.localDrafts),backup.localSettlementDrafts);
+    const drafts = validateDrafts(backup.localDrafts);
+    const settlementDrafts = validateSettlementDrafts(backup.localSettlementDrafts);
+    reviewed = await reviewDataReplacement(data, `${backup.reason || '이전 데이터'} (${backup.exportedAt || ''})`, drafts, settlementDrafts);
+    if (!reviewed) return;
+    await replaceData(data, '복원 지점으로 되돌리기 전',drafts,settlementDrafts);
     showToast('복원 완료 · 구글 저장은 별도로 실행해주세요.');
   } catch (error) { showToast('복원 실패: ' + error.message); }
+  finally { if (reviewed) endReplacementReview(); }
 }
 function importData(event) {
   const file = event.target.files[0]; event.target.value = '';
@@ -3452,14 +3559,19 @@ function importData(event) {
   const startedRevision=revision, startedDraft=draftVersion;
   const reader = new FileReader();
   reader.onload = async () => {
+    let reviewed = false;
     try {
       const parsed=JSON.parse(reader.result);
       const data = RentalCore.validateData(parsed);
       if(revision!==startedRevision||draftVersion!==startedDraft)throw new Error('파일을 읽는 동안 편집이 발생했습니다. 다시 가져와주세요.');
-      if (!confirm(`세입자 ${data.tenants.length}명, 고지서 ${Object.keys(data.bills).length}개월의 백업으로 교체할까요?`)) return;
-      await replaceData(data, '파일 가져오기 전',validateDrafts(parsed.localDrafts),parsed.localSettlementDrafts);
+      const drafts = validateDrafts(parsed.localDrafts);
+      const settlementDrafts = validateSettlementDrafts(parsed.localSettlementDrafts);
+      reviewed = await reviewDataReplacement(data, file.name, drafts, settlementDrafts);
+      if (!reviewed) return;
+      await replaceData(data, '파일 가져오기 전',drafts,settlementDrafts);
       showToast('가져오기 완료 · 구글 저장은 별도로 실행해주세요.');
     } catch (error) { showToast('가져오기 실패: ' + error.message); }
+    finally { if (reviewed) endReplacementReview(); }
   };
   reader.onerror = () => showToast('파일을 읽지 못했습니다.');
   reader.readAsText(file);
@@ -3479,6 +3591,7 @@ function openModal(id) {
   modal.querySelector('input, select, button')?.focus();
 }
 function closeModal(id) {
+  if (id === 'modal-data-replacement' && replacementReview) { finishReplacementReview(false); return; }
   document.getElementById(id).classList.remove('open');
   previousFocus?.focus();
 }
@@ -3543,12 +3656,12 @@ document.addEventListener('DOMContentLoaded',()=>{
 let backgroundReadSequence=0;
 async function checkBackgroundCloudSync() {
   const startedRevision=revision,startedDraft=draftVersion;
-  if (!cloudEnabled || isDemo || cloudDirty || storageFault || conflictingTab || persistenceBusy || syncBusy) return;
+  if (!cloudEnabled || isDemo || cloudDirty || storageFault || conflictingTab || persistenceBusy || syncBusy || replacementReview) return;
   if (!navigator.onLine) return;
   const startedRead=++backgroundReadSequence;
   try {
     const remote = await cloudRequest();
-    if(startedRead!==backgroundReadSequence||revision!==startedRevision||draftVersion!==startedDraft||syncBusy||cloudDirty)return;
+    if(startedRead!==backgroundReadSequence||revision!==startedRevision||draftVersion!==startedDraft||syncBusy||cloudDirty||replacementReview)return;
     if (!supportsSafeSync(remote)) return;
     const remoteData = RentalCore.validateData(remote.data);
     const localData = RentalCore.validateData(currentData());

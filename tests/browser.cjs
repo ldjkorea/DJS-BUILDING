@@ -1,3 +1,4 @@
+const {applyReplacement,restoreRecovery:restoreRecoveryV2}=require('./navigation.cjs');
 const {navigate:navigateV2}=require('./navigation.cjs');
 const TEST_URL=process.env.RENTAL_TEST_URL||'http://127.0.0.1:4173/';
 /* Run against npm start. Uses an existing Playwright installation; no runtime dependency. */
@@ -153,12 +154,12 @@ async function state(page) { return page.evaluate(() => currentData()); }
     await page.evaluate(async () => { localStorage.setItem('rentalIndependent20261009.'+'otherApp', 'keep'); await resetAllData(); });
     assert.equal((await state(page)).tenants.length, 0);
     assert.equal(await page.evaluate(() => localStorage.getItem('rentalIndependent20261009.'+'otherApp')), 'keep');
-    await page.evaluate(() => restoreRecovery()); assert.equal((await state(page)).tenants.length, 2); await context.close();
+    await restoreRecoveryV2(page); assert.equal((await state(page)).tenants.length, 2); await context.close();
   });
   await run('legacy import replaces optional collections and malformed import preserves data', async () => {
     const {page, context} = await pageFor();
     await page.locator('#import-file').setInputFiles({name: 'legacy.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({tenants: [], bills: {}}))});
-    await page.waitForTimeout(100); assert.equal((await state(page)).loans.length, 0);
+    await applyReplacement(page); assert.equal((await state(page)).loans.length, 0);
     const before = await state(page);
     await page.locator('#import-file').setInputFiles({name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from('{"tenants":{},"bills":[]}')});
     await page.waitForTimeout(100); assert.deepEqual(await state(page), before); await context.close();
@@ -293,7 +294,7 @@ async function state(page) { return page.evaluate(() => currentData()); }
     await page.evaluate(() => saveTenant()); data = await state(page);
     assert.equal(data.tenants[0].id, id); assert.equal(data.tenants[0].biz, '수정 연구실');
     await page.evaluate(id => deleteTenant(id), id); assert.equal((await state(page)).tenants.length, 0);
-    await page.evaluate(() => restoreRecovery()); assert.deepEqual((await state(page)).tenants, data.tenants);
+    await restoreRecoveryV2(page); assert.deepEqual((await state(page)).tenants, data.tenants);
     assert.deepEqual(errors, []); await context.close();
   });
   await run('lease status and renewal update current terms, audit changes and preserve old bills', async () => {
