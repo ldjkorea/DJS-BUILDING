@@ -317,7 +317,9 @@
   function materializeGroup(tenant,bill,key) {
     const flag=key==='pay_rent'?'stampedRent':'stampedMgmt';
     if(!bill[flag])return;
-    const state=payment(tenant,bill);
+    // Materialize stored dates even when they are later than today. The date
+    // remains future evidence; the current payment projection still excludes it.
+    const state=payment(tenant,bill,'2200-12-31');
     if (bill.paid == null) bill.paid = {};
     for(const itemKey of itemKeys.filter(k=>(k==='pay_rent')===(key==='pay_rent'))) {
       const item=state.items[itemKey];
@@ -360,6 +362,34 @@
       payday:bill.paydaySnapshot??tenant.payday,rent:bill.rent??tenant.rent,
       mgmt:bill.mgmt??tenant.mgmt,elevator:bill.elevator??tenant.elevator,
       mgmtItems:bill.mgmtItems??tenant.mgmtItems};
+  }
+  function correctBillBasis(tenant,bill,month,patch={}) {
+    if(Object.hasOwn(bill,'receiptLedger'))throw new Error('원장 고지서의 청구 기준은 고정되어 있습니다.');
+    if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))throw new Error('고지서 월을 확인해주세요.');
+    const allowed=['rent','mgmt','elevatorCharge','unitSnapshot','paydaySnapshot','tenantSnapshot'];
+    if(!patch||typeof patch!=='object'||Array.isArray(patch)||Object.keys(patch).some(key=>!allowed.includes(key)))throw new Error('청구 기준 정정 항목을 확인해주세요.');
+    const next=JSON.parse(JSON.stringify(bill));freezeBill(tenant,next,month,true);
+    for(const key of ['rent','mgmt'])if(Object.hasOwn(patch,key))next[key]=won(patch[key]);
+    if(Object.hasOwn(patch,'elevatorCharge')){
+      const charge=patch.elevatorCharge;
+      if(!charge||!['net','gross'].includes(charge.mode))throw new Error('승강기 금액의 공급가·청구액 구분을 확인해주세요.');
+      const value=won(charge.amount);
+      if(charge.mode==='gross')next.elevatorTotal=value;
+      else{next.elevator=value;delete next.elevatorTotal;}
+    }
+    for(const key of ['unitSnapshot','paydaySnapshot'])if(Object.hasOwn(patch,key)){
+      if(typeof patch[key]!=='string')throw new Error('호실·납기는 문자열로 입력해주세요.');next[key]=patch[key];
+    }
+    if(Object.hasOwn(patch,'tenantSnapshot')){
+      const values=patch.tenantSnapshot;
+      if(!values||typeof values!=='object'||Array.isArray(values)||Object.keys(values).some(key=>!snapshotFields.includes(key)||typeof values[key]!=='string'))throw new Error('계약 정보 정정 항목을 확인해주세요.');
+      Object.assign(next.tenantSnapshot,values);
+    }
+    if(Object.hasOwn(patch,'paydaySnapshot'))next.tenantSnapshot.payday=patch.paydaySnapshot;
+    else if(Object.hasOwn(patch.tenantSnapshot||{},'payday'))next.paydaySnapshot=patch.tenantSnapshot.payday;
+    const changedPayments=invalidateChangedPayments(tenant,bill,next);
+    // Estimate provenance stays intact, including fields explicitly corrected.
+    return {bill:next,changedPayments};
   }
   function dateISO(value, year = new Date().getFullYear()) {
     if(!/^(?:\d{4}[./-])?\d{1,2}[./-]\d{1,2}$/.test(String(value||'')))return '';
@@ -561,7 +591,7 @@
   }
   root.RentalBilling = {won, withVat, floorOf, distribute, calculate, reconcile, charges, payment, quarterlyStatement,
     dateISO, contractEndDate, contractDeadline, period, dueDate, historicalPayment, arrears, itemKeys, naFields,
-    materializeGroup, invalidateChangedPayments, freezeBill, effectiveTenant, collectionStatus,
+    materializeGroup, invalidateChangedPayments, freezeBill, effectiveTenant, correctBillBasis, collectionStatus,
     RECEIPT_FORMAT,openReceiptLedger,validateReceiptLedger,appendReceiptEvent,receiptLedgerState,
     hasReceiptLedgers,validateReceiptBill,assertReceiptDataTransition};
   if (typeof module !== 'undefined') module.exports = root.RentalBilling;

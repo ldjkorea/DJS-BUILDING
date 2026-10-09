@@ -507,6 +507,7 @@ async function regenerateCurrentStatus() {
 
 async function doSync(options = {}) {
   if(document.getElementById('modal-receipt-entry')?.classList.contains('open'))return;
+  if(document.getElementById('modal-bill-basis')?.classList.contains('open'))return;
   if(!cloudEnabled || storageFault || conflictingTab || persistenceBusy || syncBusy || replacementReview)return;
   if(!navigator.onLine){syncUI('offline');return;}
   syncBusy=true;
@@ -2127,13 +2128,111 @@ function renderHistContent() {
 
       <p class="card-sub" style="margin-top:10px;">관리비 전체 도장은 관리비·전기·수도·엘리베이터 전체를 완납 처리합니다. 세입자가 일부 항목만 입금한 경우 위의 항목별 분할 완납을 이용해 주세요.</p><button class="btn btn-secondary" data-focus-key="receipt-add" onclick="openReceiptDialog()">금액별 입금 기록 시작</button><p class="card-sub">여러 번 나누어 입금한 금액을 기록할 수 있습니다. 시작 후 이 고지서의 청구 기준과 기존 납부 근거는 고정됩니다.</p>`}
       <label class="invoice-check"><input type="checkbox" ${bill.invoiceIssued?'checked':''} onchange="setInvoiceIssued(this.checked)"> 세금계산서 발급 완료 · 안내 메시지에 반영</label>
-      <div class="bill-actions bill-actions-modern"><button class="btn-kakao-primary" onclick="previewKakao()">💬 카카오톡 / 문자 청구서 발송</button><button class="btn btn-secondary" onclick="editThisMonth()">✏️ 고지서 수정</button><button class="btn btn-secondary" onclick="printCurrentBill()">🖨️ 인쇄 / PDF</button></div>
-      ${(bill.audit||[]).length?`<details class="audit-details"><summary>변경 이력 ${(bill.audit||[]).length}건</summary>${[...bill.audit].reverse().map(entry=>`<p><time>${esc(new Date(entry.at).toLocaleString('ko-KR'))}</time> ${esc(entry.action)} · ${esc(entry.detail)}</p>`).join('')}</details>`:''}
+      <div class="bill-actions bill-actions-modern"><button class="btn-kakao-primary" onclick="previewKakao()">💬 카카오톡 / 문자 청구서 발송</button><button class="btn btn-secondary" onclick="editThisMonth()">✏️ 고지서 수정</button>${!bill.receiptLedger?'<button class="btn btn-secondary" data-focus-key="basis-correction" onclick="openBillBasisCorrection()">청구 기준 정정</button>':''}<button class="btn btn-secondary" onclick="printCurrentBill()">🖨️ 인쇄 / PDF</button></div>
+      ${(bill.audit||[]).length?`<details class="audit-details"><summary>변경 이력 ${(bill.audit||[]).length}건</summary>${[...bill.audit].reverse().map(entry=>`<p><time>${esc(new Date(entry.at).toLocaleString('ko-KR'))}</time> ${esc(entry.action)} · ${esc(entry.detail)}</p>${entry.action==='청구 기준 정정'&&entry.changes?'<details><summary>정정 전 원문과 저장 결과</summary><pre class="basis-audit-original">'+esc(JSON.stringify(entry.changes,null,2))+'</pre></details>':''}`).join('')}</details>`:''}
       </article>`;
   }
   function editThisMonth(){const t=findTenant(selTenantId);if(!t)return;if(bills[activeMk()]?.[selTenantId]?.receiptLedger){showToast('입금 원장 고지서의 청구 기준은 고정되어 있습니다. 입금 기록에서 추가·정정해주세요.');return;}document.getElementById('hist-content').innerHTML=buildBillFormHtml(t,histY,histM);applyBillDraft();}
 
 let receiptTarget=null;
+let billBasisTarget=null;
+const BILL_BASIS_FIELDS=['name','biz','contract','contract_first','renew','paytype','period_mgmt','period_rent','period_elec','period_elev','period_waste','period_water_day','period_water_odd'];
+function basisFieldValue(bill,key){
+  const money=value=>String(Number(typeof value==='string'?value.replaceAll(',','').trim():value??0));
+  if(key==='elevatorAmount')return money(bill.elevatorTotal??bill.elevator??0);
+  if(key==='elevatorMode')return bill.elevatorTotal!=null?'gross':'net';
+  if(['rent','mgmt'].includes(key))return money(bill[key]);
+  return String(BILL_BASIS_FIELDS.includes(key)?bill.tenantSnapshot?.[key]??'':bill[key]??'');
+}
+function openBillBasisCorrection(){
+  if(persistenceBusy||syncBusy)return;
+  try{
+    assertCurrentStorage();const month=activeMk(),id=selTenantId,bill=bills[month]?.[id];
+    if(!bill)throw new Error('저장된 고지서를 먼저 선택해주세요.');
+    if(bill.receiptLedger)throw new Error('원장 고지서의 청구 기준은 고정되어 있습니다.');
+    if(receiptTarget&&JSON.stringify(bill)!==receiptTarget.billRaw)throw new Error('고지서가 변경됐습니다. 최신 자료를 확인해주세요.');
+    const stored=RentalCore.load(appStorage);if(stored.error)throw stored.error;
+    const storedRaw=appStorage.getItem(RentalCore.STATE_KEY),storedBills=storedRaw===null?JSON.parse(appStorage.getItem('bills')||'{}'):JSON.parse(storedRaw).bills;
+    billBasisTarget={month,id,billRaw:JSON.stringify(bill),dataRaw:JSON.stringify(currentData()),before:structuredClone(bill),persisted:structuredClone(storedBills?.[month]?.[id]||bill),storedBills:structuredClone(storedBills||{}),persistedData:stored.data,prepared:null};
+    clearTimeout(saveTimer);if(receiptTarget)closeModal('modal-receipt-entry');
+    document.getElementById('bill-basis-context').textContent=month+' · '+(bill.unitSnapshot||'호실 미지정')+' · 이 고지서의 기준을 정정합니다.';
+    const number=(key,label)=>`<div class="field"><label for="basis-${key}">${label}</label><input type="number" min="0" max="1000000000000" step="1" inputmode="numeric" id="basis-${key}" value="${esc(basisFieldValue(bill,key))}"></div>`;
+    const text=(key,label)=>`<div class="field"><label for="basis-${key}">${label}</label><input type="text" id="basis-${key}" value="${esc(basisFieldValue(bill,key))}"></div>`;
+    document.getElementById('bill-basis-values').innerHTML=number('rent','월세 공급가 (VAT 제외)')+number('mgmt','관리비 공급가 (VAT 제외)')+'<div class="field"><label for="basis-elevatorMode">승강기 금액 구분</label><select id="basis-elevatorMode"><option value="net">공급가 (VAT 별도)</option><option value="gross">청구액 (VAT 포함)</option></select></div>'+number('elevatorAmount','승강기 금액 (원)')+text('unitSnapshot','고지서 호실 (1층은 승강기 미부과)')+text('paydaySnapshot','월세 납기 (예: 15일, 월말)')+'<details><summary>임차인·계약·청구 기간 정정</summary><div class="basis-contract-fields">'+BILL_BASIS_FIELDS.map(key=>text(key,RECEIPT_BASIS_LABELS[key])).join('')+'</div></details>';
+    document.getElementById('basis-elevatorMode').value=basisFieldValue(bill,'elevatorMode');
+    document.getElementById('bill-basis-estimates').textContent=(bill.snapshotEstimated||[]).length?'보완 출처를 유지하는 항목: '+receiptEstimateLabels(bill.snapshotEstimated):'이 고지서에는 추정 보완 항목이 없습니다.';
+    document.getElementById('bill-basis-reason').value='';resetBillBasisReview();openModal('modal-bill-basis');
+  }catch(error){if(activeModal())announceModalNotice(error.message);else showToast(error.message);}
+}
+function resetBillBasisReview(){
+  if(billBasisTarget)billBasisTarget.prepared=null;
+  document.getElementById('bill-basis-fields').disabled=false;document.getElementById('bill-basis-fields').hidden=false;
+  document.getElementById('bill-basis-review').hidden=true;document.getElementById('bill-basis-confirm').hidden=true;
+  document.getElementById('bill-basis-edit').hidden=true;document.getElementById('bill-basis-prepare').hidden=false;
+}
+function editBillBasisCorrection(){resetBillBasisReview();document.getElementById('basis-rent')?.focus();}
+function assertBillBasisTarget(target){
+  assertCurrentStorage();
+  if(billBasisTarget!==target||JSON.stringify(currentData())!==target.dataRaw||JSON.stringify(bills[target.month]?.[target.id])!==target.billRaw)throw new Error('고지서가 변경되어 정정을 중단했습니다. 입력을 보관하고 최신 자료를 확인해주세요.');
+}
+function reviewBillBasisCorrection(){
+  if(!billBasisTarget||persistenceBusy)return;
+  try{
+    const target=billBasisTarget;assertBillBasisTarget(target);
+    const patch={},reviewedFields=[],before=target.before;
+    for(const key of ['rent','mgmt','unitSnapshot','paydaySnapshot',...BILL_BASIS_FIELDS]){
+      const raw=document.getElementById('basis-'+key).value;
+      if(raw===basisFieldValue(before,key))continue;
+      if(['rent','mgmt'].includes(key)){
+        if(!/^\d+$/.test(raw))throw new Error('금액은 0 이상의 원 단위 정수로 입력해주세요.');patch[key]=Number(raw);
+      }else if(BILL_BASIS_FIELDS.includes(key)){patch.tenantSnapshot??={};patch.tenantSnapshot[key]=raw;}
+      else patch[key]=raw;
+      reviewedFields.push({key,before:basisFieldValue(before,key),after:raw});
+    }
+    const mode=document.getElementById('basis-elevatorMode').value,amount=document.getElementById('basis-elevatorAmount').value;
+    if(mode!==basisFieldValue(before,'elevatorMode')||amount!==basisFieldValue(before,'elevatorAmount')){
+      if(!/^\d+$/.test(amount))throw new Error('승강기 금액은 원 단위 정수로 입력해주세요.');
+      patch.elevatorCharge={mode,amount:Number(amount)};
+      const label=value=>value==='net'?'공급가':'VAT 포함 청구액';
+      reviewedFields.push({key:'elevator',before:basisFieldValue(before,'elevatorAmount')+' ('+label(basisFieldValue(before,'elevatorMode'))+')',after:amount+' ('+label(mode)+')'});
+    }
+    const reason=document.getElementById('bill-basis-reason').value.trim();if(!reason||reason.length>1000)throw new Error('원문 대조 내용과 정정 사유를 1~1000자로 입력해주세요.');
+    const tenant=findTenant(target.id,target.month),result=RentalBilling.correctBillBasis(tenant,before,target.month,patch),next=result.bill;
+    if(JSON.stringify(next)===JSON.stringify(target.persisted))throw new Error('변경할 기준이 없습니다. 정정할 항목을 입력해주세요.');
+    const oldState=RentalBilling.payment(tenant,before,'2200-12-31'),newState=RentalBilling.payment(tenant,next,'2200-12-31');
+    const confirmationReview=PAY_ITEMS.filter(({key})=>oldState.items[key].received!==newState.items[key].received||oldState.items[key].date!==newState.items[key].date).map(({key,label})=>({key,label,before:oldState.items[key],after:newState.items[key]}));
+    next.invoiceIssued=false;
+    const withoutAudit=bill=>Object.fromEntries(Object.entries(bill).filter(([key])=>key!=='audit'));
+    addAudit(next,'청구 기준 정정',reason,{before:withoutAudit(target.persisted),displayedBefore:withoutAudit(before),after:withoutAudit(next),reviewedFields,changedPayments:result.changedPayments,confirmationReview});
+    const data=structuredClone(target.persistedData);data.bills[target.month][target.id]=next;
+    if(result.changedPayments.some(key=>!['pay_rent','pay_mgmt'].includes(key))&&data.settInputs[target.month]?.confirmed)data.settInputs[target.month]={...data.settInputs[target.month],confirmed:false,needsReview:true};
+    const validated=RentalCore.validateData(data);
+    for(const [month,rows] of Object.entries(target.storedBills))for(const [id,original] of Object.entries(rows)){
+      if(month===target.month&&id===target.id)continue;
+      if(JSON.stringify(validated.bills[month]?.[id])!==JSON.stringify(original))throw new Error('다른 고지서의 원문 보정이 함께 필요해 정정을 중단했습니다. 백업 원문을 보관하고 해당 자료를 먼저 대조해주세요.');
+    }
+    RentalCore.assertReceiptStorage(appStorage,validated);
+    target.prepared={bill:next,settlement:data.settInputs[target.month],reason};
+    const rows=PAY_ITEMS.map(({key,label})=>`<tr><th>${esc(label)}</th><td data-label="정정 전">${fmt(oldState.items[key].na?0:oldState.items[key].amount)}</td><td data-label="정정 후">${fmt(newState.items[key].na?0:newState.items[key].amount)}</td></tr>`).join('');
+    document.getElementById('bill-basis-review').innerHTML='<h3 tabindex="-1">정정 전후 대조</h3><table class="replacement-summary"><thead><tr><th>VAT 포함 청구액</th><th>정정 전</th><th>정정 후</th></tr></thead><tbody>'+rows+'</tbody></table><p>총 청구액 '+fmt(oldState.total)+' → '+fmt(newState.total)+'</p>'+reviewedFields.map(row=>'<p>'+esc(RECEIPT_BASIS_LABELS[row.key]||({'unitSnapshot':'호실','paydaySnapshot':'월세 납기'}[row.key]))+': '+esc(row.before||'미지정')+' → '+esc(row.after||'미지정')+'</p>').join('')+'<p>'+esc(reason)+'</p><p>납부 재확인: '+(confirmationReview.length?confirmationReview.map(row=>esc(row.label)+' ('+esc(row.before.date||'미확인')+' → '+esc(row.after.date||'미확인')+')').join(', '):'기존 납부 확인 유지')+'</p><p>날짜 없는 일괄 도장을 해제하면 같은 묶음의 다른 항목도 재확인이 필요할 수 있습니다. 정정 전 원문과 납부 근거는 변경 이력에 보존합니다. 세금계산서 발급 상태는 미확인으로 바뀝니다.</p><p>기존 추정 출처는 유지합니다. 원장 개시는 이 정정을 저장한 후 별도로 진행합니다.</p>';
+    document.getElementById('bill-basis-fields').disabled=true;document.getElementById('bill-basis-fields').hidden=true;document.getElementById('bill-basis-review').hidden=false;
+    document.getElementById('bill-basis-confirm').hidden=false;document.getElementById('bill-basis-edit').hidden=false;document.getElementById('bill-basis-prepare').hidden=true;
+    document.querySelector('#bill-basis-review h3').focus();
+  }catch(error){resetBillBasisReview();announceModalNotice(error.message);}
+}
+async function saveBillBasisCorrection(){
+  if(!billBasisTarget?.prepared||persistenceBusy||syncBusy)return;
+  const target=billBasisTarget;persistenceBusy=true;let data;
+  try{
+    assertBillBasisTarget(target);data=structuredClone(target.persistedData);data.bills[target.month][target.id]=structuredClone(target.prepared.bill);
+    if(target.prepared.settlement)data.settInputs[target.month]=structuredClone(target.prepared.settlement);
+    await writeLocal(data,true,cloudBaseRevision,()=>assertBillBasisTarget(target));
+    const selected=selTenantId;assignData(data);selTenantId=selected;revision++;cloudDirty=true;storageFault=null;failedSaveData=null;
+    closeModal('modal-bill-basis');billBasisTarget=null;renderAll();renderHistContent();syncUI(cloudEnabled?'pending':'local');showDataNotice('');showToast('청구 기준 정정을 이 기기에 저장했습니다.');
+    if(cloudEnabled)saveTimer=setTimeout(doSync,2000);
+  }catch(error){if(data)failedSaveData=data;showDataNotice('청구 기준 정정을 저장하지 못했습니다. 기존 자료와 입력을 유지했습니다. '+error.message);announceModalNotice(error.message);}
+  finally{persistenceBusy=false;}
+}
 const RECEIPT_BASIS_LABELS={rent:'월세 공급가',mgmt:'관리비 공급가',elevator:'승강기 공급가',unit:'호실',payday:'월세 납기',name:'임차인 성명',biz:'상호',contract:'계약기간',contract_first:'최초 계약일',renew:'재계약',paytype:'납부 방식',period_mgmt:'관리비 기간',period_rent:'월세 기간',period_elec:'전기 기간',period_elev:'승강기 기간',period_waste:'오물 기간',period_water_day:'수도 기준일',period_water_odd:'수도 청구월'};
 const receiptEstimateLabels=fields=>fields.map(field=>Object.hasOwn(RECEIPT_BASIS_LABELS,field)?RECEIPT_BASIS_LABELS[field]:('확인 항목: '+field)).join(', ');
 function renderReceiptBasis(bill,ledger,opening){
@@ -3648,6 +3747,7 @@ function openModal(id) {
   updateModalIsolation();focusModalStart(modal);
 }
 function closeModal(id) {
+  if(id==='modal-bill-basis'&&!persistenceBusy){billBasisTarget=null;if(cloudEnabled&&cloudDirty)saveTimer=setTimeout(doSync,2000);}
   if(id==='modal-receipt-entry'&&!persistenceBusy){receiptTarget=null;if(cloudEnabled&&cloudDirty)saveTimer=setTimeout(doSync,2000);}
   if(id==='modal-backup-check')endBackupCheck();
   if (id === 'modal-data-replacement' && replacementReview) { finishReplacementReview(false); return; }
@@ -3677,6 +3777,7 @@ document.querySelectorAll('.modal-overlay').forEach(modal => modal.addEventListe
 document.addEventListener('keydown', event => {
   const modal = activeModal(); if (!modal) return;
   if(persistenceBusy&&modal.id==='modal-receipt-entry'){event.preventDefault();return;}
+  if(persistenceBusy&&modal.id==='modal-bill-basis'&&event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();return;}
   if (event.key === 'Escape') { event.preventDefault();event.stopImmediatePropagation();closeModal(modal.id); return; }
   if (event.key !== 'Tab') return;
   const items=modalTabStops(modal);

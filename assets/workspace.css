@@ -163,6 +163,11 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 .receipt-panel button,.receipt-modal button.btn{min-height:44px;white-space:normal;}.receipt-panel li{overflow-wrap:anywhere;}
 .receipt-modal{width:min(540px,calc(100vw - 24px));}.receipt-modal fieldset{border:0;padding:0;margin:0;min-width:0;}
 .receipt-modal select,.receipt-modal textarea,.receipt-modal input:not([type=checkbox]){width:100%;box-sizing:border-box;min-width:0;}
+.bill-basis-modal details summary{min-height:44px;cursor:pointer;line-height:1.7;}
+.bill-basis-modal p,.bill-basis-modal th,.bill-basis-modal td,.bill-basis-modal label{overflow-wrap:anywhere;}
+.bill-basis-modal table{width:100%;table-layout:fixed;}
+.basis-contract-fields{padding-top:12px;}
+.basis-audit-original{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.75rem;max-height:320px;overflow:auto;}
 .receipt-actions{display:flex;gap:8px;flex-wrap:wrap;}.receipt-modal [hidden]{display:none!important;}
 .receipt-basis{margin:12px 0;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);}
 .receipt-basis summary{cursor:pointer;font-weight:700;line-height:1.7;min-height:44px;display:list-item;}
