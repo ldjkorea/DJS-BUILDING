@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="application-version" content="2.0.6">
+<meta name="application-version" content="2.1.0">
 <title>임대관리 독립앱 · Property Management</title>
 
 <meta name="theme-color" content="#f7f8fa">
@@ -943,7 +943,7 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 
 </main><!-- /content -->
 
-<aside class="workspace-sidebar"><a href="#" class="workspace-brand" onclick="switchTab('home');return false;"><span class="brand-mark">P<span>·</span></span><span>Property<small>임대관리 독립앱</small></span></a><span class="nav-caption">임대 업무</span><nav class="pill-nav" aria-label="주요 메뉴"><div class="nav-group primary"><button type="button" class="pill-item" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="pi-label">대시보드</span></button><button type="button" class="pill-item" id="nav-history" onclick="switchTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span class="pi-label">고지서</span></button><button type="button" class="pill-item" id="nav-settlement" onclick="switchTab('settlement')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg><span class="pi-label">정산</span></button><button type="button" class="pill-item" id="nav-tenants" onclick="switchTab('tenants')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0112 0v3M16 4a3 3 0 010 6M18 14a5 5 0 013 4v3"/></svg><span class="pi-label">세입자</span></button></div><div class="nav-group secondary" id="secondary-nav" aria-label="보조 메뉴"><button type="button" class="pill-item" id="nav-building" onclick="switchTab('building')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V3h11v18M15 9h5v12M8 7h3M8 11h3M8 15h3M8 19h3M18 13v2M18 18v1"/></svg><span class="pi-label">운영현황</span></button><button type="button" class="pill-item" id="nav-tax" onclick="switchTab('tax')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 7h6M9 11h6M9 15h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg><span class="pi-label">세무집계</span></button><button type="button" class="pill-item" id="nav-settings" onclick="switchTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg><span class="pi-label">설정</span></button></div><button class="pill-item" id="nav-more" onclick="toggleMoreNav()" aria-expanded="false" aria-controls="secondary-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span class="pi-label">더보기</span></button></nav><div class="sidebar-bottom"><span class="live-dot"></span>원본과 분리된 독립앱<small>오늘의 업무를 정확하고 간결하게.</small><span class="version-label">INDEPENDENT 2.0.6</span></div></aside>
+<aside class="workspace-sidebar"><a href="#" class="workspace-brand" onclick="switchTab('home');return false;"><span class="brand-mark">P<span>·</span></span><span>Property<small>임대관리 독립앱</small></span></a><span class="nav-caption">임대 업무</span><nav class="pill-nav" aria-label="주요 메뉴"><div class="nav-group primary"><button type="button" class="pill-item" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="pi-label">대시보드</span></button><button type="button" class="pill-item" id="nav-history" onclick="switchTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span class="pi-label">고지서</span></button><button type="button" class="pill-item" id="nav-settlement" onclick="switchTab('settlement')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg><span class="pi-label">정산</span></button><button type="button" class="pill-item" id="nav-tenants" onclick="switchTab('tenants')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0112 0v3M16 4a3 3 0 010 6M18 14a5 5 0 013 4v3"/></svg><span class="pi-label">세입자</span></button></div><div class="nav-group secondary" id="secondary-nav" aria-label="보조 메뉴"><button type="button" class="pill-item" id="nav-building" onclick="switchTab('building')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V3h11v18M15 9h5v12M8 7h3M8 11h3M8 15h3M8 19h3M18 13v2M18 18v1"/></svg><span class="pi-label">운영현황</span></button><button type="button" class="pill-item" id="nav-tax" onclick="switchTab('tax')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 7h6M9 11h6M9 15h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg><span class="pi-label">세무집계</span></button><button type="button" class="pill-item" id="nav-settings" onclick="switchTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg><span class="pi-label">설정</span></button></div><button class="pill-item" id="nav-more" onclick="toggleMoreNav()" aria-expanded="false" aria-controls="secondary-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span class="pi-label">더보기</span></button></nav><div class="sidebar-bottom"><span class="live-dot"></span>원본과 분리된 독립앱<small>오늘의 업무를 정확하고 간결하게.</small><span class="version-label">INDEPENDENT 2.1.0</span></div></aside>
 <!-- ══ 모달들 ══ -->
 <!-- 세입자 추가/수정 -->
 <div class="modal-overlay" id="modal-tenant">
@@ -1509,6 +1509,136 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
   }
   const itemKeys = ['pay_rent','pay_mgmt','pay_elec','pay_water','pay_elev','pay_waste'];
   const naFields = {pay_elec:'electricityNA',pay_water:'waterNA',pay_waste:'wasteNA'};
+  // Receipt journal foundation. Existing payment() continues to use legacy confirmations
+  // until the UI, historical projections and append-only server boundary are integrated.
+  const RECEIPT_FORMAT='rental-receipts-v1';
+  const journalId=value=>typeof value==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(value)
+    &&!['__proto__','constructor','prototype','toString','valueOf','hasOwnProperty'].includes(value);
+  const journalError=message=>{throw new Error('입금 원장: '+message);};
+  function receiptWon(value){
+    // Existing charge inputs allow 1e12 net; VAT-inclusive receipts must retain that boundary.
+    if(typeof value!=='number'||!Number.isSafeInteger(value)||value<0||value>withVat(1e12))journalError('금액은 유효한 원 단위 정수여야 합니다.');
+    return value;
+  }
+  const journalObject=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+  function journalFields(value,required,optional=[]){
+    if(!journalObject(value)||required.some(key=>!Object.hasOwn(value,key))||Object.keys(value).some(key=>!required.includes(key)&&!optional.includes(key)))journalError('지원하지 않는 항목 형식입니다.');
+  }
+  function journalJSON(value,depth=0){
+    if(depth>15)journalError('자료 중첩이 너무 깊습니다.');
+    if(value===null||['string','boolean'].includes(typeof value))return;
+    if(typeof value==='number'&&Number.isFinite(value))return;
+    if(!value||typeof value!=='object'||!Array.isArray(value)&&Object.prototype.toString.call(value)!=='[object Object]')journalError('JSON 자료만 기록할 수 있습니다.');
+    for(const [key,child] of Object.entries(value)){if(['__proto__','constructor','prototype'].includes(key))journalError('안전하지 않은 자료 키입니다.');journalJSON(child,depth+1);}
+  }
+  function journalTime(value){
+    if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)||!dateISO(value.slice(0,10))||Number.isNaN(Date.parse(value))||new Date(value).toISOString()!==value)journalError('기록 시각은 유효한 UTC ISO 시각이어야 합니다.');
+    return value;
+  }
+  const journalKoreaDate=value=>new Date(Date.parse(value)+9*60*60*1000).toISOString().slice(0,10);
+  function journalBillId(value){
+    if(typeof value!=='string')journalError('고지서 식별자를 확인해주세요.');
+    const [month,id,...extra]=value.split(':');
+    if(extra.length||!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)||!dateISO(month+'-01')||!journalId(id))journalError('고지서 식별자는 월:임차인ID 형식이어야 합니다.');
+    return {month,id};
+  }
+  function legacyReceiptSource(bill){
+    const source={};
+    for(const key of ['stampedRent','stampedRentDate','stampedMgmt','stampedMgmtDate','paid','electricityNA','waterNA','wasteNA'])
+      if(Object.hasOwn(bill,key))source[key]=JSON.parse(JSON.stringify(bill[key]));
+    return source;
+  }
+  function journalLegacy(ledger){
+    const year=Number(ledger.billId.slice(0,4)),source=ledger.legacy;
+    journalFields(source,[],['stampedRent','stampedRentDate','stampedMgmt','stampedMgmtDate','paid','electricityNA','waterNA','wasteNA']);
+    for(const key of ['stampedRent','stampedMgmt','electricityNA','waterNA','wasteNA'])if(source[key]!=null&&typeof source[key]!=='boolean')journalError('과거 확인 표시는 참/거짓이어야 합니다.');
+    for(const key of ['stampedRentDate','stampedMgmtDate'])if(source[key]!=null&&(typeof source[key]!=='string'||source[key]&&!dateISO(source[key],year)))journalError('과거 확인 날짜를 확인해주세요.');
+    if(source.paid!==undefined){
+      journalFields(source.paid,[],itemKeys);
+      for(const item of Object.values(source.paid)){
+        if(!journalObject(item)||Object.hasOwn(item,'__proto__')||Object.hasOwn(item,'constructor')||Object.hasOwn(item,'prototype'))journalError('과거 항목별 확인 형식을 확인해주세요.');
+        if(item.na!=null&&typeof item.na!=='boolean')journalError('과거 제외 표시는 참/거짓이어야 합니다.');
+        if(item.date!=null&&(typeof item.date!=='string'||item.date&&!dateISO(item.date,year)))journalError('과거 항목별 확인 날짜를 확인해주세요.');
+      }
+    }
+    return Object.fromEntries(itemKeys.map(key=>{
+      const snapshot=ledger.charges[key],item=source.paid?.[key]||{},rent=key==='pay_rent';
+      if(snapshot.exempt!==(item.na===true||source[naFields[key]]===true||snapshot.amount===0))journalError('과거 확인 근거와 청구 제외 상태가 다릅니다.');
+      const stamped=(rent?source.stampedRent:source.stampedMgmt)===true;
+      const rawDate=stamped?(rent?source.stampedRentDate:source.stampedMgmtDate)||item.date||'':item.date||'';
+      const date=dateISO(rawDate,year),confirmed=!snapshot.exempt&&((stamped&&!rawDate)||!!date);
+      return [key,{amount:confirmed?snapshot.amount:0,date,undated:confirmed&&!date,rawDate}];
+    }));
+  }
+  function validateReceiptLedger(ledger){
+    journalJSON(ledger);
+    journalFields(ledger,['format','billId','openedAt','charges','legacy','estimatedFields','events']);
+    if(ledger.format!==RECEIPT_FORMAT)journalError('지원하지 않는 원장 버전입니다.');
+    journalBillId(ledger.billId);journalTime(ledger.openedAt);
+    if(!Array.isArray(ledger.estimatedFields)||ledger.estimatedFields.some(field=>typeof field!=='string'||!field||field.length>100)||new Set(ledger.estimatedFields).size!==ledger.estimatedFields.length)journalError('추정 snapshot 항목을 확인해주세요.');
+    journalFields(ledger.charges,itemKeys);
+    for(const key of itemKeys){const item=ledger.charges[key];journalFields(item,['amount','exempt']);receiptWon(item.amount);if(typeof item.exempt!=='boolean'||item.amount===0&&!item.exempt)journalError('청구 제외 상태를 확인해주세요.');}
+    if(!Array.isArray(ledger.events))journalError('입금 기록 목록을 확인해주세요.');
+    const legacy=journalLegacy(ledger),seen=new Map(),cancelled=new Set(),active=Object.fromEntries(itemKeys.map(key=>[key,legacy[key].amount]));
+    let last=ledger.openedAt;
+    for(const event of ledger.events){
+      journalFields(event,['kind','id','billId','recordedAt'],event?.kind==='receipt'?['item','amount','receivedOn','note']:['reference','reason']);
+      if(!journalId(event.id)||seen.has(event.id)||event.billId!==ledger.billId)journalError('기록 ID 중복 또는 다른 고지서 참조입니다.');
+      journalTime(event.recordedAt);if(event.recordedAt<last)journalError('기록 시각 순서를 확인해주세요.');last=event.recordedAt;
+      if(event.kind==='receipt'){
+        if(!itemKeys.includes(event.item)||receiptWon(event.amount)<=0||typeof event.receivedOn!=='string'||dateISO(event.receivedOn)!==event.receivedOn||event.receivedOn>journalKoreaDate(event.recordedAt)||typeof event.note!=='string'||event.note.length>1000)journalError('입금 항목·금액·실제 날짜·메모를 확인해주세요.');
+        if(ledger.charges[event.item].exempt)journalError('제외 항목에는 입금을 기록할 수 없습니다.');
+        active[event.item]+=event.amount;
+      }else if(event.kind==='void'){
+        if(typeof event.reference!=='string'||typeof event.reason!=='string'||!event.reason.trim()||event.reason.length>1000||cancelled.has(event.reference))journalError('취소 참조·중복·사유를 확인해주세요.');
+        const target=seen.get(event.reference),legacyKey=event.reference.startsWith('legacy:')?event.reference.slice(7):'';
+        if(target?.kind==='receipt')active[target.item]-=target.amount;
+        else if(itemKeys.includes(legacyKey)&&legacy[legacyKey].amount>0)active[legacyKey]-=legacy[legacyKey].amount;
+        else journalError('취소할 앞선 입금 또는 과거 확인이 없습니다.');
+        cancelled.add(event.reference);
+      }else journalError('지원하지 않는 입금 기록 종류입니다.');
+      for(const key of itemKeys)if(!Number.isSafeInteger(active[key])||active[key]<0||active[key]>ledger.charges[key].amount)journalError('청구액을 초과하는 입금 또는 잔액 오류입니다.');
+      seen.set(event.id,event);
+    }
+    return ledger;
+  }
+  function openReceiptLedger(tenant,bill,billId,openedAt,{reviewEstimated=false}={}){
+    const {month,id}=journalBillId(billId);journalTime(openedAt);
+    if(typeof reviewEstimated!=='boolean')journalError('추정 snapshot 검토 여부는 참/거짓이어야 합니다.');
+    if(!journalObject(bill)||tenant?.id!==id||bill.monthSnapshot!==month||bill.receiptLedger!==undefined)journalError('해당 월과 임차인의 저장된 snapshot 고지서를 확인해주세요.');
+    journalJSON(bill);
+    if(['rent','mgmt','unitSnapshot','paydaySnapshot','tenantSnapshot'].some(key=>bill[key]==null)||bill.elevator==null&&bill.elevatorTotal==null)journalError('청구 기준 snapshot이 필요합니다.');
+    if(typeof bill.unitSnapshot!=='string'||typeof bill.paydaySnapshot!=='string'||!journalObject(bill.tenantSnapshot))journalError('청구 기준 snapshot 형식을 확인해주세요.');
+    if(bill.snapshotEstimated!=null&&!Array.isArray(bill.snapshotEstimated))journalError('추정 snapshot 목록을 확인해주세요.');
+    const estimatedFields=[...(bill.snapshotEstimated||[])];
+    if(estimatedFields.length&&!reviewEstimated)journalError('추정된 과거 고지서 snapshot을 먼저 검토해주세요.');
+    const state=payment(tenant,bill,'2200-12-31',Number(month.slice(0,4)));
+    const ledger={format:RECEIPT_FORMAT,billId,openedAt,charges:Object.fromEntries(itemKeys.map(key=>[key,{amount:state.items[key].amount,exempt:state.items[key].na}])),legacy:legacyReceiptSource(bill),estimatedFields,events:[]};
+    return validateReceiptLedger(ledger);
+  }
+  function appendReceiptEvent(ledger,event){
+    validateReceiptLedger(ledger);
+    journalJSON(event);
+    const next=JSON.parse(JSON.stringify(ledger)),entry=JSON.parse(JSON.stringify(event)),prior=next.events.find(row=>row.id===entry.id);
+    if(prior){const keys=new Set([...Object.keys(prior),...Object.keys(entry)]);if([...keys].some(key=>JSON.stringify(prior[key])!==JSON.stringify(entry[key])))journalError('같은 기록 ID에 다른 내용을 사용할 수 없습니다.');return next;}
+    next.events.push(entry);return validateReceiptLedger(next);
+  }
+  function receiptLedgerState(ledger,asOf,knownAt){
+    validateReceiptLedger(ledger);const cutoff=typeof asOf==='string'&&dateISO(asOf)===asOf?asOf:'';if(!cutoff)journalError('입금 집계 기준일은 YYYY-MM-DD 실제 날짜여야 합니다.');
+    const knowledge=knownAt===undefined?ledger.events.at(-1)?.recordedAt||ledger.openedAt:journalTime(knownAt);
+    if(knowledge<ledger.openedAt)journalError('원장 개시 이전의 조회입니다. 과거 확인 원본을 조회해주세요.');
+    const events=ledger.events.filter(event=>event.recordedAt<=knowledge),cancelled=new Set(events.filter(event=>event.kind==='void').map(event=>event.reference));
+    const legacy=journalLegacy(ledger),items={};let total=0,received=0,legacyConfirmed=0,newReceived=0,exempt=0;
+    for(const key of itemKeys){
+      const charge=ledger.charges[key],base=legacy[key],opening=!cancelled.has('legacy:'+key)&&(base.undated||base.date&&base.date<=cutoff)?base.amount:0;
+      const receipts=events.filter(event=>event.kind==='receipt'&&event.item===key&&!cancelled.has(event.id)&&event.receivedOn<=cutoff);
+      const actual=receipts.reduce((sum,event)=>sum+event.amount,0),settled=opening+actual,due=charge.exempt?0:charge.amount;
+      const dates=[...new Set([...(opening&&base.date?[base.date]:[]),...receipts.map(event=>event.receivedOn)])].sort();
+      items[key]={amount:charge.amount,na:charge.exempt,legacyConfirmed:opening,newReceived:actual,received:settled,unpaid:due-settled,paid:due>0&&due===settled,partial:settled>0&&settled<due,undated:opening>0&&base.undated,dates};
+      total+=due;received+=settled;legacyConfirmed+=opening;newReceived+=actual;if(charge.exempt)exempt+=charge.amount;
+    }
+    return {billId:ledger.billId,asOf:cutoff,knownAt:knowledge,items,total,received,legacyConfirmed,newReceived,unpaid:total-received,exempt,complete:total>0&&total===received};
+  }
   function payment(tenant, bill = {}, asOf = new Date(), year) {
     const amounts=charges(tenant,bill), items={}, cutoff=asOfKey(asOf);
     const paymentYear=year || Number(bill.monthSnapshot?.slice(0,4)) || Number(cutoff.slice(0,4));
@@ -1750,7 +1880,8 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
   }
   root.RentalBilling = {won, withVat, floorOf, distribute, calculate, reconcile, charges, payment,
     dateISO, contractEndDate, contractDeadline, period, dueDate, historicalPayment, arrears, itemKeys, naFields,
-    materializeGroup, invalidateChangedPayments, freezeBill, effectiveTenant, collectionStatus};
+    materializeGroup, invalidateChangedPayments, freezeBill, effectiveTenant, collectionStatus,
+    RECEIPT_FORMAT,openReceiptLedger,validateReceiptLedger,appendReceiptEvent,receiptLedgerState};
   if (typeof module !== 'undefined') module.exports = root.RentalBilling;
 })(globalThis);
 
@@ -6124,7 +6255,7 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.0.6';
+const APPLICATION_VERSION='2.1.0';
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
   const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';
