@@ -7,6 +7,7 @@
 - [2.0.0 기준 릴리스 후보와 검증 판정](docs/RELEASE_CANDIDATE_V2.md)
 - [UX 리디자인](docs/UX_REDESIGN_V2.md) · [데이터 무결성 감사](docs/DATA_INTEGRITY_AUDIT.md) · [Android/업데이트](docs/ANDROID_UPDATE_STRATEGY.md)
 - [기존 1.0 연결 대상·실제 운영 검증 기록](docs/INDEPENDENT_APP.md)
+- [최신 독립 운영 자료의 읽기 전용 계산 대조](docs/OPERATING_DATA_RECONCILIATION.md) — 38건·11개월 계산 차이 0건. 과거 추정 기준 30건은 원문 자료 검토 필요.
 
 운영 주소는 아직 1.0 배포 버전 4입니다. 새 [GAS 2.1.3 검토 후보](docs/GAS_REVIEW_CANDIDATE_2.1.3.md)를 만들고 압축본을 검증했습니다. 이전 `candidate/independent-v206-18237dc`의 웹 2.0.6 ZIP은 보존했습니다. 현재 2.1.x 개발 소스에는 [부분입금 입력·정정·잔액 조회와 공식 저장 보호](docs/RECEIPT_LEDGER.md)를 구현했습니다. 고지서의 **금액별 입금 기록 시작**에서 항목·입금액·실제 입금일을 검토한 뒤 저장합니다. 원장을 시작한 고지서의 청구 기준은 고정되며, 잘못된 입금은 원본 기록을 남기고 사유가 있는 정정 기록으로 처리합니다. 호환되는 전체 원장 백업을 가져올 수 있고 기존 이력을 지우는 복원은 차단합니다. 원장 시작 후 청구 기준 변경 이관 정책·실제 운영 및 휴대전화 검증은 남아 있습니다. 기존 서명 Android 2.0.0 APK도 유지합니다.
 - 웹 2.1.1은 [분기 고지서 집계](docs/QUARTERLY_STATEMENT.md)를 보완합니다. 고지서가 없는 달의 예정 금액을 더하지 않고, 보관·미등록 임차인의 과거 고지서를 포함하며, 항목별 부가세·오물비·부분입금 잔액을 화면과 CSV에 일치시킵니다.

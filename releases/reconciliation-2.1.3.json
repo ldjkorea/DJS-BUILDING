@@ -1,0 +1,116 @@
+{
+  "appVersion": "2.1.3",
+  "recordedAt": "2026-10-09T23:22:41.547Z",
+  "sourceCommit": "20f8e98239f1752cd2915697e08cf1614bf68f19",
+  "productValidationCommit": "e08f91527eb3389e5a5b0917b9baeb73fedbb151",
+  "baselineCommit": "2b01a2ead927221a27322bba5290754b5db18969",
+  "asOf": "2026-10-10",
+  "sourceHashes": {
+    "scripts/reconcile-data.cjs": "12f5c613c3602362944dab8733c06fcbbe1119117124576172ccf35133a0e2b8",
+    "tests/reconcile-data.test.cjs": "0126942ff0af4b4110b56bf993b0fdeda28f23ef38db812051e38969183b7524",
+    "assets/core.js": "b10b52212c0b6bec7d7173ed2321ef4d392852e0265d54d64453f299692e7f17",
+    "assets/billing.js": "1250de59157d5a0853561b7cbd70fb21925c27d60c33ff83783f07da5b7faf00",
+    "server/Billing.gs": "a20d4072e65d8bc129d1b5e9c5e0a2d171595ba623d4d8fc9c080a5d9dab20fc",
+    "server/Code.gs": "efdafb7cf306830846cbb8cd7e45a5b95d242569c388cb130786246ae0209211",
+    "package.json": "0214043b4225cac07a15e549ccc86ffa439eba603090ae051bd0d6d58adf1fbf"
+  },
+  "acquisition": {
+    "checkedAt": "2026-10-09T23:21:37.316Z",
+    "initialCheckedAt": "2026-10-09T23:14:47.549Z",
+    "rawValuesUnchanged": true,
+    "range": "'시트1'!A1:A1000",
+    "storedRows": 3,
+    "modifiedTime": "2026-10-09T14:37:35.156Z",
+    "source": "connected Google Drive metadata and Sheets ranges",
+    "actualWrite": false,
+    "sheetId": 0,
+    "privateSnapshotSha256": "a13f064506c91f39bc8d6ed6ed642acad0c4177e75ef016746180c11e981847f",
+    "rawStorageSha256": "853e1a2afffccccc31063782058ec4d302d79c7f8e7686dc4763baeb7ccbeb45",
+    "sourceUrl": "https://docs.google.com/spreadsheets/d/1E9YcSQSNTLTC41fqWBYHMNpSRKQrDlvAXeF9AxdDFb8/edit",
+    "directSheetsRestAttempt": "API disabled; no configuration changes",
+    "fallback": "Connected Google Drive plugin metadata and bounded Sheets reads"
+  },
+  "validation": {
+    "unit": {
+      "total": 177,
+      "passed": 177,
+      "newReconciliationTests": 12
+    },
+    "tenantCount": 4,
+    "billCount": 38,
+    "monthCount": 11,
+    "dateCount": 165,
+    "invoiceDateComparisons": 6270,
+    "itemComparisons": 37620,
+    "quarterComparisons": 660,
+    "gasCompared": true,
+    "sourcePreserved": true,
+    "normalizationChanges": 0,
+    "normalizationFinancialDifferences": 0,
+    "baselineFinancialDifferences": 0,
+    "gasFinancialDifferences": 0,
+    "aggregateDifferences": 0,
+    "basisReviewInvoices": 30,
+    "comparisonPassed": true,
+    "reviewRequired": true,
+    "basis": {
+      "estimatedInvoices": 30,
+      "missingSnapshotInvoices": 0,
+      "receiptLedgerInvoices": 0
+    },
+    "operatingBaseline": {
+      "checkedAt": "2026-10-09T23:17:09.162Z",
+      "operatingBillingMatchesClone": true,
+      "baselineRef": "2b01a2e",
+      "normalizedBillingSha256": "471d439e46ba27d63e86ab1f815ac1b3dd7e19ea3a31bf718067e2b956bddd4a",
+      "removedGeneratedHeaderOnly": true,
+      "readOnly": true
+    },
+    "candidateValidator": {
+      "checkedAt": "2026-10-09T23:18:08.832Z",
+      "candidateServerValidatorAccepted": true,
+      "domainPreserved": true,
+      "realGoogleExecution": false,
+      "actualWrite": false
+    },
+    "commandExitCode": 2,
+    "commandExitReason": "Estimated historical basis requires source-document review"
+  },
+  "operating": {
+    "checkedAt": "2026-10-09T23:21:40.899Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e",
+    "appVersion": "1.0.0",
+    "deploymentVersion": 4,
+    "actualDataWrite": false,
+    "actualDocsRegeneration": false,
+    "actualCalendarSync": false,
+    "deploymentPerformed": false,
+    "pushPerformed": false
+  },
+  "candidateZip": {
+    "file": "rental-independent-gas-2.1.3.zip",
+    "bytes": 1704106,
+    "sha256": "46e4f65eab6cbf69344aae34d3ac245c1bc5c66cea3b7392b8ce8c87d0648e10",
+    "preserved": true
+  },
+  "privacy": {
+    "realDataAndInvoiceIndex": "Private ignored files only",
+    "publicRecordContainsTenantIdentity": false,
+    "publicRecordContainsActualAmounts": false
+  },
+  "scope": "In-memory core validation and billing comparison only; no UI initialization, migration, write, deployment or production readiness proof",
+  "productionReady": false,
+  "remaining": [
+    "Verify 30 estimated invoice bases against original invoices and contracts",
+    "Actual ledger write/readback and compatible recovery with explicit authorization",
+    "Post-opening journal basis migration policy",
+    "Actual app initialization full restore and phone offline printing checks"
+  ]
+}
