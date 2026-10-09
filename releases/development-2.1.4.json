@@ -1,0 +1,280 @@
+{
+  "appVersion": "2.1.4",
+  "phase": "saved-invoice-csv-and-unissued-restoration",
+  "sourceCommit": "9ab701ff997ae9fba42b824d2c5d886a89f0621d",
+  "recordedAt": "2026-10-09T23:47:21.127Z",
+  "reviewCandidate": true,
+  "productionReady": false,
+  "behavior": {
+    "savedInvoicesOnlyMonthlyCsv": true,
+    "archivedAndOrphanInvoicesIncluded": true,
+    "emptyInvoicePreservedOnReload": true,
+    "unissuedHistoryLabel": "미작성",
+    "schemaVersion": 1,
+    "sharedBillingRulesUnchanged": true,
+    "storageValidatorUnchanged": true,
+    "csvColumnCount": 16
+  },
+  "validation": {
+    "command": "npm run test:all",
+    "unit": {
+      "total": 178,
+      "passed": 178
+    },
+    "browser": {
+      "startedAt": "2026-10-09T23:41:54.709Z",
+      "finishedAt": "2026-10-09T23:47:13.899Z",
+      "url": "http://127.0.0.1:13780/",
+      "node": "v24.18.0",
+      "results": [
+        {
+          "suite": "browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "audit-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "bill-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "quarter-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "restored-data-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "pwa-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "single-file-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "integrity-v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "independent-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        }
+      ]
+    },
+    "anonymousRestoration": {
+      "appVersion": "2.1.4",
+      "startedAt": "2026-10-09T23:45:40.610Z",
+      "finishedAt": "2026-10-09T23:45:52.770Z",
+      "inputSha256": "df664dd26e9f86326aa8ad1f24fa506740fb78f6e06ddf9130ad8c0bd4126061",
+      "privateInput": false,
+      "sourceFilePreserved": true,
+      "screenshotsTaken": false,
+      "googleRequestsPerformed": false,
+      "asOf": "2026-10-10",
+      "tenantCount": 3,
+      "billCount": 3,
+      "monthCount": 2,
+      "results": [
+        {
+          "name": "backup preview cancel apply reload and JSON roundtrip preserve every domain field on PC and mobile",
+          "status": "pass"
+        },
+        {
+          "name": "every stored invoice renders exact charges and keeps estimated basis unconfirmed without data writes",
+          "status": "pass"
+        },
+        {
+          "name": "monthly CSV contains only saved invoices including archived and orphan rows and matches exact shared totals",
+          "status": "pass"
+        },
+        {
+          "name": "empty invoice placeholders remain unissued after reload and open an editor without saved-invoice actions",
+          "status": "pass",
+          "coverage": {
+            "unissuedCaseAvailable": true
+          }
+        },
+        {
+          "name": "quarter screen and downloaded CSV match all saved quarter totals after full backup restoration",
+          "status": "pass"
+        },
+        {
+          "name": "restored full data keeps all seven menus within six viewport widths without source changes",
+          "status": "pass"
+        }
+      ]
+    },
+    "actualDataRestoration": {
+      "appVersion": "2.1.4",
+      "startedAt": "2026-10-09T23:41:46.107Z",
+      "finishedAt": "2026-10-09T23:42:07.570Z",
+      "inputSha256": "a13f064506c91f39bc8d6ed6ed642acad0c4177e75ef016746180c11e981847f",
+      "privateInput": true,
+      "sourceFilePreserved": true,
+      "screenshotsTaken": false,
+      "googleRequestsPerformed": false,
+      "asOf": "2026-10-10",
+      "tenantCount": 4,
+      "billCount": 38,
+      "monthCount": 11,
+      "results": [
+        {
+          "name": "backup preview cancel apply reload and JSON roundtrip preserve every domain field on PC and mobile",
+          "status": "pass"
+        },
+        {
+          "name": "every stored invoice renders exact charges and keeps estimated basis unconfirmed without data writes",
+          "status": "pass"
+        },
+        {
+          "name": "monthly CSV contains only saved invoices including archived and orphan rows and matches exact shared totals",
+          "status": "pass"
+        },
+        {
+          "name": "empty invoice placeholders remain unissued after reload and open an editor without saved-invoice actions",
+          "status": "pass",
+          "coverage": {
+            "unissuedCaseAvailable": true
+          }
+        },
+        {
+          "name": "quarter screen and downloaded CSV match all saved quarter totals after full backup restoration",
+          "status": "pass"
+        },
+        {
+          "name": "restored full data keeps all seven menus within six viewport widths without source changes",
+          "status": "pass"
+        }
+      ]
+    },
+    "monthlyCsvComparison": {
+      "baselineCommit": "e08f91527eb3389e5a5b0917b9baeb73fedbb151",
+      "before": {
+        "months": 11,
+        "savedRows": 38,
+        "csvRows": 44,
+        "mismatchedMonths": 2,
+        "extraRows": 6
+      },
+      "after": {
+        "months": 11,
+        "savedRows": 38,
+        "csvRows": 38,
+        "mismatchedMonths": 0,
+        "extraRows": 0
+      }
+    }
+  },
+  "acquisition": {
+    "checkedAt": "2026-10-09T23:44:45.584Z",
+    "range": "'시트1'!A1:A1000",
+    "storedRows": 3,
+    "rawValuesUnchanged": true,
+    "rawStorageSha256": "853e1a2afffccccc31063782058ec4d302d79c7f8e7686dc4763baeb7ccbeb45",
+    "actualWrite": false,
+    "source": "Connected Google Drive bounded Sheets read",
+    "sourceUrl": "https://docs.google.com/spreadsheets/d/1E9YcSQSNTLTC41fqWBYHMNpSRKQrDlvAXeF9AxdDFb8/edit"
+  },
+  "operating": {
+    "checkedAt": "2026-10-09T23:45:11.984Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e",
+    "appVersion": "1.0.0",
+    "deploymentVersion": 4,
+    "actualDataWrite": false,
+    "actualDocsRegeneration": false,
+    "actualCalendarSync": false,
+    "deploymentPerformed": false,
+    "pushPerformed": false
+  },
+  "candidateZip": {
+    "file": "rental-independent-gas-2.1.3.zip",
+    "bytes": 1704106,
+    "sha256": "46e4f65eab6cbf69344aae34d3ac245c1bc5c66cea3b7392b8ce8c87d0648e10",
+    "preserved": true
+  },
+  "sourceHashes": {
+    "package.json": "4e5622e424e6140a955547603ebd5ebf5ccddf33f36859b9f2bacf6fc0f0c64e",
+    "index.html": "1593263a170b3562f412d1ad5fc306cc74c8cad8281fd83cac4b4b632dbb5ef4",
+    "src/index.template.html": "0f644fc4b31b3b18cfbf46b40838d5089d68b2c12ff75eb7228ac86a4daa04b2",
+    "assets/app.js": "c6a07031d4fad2bdf2b7bd8b46e0d29f02124764d5f4896824fcb96912da9fb9",
+    "assets/enhancements.js": "9c9e15cfc473d678f86e41e19c5f248ab7e6304bd43c373a40846a0e753b37ad",
+    "assets/core.js": "b10b52212c0b6bec7d7173ed2321ef4d392852e0265d54d64453f299692e7f17",
+    "assets/billing.js": "1250de59157d5a0853561b7cbd70fb21925c27d60c33ff83783f07da5b7faf00",
+    "sw.js": "8f331dc9877dfac0b7c4d3168ba0fa783bdee83861bdff952981683da155eeda",
+    "scripts/build.cjs": "87c271bd5d87e1d611363539bf6e643d20c90a7d8d2fe8bf23a08128def14b6b",
+    "scripts/test-browser.cjs": "91366b2cfb0c715567d2a6a6eddb03cc9d2a0afcb78d37fa6d4d5850bd7ac068",
+    "scripts/package-gas.cjs": "d5fe454bac3073f168a78f6a0ec2f193f3ecddcf63087ca661df65555b3619b4",
+    "tests/package-gas.test.cjs": "14e084d044c7e48b7f65849fc47b1746d63a38e6c45ad72a0f59356835af5a19",
+    "tests/restored-data-browser.cjs": "92a2007562fcbe80b9960d13836048c9f39966f6e1d9f093bba67fe614cb6a07",
+    "server/appsscript.json": "a6954c274b74d412d9ff0968b40641931869fcc31f5a0eb622a54575ca8d1247",
+    "server/AuthorizeDocs.gs": "5512c7b1828320898d8c86fc78163c2860bc9b63d9317ec98f81a4bac838efbb",
+    "server/Billing.gs": "a20d4072e65d8bc129d1b5e9c5e0a2d171595ba623d4d8fc9c080a5d9dab20fc",
+    "server/CalendarSync.gs": "501747cb87a69dd4f61cf26e86960d45e4bc156f788188805a551738a4c39a6c",
+    "server/Code.gs": "741643aac1a729d99a71ce9ea3d5b4681a589daea17d2d73e41c3ee52844e8b9",
+    "server/CurrentStatus.gs": "8dcf4fc79d5d8f388797b0ca0babe93e0b6bcec3ea3bd543803b75ea3a9cff7f",
+    "server/IndependentApp.gs": "c97eb66869f7c898b09763710e6d8fa5b370c468f924ef77ee9b01b5f2550f41"
+  },
+  "screenshots": [
+    {
+      "file": "docs/screenshots/month-csv-saved-1366.png",
+      "sha256": "c586a3e1f7e590dc1f54110524b83b93cf1469aa0be9db940d20e429496f43c5",
+      "bytes": 162026,
+      "anonymous": true,
+      "visuallyInspected": true
+    },
+    {
+      "file": "docs/screenshots/month-csv-unissued-390.png",
+      "sha256": "daf00f306d67558e106cc5a1635d9e77a8c108d72057b6ee81d771d0aa0e288a",
+      "bytes": 112586,
+      "anonymous": true,
+      "visuallyInspected": true
+    }
+  ],
+  "privacy": {
+    "publicRecordContainsTenantIdentity": false,
+    "publicRecordContainsActualAmounts": false,
+    "realDataStoredInIgnoredPrivateFilesOnly": true
+  },
+  "remaining": [
+    "Verify 30 estimated historical bases against original invoices and contracts",
+    "Opened-journal basis correction policy",
+    "Explicitly authorized actual Google write/readback Docs and Calendar verification",
+    "Physical phone offline update and printing verification"
+  ],
+  "scope": "Local full restore and rendered/downloaded output verification. No actual operating write or 2.1.4 deployment."
+}
