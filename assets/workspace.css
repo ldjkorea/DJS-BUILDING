@@ -164,5 +164,15 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 .receipt-modal{width:min(540px,calc(100vw - 24px));}.receipt-modal fieldset{border:0;padding:0;margin:0;min-width:0;}
 .receipt-modal select,.receipt-modal textarea,.receipt-modal input:not([type=checkbox]){width:100%;box-sizing:border-box;min-width:0;}
 .receipt-actions{display:flex;gap:8px;flex-wrap:wrap;}.receipt-modal [hidden]{display:none!important;}
+.receipt-basis{margin:12px 0;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);}
+.receipt-basis summary{cursor:pointer;font-weight:700;line-height:1.7;min-height:44px;display:list-item;}
+.receipt-basis p,.receipt-basis small,#receipt-basis-blocked{overflow-wrap:anywhere;line-height:1.7;}
+.receipt-basis-list{padding:0;margin:12px 0;list-style:none;}
+.receipt-basis-list li{padding:10px 0;border-bottom:1px solid var(--border);}
+.receipt-basis-list dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0;}
+.receipt-basis-list dt,.receipt-basis-list small{font-size:.75rem;color:var(--text2);}
+.receipt-basis-list dd{margin:3px 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+.receipt-basis-list small{display:block;}
+@media(max-width:560px){.receipt-basis-list dl{grid-template-columns:repeat(auto-fit,minmax(min(100%,6rem),1fr));}}
 .receipt-estimate-check{display:flex;align-items:flex-start;gap:9px;line-height:1.6;margin:12px 0;color:var(--text2);}.receipt-estimate-check input{flex:none;accent-color:#4e7850;margin-top:5px;}
 @media(max-width:540px){.receipt-entry{flex-wrap:wrap;}.receipt-entry>div{flex-basis:100%;}}

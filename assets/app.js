@@ -2134,6 +2134,35 @@ function renderHistContent() {
   function editThisMonth(){const t=findTenant(selTenantId);if(!t)return;if(bills[activeMk()]?.[selTenantId]?.receiptLedger){showToast('입금 원장 고지서의 청구 기준은 고정되어 있습니다. 입금 기록에서 추가·정정해주세요.');return;}document.getElementById('hist-content').innerHTML=buildBillFormHtml(t,histY,histM);applyBillDraft();}
 
 let receiptTarget=null;
+const RECEIPT_BASIS_LABELS={rent:'월세 공급가',mgmt:'관리비 공급가',elevator:'승강기 공급가',unit:'호실',payday:'월세 납기',name:'임차인 성명',biz:'상호',contract:'계약기간',contract_first:'최초 계약일',renew:'재계약',paytype:'납부 방식',period_mgmt:'관리비 기간',period_rent:'월세 기간',period_elec:'전기 기간',period_elev:'승강기 기간',period_waste:'오물 기간',period_water_day:'수도 기준일',period_water_odd:'수도 청구월'};
+const receiptEstimateLabels=fields=>fields.map(field=>Object.hasOwn(RECEIPT_BASIS_LABELS,field)?RECEIPT_BASIS_LABELS[field]:('확인 항목: '+field)).join(', ');
+function renderReceiptBasis(bill,ledger,opening){
+  const state=RentalBilling.receiptLedgerState(ledger,localToday());
+  const preserved=RentalBilling.receiptLedgerState({...ledger,events:[]},'2200-12-31',ledger.openedAt);
+  const rows=PAY_ITEMS.map(({key,label})=>{
+    const item=state.items[key],past=preserved.items[key];
+    const dates=item.undated?'날짜 미지정':item.dates.join(' · ')||'확인 날짜 없음';
+    const pending=past.received>0&&past.dates.some(date=>date>state.asOf)?' · 기준일 이후의 기존 확인 날짜 '+past.dates.filter(date=>date>state.asOf).join(' · '):'';
+    return `<li data-receipt-basis-item="${key}"><strong>${esc(label)}${item.na?' · 미부과':''}</strong><dl><div><dt>청구액</dt><dd>${fmt(item.na?0:item.amount)}</dd></div><div><dt>확인액</dt><dd>${fmt(item.received)}</dd></div><div><dt>잔액</dt><dd>${fmt(item.unpaid)}</dd></div></dl><small>${esc(dates+pending)}</small></li>`;
+  }).join('');
+  const identity=bill.tenantSnapshot||{};
+  document.getElementById('receipt-basis-content').innerHTML=`<p class="card-sub">${esc(bill.unitSnapshot||'호실 미지정')} · ${esc(identity.name||'성명 미지정')} · ${esc(identity.biz||'상호 미지정')}<br>월세 납기 ${esc(bill.paydaySnapshot||'미지정')} · 계약기간 ${esc(identity.contract||'미지정')}</p><p class="card-sub">${opening?'원장을 시작할 청구액과 기존 납부 확인입니다.':'저장된 청구 기준과 현재 입금·정정을 반영한 확인액입니다.'} 청구액은 부가세를 포함하며 수납 기준일은 ${state.asOf}입니다.</p><ul class="receipt-basis-list">${rows}</ul><p id="receipt-basis-total" class="hint-box">청구 총액 ${fmt(state.total)} · 기존 확인 ${fmt(state.legacyConfirmed)} · 새 입금 ${fmt(state.newReceived)} · 잔액 ${fmt(state.unpaid)}</p><p class="card-sub">날짜가 없는 납부 도장은 날짜 미지정 근거로 보존합니다. 원장 시작일을 실제 입금일로 바꾸지 않습니다. 시작 후 이 고지서의 청구 기준은 고정됩니다.</p>`;
+  document.getElementById('receipt-basis-details').open=opening;
+}
+function openReceiptBasisCheck(){
+  if(!receiptTarget?.blocked||persistenceBusy||syncBusy)return;
+  try{
+    const {month,id,billRaw}=receiptTarget;assertCurrentStorage();
+    if(JSON.stringify(bills[month]?.[id])!==billRaw)throw new Error('고지서가 변경됐습니다. 창을 닫고 최신 자료를 확인해주세요.');
+    closeModal('modal-receipt-entry');editThisMonth();
+    const heading=document.querySelector('#hist-content .card-title');if(heading){heading.tabIndex=-1;heading.focus();}
+  }catch(error){announceModalNotice(error.message);}
+}
+function focusReceiptInputs(){
+  if(!receiptTarget||receiptTarget.blocked||receiptTarget.mode!=='receipt')return;
+  document.getElementById('receipt-basis-details').open=false;
+  document.getElementById(receiptTarget.prepared?'receipt-edit':'receipt-amount').focus();
+}
 function renderReceiptPanel(tenant,bill){
   const ledger=bill.receiptLedger,state=RentalBilling.payment(tenant,bill),cancelled=new Set(ledger.events.filter(event=>event.kind==='void').map(event=>event.reference));
   const label=key=>PAY_ITEMS.find(item=>item.key===key)?.label||key;
@@ -2142,7 +2171,7 @@ function renderReceiptPanel(tenant,bill){
   const legacy=RentalBilling.receiptLedgerState({...ledger,events:[]},localToday(),ledger.openedAt);
   const previous=Object.entries(legacy.items).filter(([,item])=>item.received>0).map(([key,item])=>`<li><strong>${esc(label(key))} ${fmt(item.received)}</strong> · ${item.undated?'날짜 미지정':esc(item.dates.join(' · '))} ${cancelled.has('legacy:'+key)?'<span>정정됨</span>':`<button class="btn btn-secondary" data-focus-key="receipt-legacy-${key}" onclick="openReceiptDialog('void','legacy:${key}')">과거 확인 정정</button>`}</li>`).join('');
   const rows=ledger.events.map(event=>`<li class="receipt-entry"><div><strong>${event.kind==='receipt'?esc(label(event.item))+' '+fmt(event.amount):'기록 정정'}</strong><span>${event.kind==='receipt'?'실제 입금일 '+esc(event.receivedOn):'대상 '+esc(event.reference)}</span><small>기록 ${esc(new Date(event.recordedAt).toLocaleString('ko-KR'))}</small><p>${esc(event.kind==='receipt'?event.note:event.reason)}</p></div>${event.kind==='receipt'?(cancelled.has(event.id)?'<span class="status-tag">정정됨</span>':`<button class="btn btn-secondary" data-focus-key="receipt-void-${event.id}" onclick="openReceiptDialog('void','${event.id}')">기록 정정</button>`):''}</li>`).reverse().join('');
-  return `<section class="receipt-panel" aria-label="입금 원장"><h3>입금 기록</h3><p class="card-sub">과거 확인 ${fmt(state.legacyConfirmed)} · 새 입금 ${fmt(state.newReceived)} · 잔액 ${fmt(state.unpaid)}</p><button class="btn btn-primary" data-focus-key="receipt-add" onclick="openReceiptDialog()">입금 추가</button><p class="card-sub">청구 기준과 기존 기록을 보존합니다. 정정은 원래 기록을 삭제하지 않으며 실제 환급을 뜻하지 않습니다.</p>${ledger.estimatedFields.length?`<p class="data-warning">검토한 과거 보완 정보: ${esc(ledger.estimatedFields.join(', '))}</p>`:''}${previous?`<details><summary>원장 개시 전 납부 확인 근거</summary><ul class="receipt-list">${previous}</ul></details>`:''}<ol class="receipt-list">${rows||'<li>새 입금 기록이 없습니다.</li>'}</ol></section>`;
+  return `<section class="receipt-panel" aria-label="입금 원장"><h3>입금 기록</h3><p class="card-sub">과거 확인 ${fmt(state.legacyConfirmed)} · 새 입금 ${fmt(state.newReceived)} · 잔액 ${fmt(state.unpaid)}</p><button class="btn btn-primary" data-focus-key="receipt-add" onclick="openReceiptDialog()">입금 추가</button><p class="card-sub">청구 기준과 기존 기록을 보존합니다. 정정은 원래 기록을 삭제하지 않으며 실제 환급을 뜻하지 않습니다.</p>${ledger.estimatedFields.length?`<p class="data-warning">검토한 과거 보완 정보: ${esc(receiptEstimateLabels(ledger.estimatedFields))}</p>`:''}${previous?`<details><summary>원장 개시 전 납부 확인 근거</summary><ul class="receipt-list">${previous}</ul></details>`:''}<ol class="receipt-list">${rows||'<li>새 입금 기록이 없습니다.</li>'}</ol></section>`;
 }
 function openReceiptDialog(mode='receipt',reference='',preferred='pay_rent'){
   if(persistenceBusy||syncBusy||replacementReview||loadedState.error||conflictingTab)return;
@@ -2153,24 +2182,37 @@ function openReceiptDialog(mode='receipt',reference='',preferred='pay_rent'){
     const ledger=bill.receiptLedger||RentalBilling.openReceiptLedger(tenant,bill,month+':'+id,new Date().toISOString(),{reviewEstimated:true});
     const state=RentalBilling.receiptLedgerState(ledger,'2200-12-31'),available=PAY_ITEMS.filter(item=>state.items[item.key].unpaid>0);
     if(mode==='receipt'&&!available.length){if(bill.receiptLedger){showToast('추가할 잔액이 없습니다. 오입력은 기록 정정을 이용해주세요.');return;}mode='open';}
-    receiptTarget={month,id,mode,reference,billRaw:JSON.stringify(bill),ledger,prepared:null};
+    let blocked=false;
+    if(!bill.receiptLedger){
+      const candidate=structuredClone(currentData());candidate.bills[month][id].receiptLedger=ledger;
+      try{RentalCore.assertReceiptStorage(appStorage,candidate);}catch(error){
+        if(!/원장 개시와 기존 고지서/.test(error.message))throw error;
+        blocked=true;
+      }
+    }
+    receiptTarget={month,id,mode,reference,billRaw:JSON.stringify(bill),ledger,prepared:null,blocked};
+    renderReceiptBasis(bill,ledger,!bill.receiptLedger);document.getElementById('receipt-basis-blocked').hidden=!blocked;
     const select=document.getElementById('receipt-item');select.innerHTML=available.map(item=>`<option value="${item.key}">${esc(item.label)} · 잔액 ${fmt(state.items[item.key].unpaid)}</option>`).join('');if(available.some(item=>item.key===preferred))select.value=preferred;
-    document.getElementById('receipt-title').textContent=mode==='void'?'입금 기록 정정':mode==='open'?'입금 원장 시작':'입금 추가';
+    document.getElementById('receipt-title').textContent=blocked?'청구 기준 대조 필요':mode==='void'?'입금 기록 정정':mode==='open'?'입금 원장 시작':'입금 추가';
     document.getElementById('receipt-context').textContent=month+' · '+(bill.tenantSnapshot?.biz||bill.tenantSnapshot?.name||tenant.name)+' · 청구 기준과 기존 확인 근거를 보존합니다.';
     document.getElementById('receipt-inputs').hidden=mode!=='receipt';document.getElementById('receipt-reason-wrap').hidden=mode!=='void';
     document.getElementById('receipt-amount').value='';document.getElementById('receipt-date').value=localToday();document.getElementById('receipt-date').max=localToday();document.getElementById('receipt-note').value='';document.getElementById('receipt-reason').value='';
-    document.getElementById('receipt-legacy-summary').textContent='원장 개시 전 확인 '+fmt(state.legacyConfirmed)+' · 실제 입금 기록으로 새로 만들지 않습니다.'+(mode==='void'?' 정정 대상: '+reference:'');
-    const estimates=!bill.receiptLedger&&(bill.snapshotEstimated||[]).length>0;document.getElementById('receipt-estimates').hidden=!estimates;document.getElementById('receipt-estimate-list').textContent=(bill.snapshotEstimated||[]).join(', ');document.getElementById('receipt-review-estimated').checked=false;
+    const current=RentalBilling.receiptLedgerState(ledger,localToday());
+    document.getElementById('receipt-legacy-summary').textContent='수납 기준일 '+current.asOf+' · 기존 확인 '+fmt(current.legacyConfirmed)+' · 새 입금 '+fmt(current.newReceived)+' · 잔액 '+fmt(current.unpaid)+' · 기존 확인을 실제 입금 기록으로 새로 만들지 않습니다.'+(mode==='void'?' 정정 대상: '+reference:'');
+    document.getElementById('receipt-input-focus').hidden=blocked||mode!=='receipt';
+    document.getElementById('receipt-blocked-estimates').textContent=receiptEstimateLabels(bill.snapshotEstimated||[]);
+    const estimates=!bill.receiptLedger&&(bill.snapshotEstimated||[]).length>0;document.getElementById('receipt-estimates').hidden=!estimates;document.getElementById('receipt-estimate-list').textContent=receiptEstimateLabels(bill.snapshotEstimated||[]);document.getElementById('receipt-review-estimated').checked=false;
     resetReceiptReview();openModal('modal-receipt-entry');
   }catch(error){showToast(error.message);}
 }
 function resetReceiptReview(){
   if(receiptTarget)receiptTarget.prepared=null;
-  document.getElementById('receipt-fields').disabled=false;document.getElementById('receipt-review').hidden=true;document.getElementById('receipt-confirm').hidden=true;document.getElementById('receipt-edit').hidden=true;document.getElementById('receipt-prepare').hidden=false;
+  document.getElementById('receipt-fields').disabled=!!receiptTarget?.blocked;document.getElementById('receipt-fields').hidden=!!receiptTarget?.blocked;document.getElementById('receipt-review').hidden=true;document.getElementById('receipt-confirm').hidden=true;document.getElementById('receipt-edit').hidden=true;document.getElementById('receipt-prepare').hidden=!!receiptTarget?.blocked;
 }
 function reviewReceiptEntry(){
   if(!receiptTarget)return;
   try{
+    if(receiptTarget.blocked)throw new Error('먼저 고지서의 청구 기준을 대조·저장해주세요.');
     const {month,id,mode,reference,billRaw}=receiptTarget,bill=bills[month]?.[id];if(JSON.stringify(bill)!==billRaw)throw new Error('고지서가 변경됐습니다. 입력을 보관하고 창을 다시 열어주세요.');assertCurrentStorage();
     const at=new Date().toISOString();let ledger=bill.receiptLedger||RentalBilling.openReceiptLedger(findTenant(id,month),bill,month+':'+id,at,{reviewEstimated:document.getElementById('receipt-review-estimated').checked});
     let event=null;
@@ -2187,7 +2229,7 @@ function reviewReceiptEntry(){
   }catch(error){announceModalNotice(error.message+(/원장 개시/.test(error.message)?' 이 창을 닫고 고지서 수정에서 기존 청구 기준을 대조·저장한 뒤 다시 시작해주세요.':''));}
 }
 async function saveReceiptEntry(){
-  if(!receiptTarget?.prepared||persistenceBusy)return;
+  if(!receiptTarget?.prepared||receiptTarget.blocked||persistenceBusy)return;
   const target=receiptTarget;persistenceBusy=true;
   let data;
   try{
