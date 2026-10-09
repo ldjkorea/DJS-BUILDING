@@ -1,0 +1,184 @@
+{
+  "version": "2.1.0",
+  "phase": "receipt-ui-projections-step3",
+  "sourceCommit": "7efc2ddad6ef959fff12f97c45b8d227605e8d7c",
+  "checkedAt": "2026-10-09T21:32:05.098Z",
+  "releaseCandidate": false,
+  "fullPartialPaymentFeatureComplete": false,
+  "uiIntegration": true,
+  "storageIntegration": true,
+  "sharedPaymentProjections": true,
+  "tests": {
+    "unit": {
+      "passed": 139,
+      "total": 139,
+      "newCases": 8
+    },
+    "browser": {
+      "passed": 8,
+      "total": 8,
+      "startedAt": "2026-10-09T21:27:47.580Z",
+      "finishedAt": "2026-10-09T21:31:49.973Z",
+      "results": [
+        {
+          "suite": "browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "audit-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "pwa-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "single-file-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "integrity-v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "independent-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        }
+      ]
+    },
+    "audit": {
+      "passed": 69,
+      "total": 69
+    },
+    "receiptUi": {
+      "passed": 11,
+      "total": 11,
+      "results": [
+        {
+          "name": "receipt UI PC mobile saves 30000 plus 80000 and reloads exact rent balance with protected original storage",
+          "status": "pass"
+        },
+        {
+          "name": "receipt UI correction needs reason preserves receipt payload and removes canceled recent cash",
+          "status": "pass"
+        },
+        {
+          "name": "receipt UI invalid amount future date and estimated snapshot review preserve all input and source",
+          "status": "pass"
+        },
+        {
+          "name": "receipt UI quota failure retains prepared ID and raw input then retries once",
+          "status": "pass"
+        },
+        {
+          "name": "receipt UI another tab saving during review stops the stale receipt and retains its input",
+          "status": "pass"
+        },
+        {
+          "name": "receipt UI full backup restores journal on new device and rejects old history erasing backup",
+          "status": "pass"
+        },
+        {
+          "name": "receipt UI cash balance matches dashboard Kakao and monthly CSV including water and waste",
+          "status": "pass"
+        },
+        {
+          "name": "receipt UI legacy undated confirmation stays separate and can be corrected without deleting source",
+          "status": "pass"
+        },
+        {
+          "name": "receipt UI overdue balance agrees across operating view quarterly tax row and tax CSV",
+          "status": "pass"
+        },
+        {
+          "name": "receipt UI typed mock cloud lost acknowledgement retries the same ID and preserves one persisted receipt",
+          "status": "pass"
+        },
+        {
+          "name": "receipt UI six viewports large text keyboard and cancel keep usable controls and source",
+          "status": "pass"
+        }
+      ]
+    },
+    "build": true,
+    "syntax": true,
+    "generatedFilesCurrent": true
+  },
+  "localScope": {
+    "receiptInputReview": true,
+    "legacyAndActualCashSeparated": true,
+    "reasonRequiredVoid": true,
+    "actualPreimageAndAppendOnlyPrefix": true,
+    "quotaInputsAndPreparedIdRetained": true,
+    "anotherTabConflictRejected": true,
+    "fullJournalRestoreOnEmptyDevice": true,
+    "historyRemovingRestoreRejected": true,
+    "oldCloudCapabilityBlocksWrites": true,
+    "mockLostAcknowledgementWritesOnce": true,
+    "kakaoAndMonthCsvRemainingBalance": true,
+    "operatingAndTaxOverdueBalance": true,
+    "docsVmSharedCollectionProjection": true,
+    "receiptPanelReadableOnPcAndMobile": true,
+    "sixViewportsAndLargeTextKeyboard": true
+  },
+  "live": {
+    "checkedAt": "2026-10-09T21:24:50.477Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e",
+    "appVersion": "1.0.0",
+    "deployedVersion": 4,
+    "writeExecuted": false,
+    "deploymentExecuted": false,
+    "permissionsRecheckedSeparately": true
+  },
+  "previousCandidate": {
+    "version": "2.0.6",
+    "tag": "candidate/independent-v206-18237dc",
+    "zipSha256": "fc03fdf04b43da7e9870e6c0e37ccf3ef5fd5cfadb82d318d8ebefecf1aeadd7"
+  },
+  "notVerified": [
+    "live 2.1 receipt write revision readback and Docs",
+    "physical phone and screen reader",
+    "receipt anchor repricing migration policy",
+    "2.1 release candidate packaging",
+    "all historical operating records financially reconciled"
+  ],
+  "files": {
+    "assets/billing.js": "8fe51b69074467d345010253084a07afc69c33151976f7b9b5690700573093ba",
+    "assets/core.js": "b10b52212c0b6bec7d7173ed2321ef4d392852e0265d54d64453f299692e7f17",
+    "assets/app.js": "5f27b73df730342df2fa0a0fe38f8bcbe07480ee36549c5be2dbdb0bb1a6998c",
+    "assets/enhancements.js": "24098352e3434bab3fdcb2fcc0bbc1c7a48f462105538f1bcc14669df69ed67b",
+    "assets/workspace.css": "60c860b5a3968c7d76d02bb105a5b68364b19ca4765b1d4212a3f8a3b409adf5",
+    "src/index.template.html": "9675e3c6793cd192a5b1cbff927146fa11cd00b89f38e46697ee49f16b392d2d",
+    "server/Code.gs": "f099e0d604fbc6fbe7359809164ce4048ab388835d69d7a3704114c470c45d88",
+    "server/Billing.gs": "d6b99426f5ddc4a5c3100026343b4c35e5ed807345f516cd894717557ba63047",
+    "server/CurrentStatus.gs": "8dcf4fc79d5d8f388797b0ca0babe93e0b6bcec3ea3bd543803b75ea3a9cff7f",
+    "server/IndependentApp.gs": "c97eb66869f7c898b09763710e6d8fa5b370c468f924ef77ee9b01b5f2550f41",
+    "index.html": "a7a0d55c502ee383989e7285ab889b73b58991de121d4945656dacfe7b8fd1eb",
+    "tests/receipt-browser.cjs": "71663231bab20ab18db3460de9cdd653d29c5a1846fc3e3f851ce8233f20851f",
+    "tests/receipt-projection.test.cjs": "3d9778d1b2f99ce9463c1033d8c8ce1ddfcb6a73405dc1eaf18bbd2f1f843687"
+  },
+  "localLogSha256": "960f74e584593565c2a8fc69c8dcadba0140227eff20570933aa3f0253941f32"
+}
