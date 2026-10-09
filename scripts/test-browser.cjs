@@ -3,7 +3,7 @@ const {spawn}=require('node:child_process');
 const fs=require('node:fs');
 const path=require('node:path');
 const root=path.resolve(__dirname,'..'),out=path.join(root,'test-results');
-const suites=['browser.cjs','v2-browser.cjs','audit-browser.cjs','receipt-browser.cjs','receipt-basis-browser.cjs','bill-basis-browser.cjs','quarter-browser.cjs','pwa-browser.cjs','single-file-browser.cjs','integrity-v2-browser.cjs','independent-browser.cjs'];
+const suites=['browser.cjs','v2-browser.cjs','audit-browser.cjs','receipt-browser.cjs','receipt-basis-browser.cjs','bill-basis-browser.cjs','quarter-browser.cjs','restored-data-browser.cjs','pwa-browser.cjs','single-file-browser.cjs','integrity-v2-browser.cjs','independent-browser.cjs'];
 let server,serverExited;
 function run(file,env){
   return new Promise(resolve=>{
@@ -24,7 +24,7 @@ function run(file,env){
     server.on('exit',code=>{clearTimeout(timeout);reject(new Error('Test server exited: '+code));});
     server.stdout.on('data',chunk=>{output+=chunk;const match=output.match(/http:\/\/127\.0\.0\.1:\d+/);if(match){clearTimeout(timeout);resolve(match[0]+'/');}});
   });
-  const env={...process.env,RENTAL_TEST_URL:url};delete env.RENTAL_CASE;
+  const env={...process.env,RENTAL_TEST_URL:url};delete env.RENTAL_CASE;delete env.RENTAL_RESTORE_INPUT;
   const startedAt=new Date().toISOString(),results=[];
   for(const suite of suites)results.push(await run(suite,env));
   fs.writeFileSync(path.join(out,'browser-suite-summary.json'),JSON.stringify({startedAt,finishedAt:new Date().toISOString(),url,node:process.version,results},null,2));

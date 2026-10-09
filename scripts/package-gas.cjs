@@ -30,7 +30,8 @@ function verifyArchive(zipFile,manifest){
  return entries;
 }
 function assertProof(directory,version){
- const proof=readJson(path.join(directory,'releases/development-bill-basis-'+version+'.json'));
+ const standard=path.join(directory,'releases/development-'+version+'.json');
+ const proof=readJson(fs.existsSync(standard)?standard:path.join(directory,'releases/development-bill-basis-'+version+'.json'));
  assert.equal(proof.appVersion,version);assert.ok(proof.validation.browser.results.every(row=>row.status==='pass'&&row.exitCode===0));assert.equal(proof.validation.unit.passed,proof.validation.unit.total);
  for(const [file,expected] of Object.entries(proof.sourceHashes))if(file!=='package.json')assert.equal(hash(fs.readFileSync(path.join(directory,file))),expected,'Verified source changed: '+file);
  assert.match(proof.sourceCommit,/^[a-f0-9]{40}$/);

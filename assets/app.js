@@ -2069,7 +2069,8 @@ function renderHistContent() {
   if(!tenant||!con)return;
   document.getElementById('hist-nav').style.display='flex';
   document.getElementById('hist-month-lbl').textContent=`${histY}년 ${histM}월`;
-  const bill=bills[`${histY}-${String(histM).padStart(2,'0')}`]?.[tenant.id];
+  const saved=bills[`${histY}-${String(histM).padStart(2,'0')}`]?.[tenant.id];
+  const bill=saved&&Object.keys(saved).length?saved:null;
   if(!bill&&tenant.archived){con.innerHTML='<div class="empty">보관된 세입자입니다. 고지서가 저장된 과거 월을 선택해주세요.</div>';return;}
   if(!bill){con.innerHTML=buildBillFormHtml(tenant,histY,histM);applyBillDraft();return;}
   const state=RentalBilling.payment(tenant,bill);
@@ -3821,7 +3822,7 @@ document.addEventListener('change',event=>{
 });
 document.addEventListener('DOMContentLoaded',()=>{
   for(const [month,rows] of Object.entries(bills))for(const [id,bill] of Object.entries(rows))
-    snapshotBill(findTenant(id,month),bill,month,true);
+    if(Object.keys(bill).length)snapshotBill(findTenant(id,month),bill,month,true);
   lastCommitted=structuredClone(currentData());
   updateMonthLabel();loadWaterRatioInputs();renderAll();syncUI(cloudEnabled&&cloudDirty?'pending':'local');
   document.getElementById('cloud-enabled').checked = cloudEnabled;

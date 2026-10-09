@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="application-version" content="2.1.3">
+<meta name="application-version" content="2.1.4">
 <title>임대관리 독립앱 · Property Management</title>
 
 <meta name="theme-color" content="#f7f8fa">
@@ -827,7 +827,7 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
     <!-- 세입자별 현황 -->
     <div class="dashboard-columns"><div class="card workflow-ledger">
       <div class="card-header">
-        <div><div class="card-title">임차인별 청구 · 수납</div><button class="text-button" onclick="exportMonthCsv()">월별 내역 내보내기 ↗</button></div>
+        <div><div class="card-title">임차인별 청구 · 수납</div><button class="text-button" onclick="exportMonthCsv()">저장 고지서 내역 내보내기 ↗</button></div>
       </div>
       <div id="home-bill-list">
         <div class="empty"><div class="empty-icon">📋</div><div style="font-size:13px;">세입자를 추가해보세요</div></div>
@@ -993,7 +993,7 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 
 </main><!-- /content -->
 
-<aside class="workspace-sidebar"><a href="#" class="workspace-brand" onclick="switchTab('home');return false;"><span class="brand-mark">P<span>·</span></span><span>Property<small>임대관리 독립앱</small></span></a><span class="nav-caption">임대 업무</span><nav class="pill-nav" aria-label="주요 메뉴"><div class="nav-group primary"><button type="button" class="pill-item" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="pi-label">대시보드</span></button><button type="button" class="pill-item" id="nav-history" onclick="switchTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span class="pi-label">고지서</span></button><button type="button" class="pill-item" id="nav-settlement" onclick="switchTab('settlement')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg><span class="pi-label">정산</span></button><button type="button" class="pill-item" id="nav-tenants" onclick="switchTab('tenants')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0112 0v3M16 4a3 3 0 010 6M18 14a5 5 0 013 4v3"/></svg><span class="pi-label">세입자</span></button></div><div class="nav-group secondary" id="secondary-nav" aria-label="보조 메뉴"><button type="button" class="pill-item" id="nav-building" onclick="switchTab('building')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V3h11v18M15 9h5v12M8 7h3M8 11h3M8 15h3M8 19h3M18 13v2M18 18v1"/></svg><span class="pi-label">운영현황</span></button><button type="button" class="pill-item" id="nav-tax" onclick="switchTab('tax')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 7h6M9 11h6M9 15h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg><span class="pi-label">세무집계</span></button><button type="button" class="pill-item" id="nav-settings" onclick="switchTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg><span class="pi-label">설정</span></button></div><button class="pill-item" id="nav-more" onclick="toggleMoreNav()" aria-expanded="false" aria-controls="secondary-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span class="pi-label">더보기</span></button></nav><div class="sidebar-bottom"><span class="live-dot"></span>원본과 분리된 독립앱<small>오늘의 업무를 정확하고 간결하게.</small><span class="version-label">INDEPENDENT 2.1.3</span></div></aside>
+<aside class="workspace-sidebar"><a href="#" class="workspace-brand" onclick="switchTab('home');return false;"><span class="brand-mark">P<span>·</span></span><span>Property<small>임대관리 독립앱</small></span></a><span class="nav-caption">임대 업무</span><nav class="pill-nav" aria-label="주요 메뉴"><div class="nav-group primary"><button type="button" class="pill-item" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="pi-label">대시보드</span></button><button type="button" class="pill-item" id="nav-history" onclick="switchTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span class="pi-label">고지서</span></button><button type="button" class="pill-item" id="nav-settlement" onclick="switchTab('settlement')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg><span class="pi-label">정산</span></button><button type="button" class="pill-item" id="nav-tenants" onclick="switchTab('tenants')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0112 0v3M16 4a3 3 0 010 6M18 14a5 5 0 013 4v3"/></svg><span class="pi-label">세입자</span></button></div><div class="nav-group secondary" id="secondary-nav" aria-label="보조 메뉴"><button type="button" class="pill-item" id="nav-building" onclick="switchTab('building')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V3h11v18M15 9h5v12M8 7h3M8 11h3M8 15h3M8 19h3M18 13v2M18 18v1"/></svg><span class="pi-label">운영현황</span></button><button type="button" class="pill-item" id="nav-tax" onclick="switchTab('tax')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 7h6M9 11h6M9 15h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg><span class="pi-label">세무집계</span></button><button type="button" class="pill-item" id="nav-settings" onclick="switchTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg><span class="pi-label">설정</span></button></div><button class="pill-item" id="nav-more" onclick="toggleMoreNav()" aria-expanded="false" aria-controls="secondary-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span class="pi-label">더보기</span></button></nav><div class="sidebar-bottom"><span class="live-dot"></span>원본과 분리된 독립앱<small>오늘의 업무를 정확하고 간결하게.</small><span class="version-label">INDEPENDENT 2.1.4</span></div></aside>
 <!-- ══ 모달들 ══ -->
 <!-- 세입자 추가/수정 -->
 <div class="modal-overlay" id="modal-tenant">
@@ -4186,7 +4186,8 @@ function renderHistContent() {
   if(!tenant||!con)return;
   document.getElementById('hist-nav').style.display='flex';
   document.getElementById('hist-month-lbl').textContent=`${histY}년 ${histM}월`;
-  const bill=bills[`${histY}-${String(histM).padStart(2,'0')}`]?.[tenant.id];
+  const saved=bills[`${histY}-${String(histM).padStart(2,'0')}`]?.[tenant.id];
+  const bill=saved&&Object.keys(saved).length?saved:null;
   if(!bill&&tenant.archived){con.innerHTML='<div class="empty">보관된 세입자입니다. 고지서가 저장된 과거 월을 선택해주세요.</div>';return;}
   if(!bill){con.innerHTML=buildBillFormHtml(tenant,histY,histM);applyBillDraft();return;}
   const state=RentalBilling.payment(tenant,bill);
@@ -5938,7 +5939,7 @@ document.addEventListener('change',event=>{
 });
 document.addEventListener('DOMContentLoaded',()=>{
   for(const [month,rows] of Object.entries(bills))for(const [id,bill] of Object.entries(rows))
-    snapshotBill(findTenant(id,month),bill,month,true);
+    if(Object.keys(bill).length)snapshotBill(findTenant(id,month),bill,month,true);
   lastCommitted=structuredClone(currentData());
   updateMonthLabel();loadWaterRatioInputs();renderAll();syncUI(cloudEnabled&&cloudDirty?'pending':'local');
   document.getElementById('cloud-enabled').checked = cloudEnabled;
@@ -6069,7 +6070,10 @@ function renderDashboardMetrics(context={}) {
 function exportMonthCsv() {
   const rows=[['기준월','호수','상호','세입자','월세','관리비','전기','수도','엘리베이터','오물비','미부과 차감','총 청구액','입금 확인','미확인','월세 완납일','관리비 완납일']];
   tenantsForMonth().forEach(t=>{
-    const bill=bills[mk()]?.[t.id]||{},s=RentalBilling.payment(t,bill),c=RentalBilling.charges(t,bill);
+    const bill=bills[mk()]?.[t.id];
+    // A missing or empty invoice is not an issued charge, just as on the dashboard.
+    if(!bill||!Object.keys(bill).length)return;
+    const s=RentalBilling.payment(t,bill),c=RentalBilling.charges(t,bill);
     const identity=billTenant(t,bill);
     const groupDate=group=>s.groups[group].complete?s.groups[group].dates.join(' · '):'';
     rows.push([mk(),identity.unit,identity.biz||'',identity.name,...['pay_rent','pay_mgmt','pay_elec','pay_water','pay_elev','pay_waste'].map(k=>c[k]),s.exempt,s.total,s.received,s.unpaid,bill.receiptLedger?groupDate('rent'):bill.stampedRent?bill.stampedRentDate||'':'',bill.receiptLedger?groupDate('mgmt'):bill.stampedMgmt?bill.stampedMgmtDate||'':'']);
@@ -6081,7 +6085,7 @@ function exportMonthCsv() {
   };
   const url=URL.createObjectURL(new Blob(['\uFEFF'+rows.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));
   const link=document.createElement('a');link.href=url;link.download=`임대관리_월별내역_${mk()}.csv`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-  showToast('월별 내역 다운로드를 시작했습니다.');
+  showToast('저장된 고지서의 월별 내역 다운로드를 시작했습니다.');
 }
 
 const DRAFT_KEY='rentalApp.billDrafts.v1';
@@ -6565,7 +6569,7 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.1.3';
+const APPLICATION_VERSION='2.1.4';
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
   const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';

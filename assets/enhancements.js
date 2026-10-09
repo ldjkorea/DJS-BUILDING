@@ -32,7 +32,10 @@ function renderDashboardMetrics(context={}) {
 function exportMonthCsv() {
   const rows=[['기준월','호수','상호','세입자','월세','관리비','전기','수도','엘리베이터','오물비','미부과 차감','총 청구액','입금 확인','미확인','월세 완납일','관리비 완납일']];
   tenantsForMonth().forEach(t=>{
-    const bill=bills[mk()]?.[t.id]||{},s=RentalBilling.payment(t,bill),c=RentalBilling.charges(t,bill);
+    const bill=bills[mk()]?.[t.id];
+    // A missing or empty invoice is not an issued charge, just as on the dashboard.
+    if(!bill||!Object.keys(bill).length)return;
+    const s=RentalBilling.payment(t,bill),c=RentalBilling.charges(t,bill);
     const identity=billTenant(t,bill);
     const groupDate=group=>s.groups[group].complete?s.groups[group].dates.join(' · '):'';
     rows.push([mk(),identity.unit,identity.biz||'',identity.name,...['pay_rent','pay_mgmt','pay_elec','pay_water','pay_elev','pay_waste'].map(k=>c[k]),s.exempt,s.total,s.received,s.unpaid,bill.receiptLedger?groupDate('rent'):bill.stampedRent?bill.stampedRentDate||'':'',bill.receiptLedger?groupDate('mgmt'):bill.stampedMgmt?bill.stampedMgmtDate||'':'']);
@@ -44,7 +47,7 @@ function exportMonthCsv() {
   };
   const url=URL.createObjectURL(new Blob(['\uFEFF'+rows.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));
   const link=document.createElement('a');link.href=url;link.download=`임대관리_월별내역_${mk()}.csv`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-  showToast('월별 내역 다운로드를 시작했습니다.');
+  showToast('저장된 고지서의 월별 내역 다운로드를 시작했습니다.');
 }
 
 const DRAFT_KEY='rentalApp.billDrafts.v1';
@@ -528,7 +531,7 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.1.3';
+const APPLICATION_VERSION='2.1.4';
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
   const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';
