@@ -1,3 +1,4 @@
+const {navigate:navigateV2}=require('./navigation.cjs');
 /* Operational regressions use disposable browser contexts and mock cloud responses. */
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
@@ -98,7 +99,7 @@ test('orphan historical bill supports receipt confirmation and reload',async()=>
 });
 test('re-settlement invalidates changed receipts but retains unaffected payments',async()=>{
   const data=sample();data.bills[key]={audit1:billing.freezeBill(tenant,{water:10000,electricity:35000,elevatorTotal:50000,waste:1000,stampedMgmt:true,stampedMgmtDate:receipt,stampedRent:true,stampedRentDate:receipt,invoiceIssued:true},key)};
-  const {page}=await open(data);await page.locator('#nav-settlement').click();
+  const {page}=await open(data);await navigateV2(page,'settlement');
   await page.locator('#sett-elev').fill('60000');await page.locator('#sett-waste').fill('1000');
   await page.evaluate(()=>calcSettlement());await page.evaluate(()=>confirmSettlement());
   const state=await page.evaluate(()=>RentalBilling.payment(tenants[0],bills[mk()].audit1));
@@ -197,6 +198,10 @@ test('CSV escapes formula-like tenant names and uses historical identity',async(
   const file=await pending;const csv=fs.readFileSync(await file.path(),'utf8');
   assert.ok(csv.includes('"\'=2+3"'));assert.ok(!csv.includes('changed'));assert.ok(csv.includes('110000'));
 });
+test('settlement draft backup restores inputs and remains exportable after storage failure',async()=>{
+ const {page}=await open();await navigateV2(page,'settlement');await page.locator('#sett-elec').fill('76543');const backup=await exportBackup(page);assert.equal(backup.localSettlementDrafts[key].fields['sett-elec'].value,'76543');assert.equal(core.validateData(backup).localSettlementDrafts,undefined);await page.evaluate(()=>resetAllData());await page.evaluate(()=>restoreRecovery());await navigateV2(page,'settlement');assert.equal(await page.locator('#sett-elec').inputValue(),'76543');await failStorage(page,'rentalApp.settlementDrafts.v2');await page.evaluate(async backup=>replaceData(RentalCore.validateData(backup),'정산 초안 격리 복원',{},backup.localSettlementDrafts),backup);assert.match(await page.locator('#data-notice').innerText(),/초안을 저장하지 못/);assert.equal((await exportBackup(page)).localSettlementDrafts[key].fields['sett-elec'].value,'76543');
+});
+
 (async()=>{
   browser=await chromium.launch({headless:true,executablePath:process.env.RENTAL_BROWSER||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
   try {

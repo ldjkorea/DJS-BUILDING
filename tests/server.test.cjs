@@ -17,10 +17,10 @@ function server(options={}) {
       getMaxRows:()=>maxRows,insertRowsAfter:(_after,count)=>{maxRows+=count;},
       getRange:(row,column,numRows=1,numColumns=1)=>({
         getValue:()=>rows[row-1]?.[column-1]??'',
-        getValues:()=>Array.from({length:numRows},(_,r)=>Array.from({length:numColumns},(_,c)=>rows[row-1+r]?.[column-1+c]??'')),
+        getValues:()=>{if(isBackup&&fail==='backup-read')throw Error('backup read quota');const values=Array.from({length:numRows},(_,r)=>Array.from({length:numColumns},(_,c)=>rows[row-1+r]?.[column-1+c]??''));if(isBackup&&fail==='backup-hash'&&values.length)values[0][2]+='bad';return values;},
         setValue:value=>{if(fail===(isBackup?'backup':'write'))throw Error((isBackup?'backup':'write')+' failed');rows[row-1]??=[];rows[row-1][column-1]=value;if(!isBackup)writes++;},
-        setValues:values=>{if(fail===(isBackup?'backup':'write'))throw Error((isBackup?'backup':'write')+' failed');values.forEach((source,r)=>source.forEach((value,c)=>{rows[row-1+r]??=[];rows[row-1+r][column-1+c]=value;}));if(!isBackup)writes++;},
-        clearContent:()=>{for(let r=0;r<numRows;r++)for(let c=0;c<numColumns;c++)if(rows[row-1+r])rows[row-1+r][column-1+c]='';}
+        setValues:values=>{if(fail===(isBackup?'backup':'write'))throw Error((isBackup?'backup':'write')+' failed');values.forEach((source,r)=>{if(!isBackup&&((fail==='partial-write'&&r>0)||(fail==='last-write'&&r===values.length-1)))throw Error('partial write');source.forEach((value,c)=>{rows[row-1+r]??=[];rows[row-1+r][column-1+c]=value;});});if(!isBackup)writes++;},
+        clearContent:()=>{if(!isBackup&&fail==='clear')throw Error('clear quota');for(let r=0;r<numRows;r++)for(let c=0;c<numColumns;c++)if(rows[row-1+r])rows[row-1+r][column-1+c]='';}
       })
     };
   }
@@ -44,12 +44,13 @@ function server(options={}) {
   const dateKey=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
   class CalendarEvent {
     constructor(title,date,description){this.id='event-'+(++calendarSequence);this.title=title;this.date=dateKey(date);this.description=description||'';}
-    getId(){return this.id;}setTitle(value){this.title=value;return this;}setDescription(value){this.description=value;return this;}
+    getTitle(){return this.title;}getDescription(){return this.description;}getId(){if(fail==='calendar-id')throw Error('event ID acknowledgement failed');return this.id;}setTitle(value){this.title=value;return this;}setDescription(value){this.description=value;return this;}
     setAllDayDate(value){this.date=dateKey(value);return this;}
   }
   const calendar={getId:()=>'independent-calendar',
+    getEvents:(_start,_end,config)=>[...calendarEvents.values()].filter(event=>!config?.search||event.description.includes(config.search)),
     getEventById:id=>{if(fail==='calendar')throw Error('calendar unavailable');return calendarEvents.get(id)||null;},
-    createAllDayEvent:(title,date,config)=>{if(fail==='calendar'||fail==='calendar-permission')throw Error('calendar permission denied');const event=new CalendarEvent(title,date,config?.description);calendarEvents.set(event.id,event);return event;}
+    createAllDayEvent:(title,date,config)=>{if(fail==='calendar'||fail==='calendar-permission')throw Error('calendar permission denied');const event=new CalendarEvent(title,date,config?.description);calendarEvents.set(event.id,event);if(fail==='calendar-after-create')throw Error('creation acknowledgement lost');return event;}
   };
   const CalendarApp={getDefaultCalendar:()=>{throw Error('original calendar must never be used');},createCalendar:()=>{if(fail==='calendar-permission')throw Error('calendar permission denied');return calendar;},getCalendarById:id=>{if(fail==='calendar-permission')throw Error('calendar permission denied');return id==='missing'?null:calendar;}};
   if(options.existingDocument!==false&&!props.has('RENTAL_STATUS_DOCUMENT_ID'))props.set('RENTAL_STATUS_DOCUMENT_ID',docId);
@@ -57,12 +58,13 @@ function server(options={}) {
     ContentService:{MimeType:{JSON:'json'},createTextOutput:s=>({setMimeType:()=>s})},
     Utilities:{DigestAlgorithm:{SHA_256:'sha256'},Charset:{UTF_8:'utf8'},computeDigest:(a,s)=>[...crypto.createHash('sha256').update(s).digest()],getUuid:()=>crypto.randomUUID(),formatDate:(date,_zone,format)=>format==='yyyy-MM-dd'?date.toISOString().slice(0,10):date.toISOString().replace('T',' ').slice(0,19)},
     LockService:{getScriptLock:()=>({tryLock:()=>!held&&(held=true),releaseLock:()=>{held=false;}})},SpreadsheetApp:{openById:id=>{assert.equal(id,'1E9YcSQSNTLTC41fqWBYHMNpSRKQrDlvAXeF9AxdDFb8');return book;},flush:()=>{}},DocumentApp,DriveApp,CalendarApp,
-    PropertiesService:{getScriptProperties:()=>({getProperty:key=>props.get(key)??null,setProperty:(key,value)=>props.set(key,value)})}
+    PropertiesService:{getScriptProperties:()=>({getProperty:key=>props.get(key)??null,deleteProperty:key=>props.delete(key),setProperty:(key,value)=>{if(fail==='calendar-map'&&key==='INDEPENDENT_CONTRACT_CALENDAR_EVENTS_V1')throw Error('mapping write failed');return props.set(key,value);}})}
   });
   for(const file of ['Billing.gs','CurrentStatus.gs','CalendarSync.gs','Code.gs'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../server',file),'utf8'),c,{filename:file});
+  c.INDEPENDENT_CONTRACT_CALENDAR_ID='independent-calendar';
   const get=()=>JSON.parse(c.doGet({parameter:{api:'1'}})),post=req=>JSON.parse(c.doPost({postData:{contents:JSON.stringify(req)}}));
   const request=(data={tenants:[],bills:{}})=>({protocol:'rental-sync-v2',expectedRevision:get().revision,requestId:crypto.randomUUID(),data});
-  return {get,post,request,writes:()=>writes,backupRows,body,props,events:()=>[...calendarEvents.values()].map(event=>({...event})),raw:()=>targetRows.map(row=>String(row[0]||'')).join(''),fail:value=>{fail=value;},hold:value=>{held=value;},corrupt:value=>{targetRows.splice(0,targetRows.length,[value]);}};
+  return {get,post,request,writes:()=>writes,backupRows,body,props,dropEvent:id=>calendarEvents.delete(id),loseMarker:()=>calendarEvents.forEach(event=>{event.description=event.description.split('\n[RENTAL_INDEPENDENT_CONTRACT:')[0];}),events:()=>[...calendarEvents.values()].map(event=>({...event})),raw:()=>targetRows.map(row=>String(row[0]||'')).join(''),fail:value=>{fail=value;},hold:value=>{held=value;},corrupt:value=>{targetRows.splice(0,targetRows.length,[value]);}};
 }
 
 test('GET is read-only and advertises conditional writes, current status and contract calendar',()=>{const s=server(),before=s.raw(),result=s.get();assert.equal(result.capabilities.conditionalWrite,true);assert.equal(result.capabilities.currentStatus,true);assert.equal(result.capabilities.contractCalendar,true);assert.equal(s.raw(),before);assert.equal(s.writes(),0);});
@@ -115,3 +117,54 @@ test('current status omits archived historical tenants',()=>{const s=server(),r=
 test('missing configured document ID reports an error without creating a replacement',()=>{const s=server({properties:{RENTAL_STATUS_DOCUMENT_ID:'missing-doc'}}),ack=s.post(s.request());assert.equal(ack.status,'ok');assert.equal(ack.docs.status,'error');assert.equal(s.props.get('RENTAL_STATUS_DOCUMENT_ID'),'missing-doc');});
 test('missing document property uses only the copied document ID and ignores document title',()=>{const s=server({existingDocument:false}),ack=s.post(s.request());assert.equal(ack.status,'ok');assert.equal(ack.docs.status,'ok');assert.equal(s.props.get('RENTAL_STATUS_DOCUMENT_ID'),'1YjTZPiRA2vnfAuWp1UTBci8F4yUNozQjYhE9QwMdtuQ');});
 test('corrupt persisted data is never replaced and busy lock prevents writes',()=>{const s=server(),r=s.request();s.corrupt('{broken');assert.equal(s.post(r).status,'error');assert.equal(s.raw(),'{broken');const busy=server();busy.hold(true);assert.equal(busy.post(busy.request()).status,'busy');assert.equal(busy.writes(),0);});
+
+
+test('calendar creation followed by mapping failure does not duplicate on retry',()=>{
+ const s=server({raw:JSON.stringify({tenants:[{id:'t1',name:'검증용',unit:'201',contract:'2025.01.01 ~ 2027.01.01'}],bills:{}})});
+ const req={protocol:'rental-sync-v2',action:'syncContractCalendar',requestId:crypto.randomUUID(),expectedRevision:s.get().revision};
+ s.fail('calendar-map');assert.equal(s.post(req).calendar.status,'error');assert.equal(s.events().length,1);
+ s.fail('');assert.equal(s.post(req).calendar.status,'ok');assert.equal(s.events().length,1);assert.equal(s.writes(),0);
+});
+test('server rejects negative and fractional bill amounts before any mutation',()=>{
+ for(const amount of [-1,0.1,1e13]){const s=server(),before=s.raw();const ack=s.post(s.request({tenants:[],bills:{'2026-10':{t1:{rent:amount}}}}));
+ assert.equal(ack.status,'error');assert.equal(s.raw(),before);assert.equal(s.writes(),0);assert.equal(s.backupRows.length,0);}
+});
+
+test('valid JSON from an interrupted mixed write is blocked by its journal',()=>{const s=server();s.props.set('INDEPENDENT_SYNC_WRITE_JOURNAL',JSON.stringify({before:'sha256-before',after:'sha256-after'}));assert.equal(s.get().status,'error');assert.equal(s.post({protocol:'rental-sync-v2',expectedRevision:'sha256-before',requestId:crypto.randomUUID(),data:{tenants:[],bills:{}}}).status,'error');assert.equal(s.writes(),0);});
+
+test('backup read and hash failure prevent every active-sheet write',()=>{
+ for(const fault of ['backup-read','backup-hash']){const s=server(),req=s.request({tenants:[],bills:{},extra:'x'.repeat(80000)}),before=s.raw();s.fail(fault);assert.equal(s.post(req).status,'error');assert.equal(s.raw(),before);assert.equal(s.writes(),0);}
+});
+test('partial and final chunk failures block corrupt state and retain verified recovery',()=>{
+ for(const fault of ['partial-write','last-write']){const s=server({raw:JSON.stringify({tenants:[],bills:{},extra:'old'.repeat(30000)})}),req=s.request({tenants:[],bills:{},next:'new'.repeat(30000)}),before=s.raw();s.fail(fault);assert.equal(s.post(req).status,'error');assert.equal(s.get().status,'error');assert.equal(s.backupRows.map(r=>r[2]).join(''),before);s.fail('');const report=s.post({protocol:'rental-sync-v2',action:'inspectRecovery',expectedRevision:req.expectedRevision,requestId:crypto.randomUUID()});assert.equal(report.status,'ok');assert.equal(report.recovery.revision,req.expectedRevision);assert.equal(s.get().status,'error');}
+});
+test('remaining-row clear failure never acknowledges an incomplete replacement',()=>{
+ const s=server({raw:JSON.stringify({tenants:[],bills:{},extra:'x'.repeat(78000)})}),req=s.request(),before=s.raw();s.fail('clear');assert.equal(s.post(req).status,'error');assert.equal(s.get().status,'error');assert.equal(s.backupRows.map(r=>r[2]).join(''),before);
+});
+test('recovery inspection rejects changed raw, wrong order and incomplete chunks',()=>{
+ for(const damage of ['raw','order','count']){const s=server({raw:JSON.stringify({tenants:[],bills:{},text:'x'.repeat(78000)})});s.post(s.request());if(damage==='raw')s.backupRows[0][2]+='x';if(damage==='order')s.backupRows[0][4]=2;if(damage==='count')s.backupRows.pop();const before=s.raw();assert.equal(s.post({protocol:'rental-sync-v2',action:'inspectRecovery',expectedRevision:s.get().revision,requestId:crypto.randomUUID()}).status,'error');assert.equal(s.raw(),before);}
+});
+test('same and different tenant writes share revision protection with complete domain fidelity',()=>{
+ const data={tenants:[{id:'t1',name:'익명',rent:'1,000',audit:[{changes:{deposit:{from:null,to:0}}}],waterHistory:[]},{id:'t2',name:'익명2'}],bills:{'2024-02':{orphan:{rent:0,water:null,history:[{from:'',to:null}],paid:{pay_rent:{paid:false,date:''}}}}},loans:[],expenses:{},renewalDone:{},settInputs:{},waterRatio:{r2:0,r3:1,r4:2},floorOperations:{5:{leaseStatus:'공실(정리중)'}},futureExtension:{missing:null,empty:'',zero:0}};
+ for(const id of ['t1','t2']){const s=server({raw:JSON.stringify(data)}),a=s.request(structuredClone(data)),b=s.request(structuredClone(data));a.data.tenants[0].name='첫 수정';b.data.tenants.find(t=>t.id===id).name='나중 수정';assert.equal(s.post(a).status,'ok');assert.equal(s.post(b).status,'conflict');assert.deepEqual(s.get().data,a.data);}
+});
+test('Docs missing or duplicate markers stop without changing surrounding content',()=>{
+ for(const documentTexts of [['메모','[RENTAL_CURRENT_STATUS_BEGIN]','내용'],['위','[RENTAL_CURRENT_STATUS_BEGIN]','[RENTAL_CURRENT_STATUS_BEGIN]','[RENTAL_CURRENT_STATUS_END]','아래']]){const s=server({documentTexts}),before=s.body.children.map(c=>c.getText()),ack=s.post(s.request());assert.equal(ack.status,'ok');assert.equal(ack.docs.status,'error');assert.deepEqual(s.body.children.map(c=>c.getText()),before);assert.equal(s.writes(),1);}
+});
+test('Calendar creation acknowledgement and ID lookup failure retry without duplication',()=>{
+ for(const fault of ['calendar-after-create','calendar-id']){const s=server({raw:JSON.stringify({tenants:[{id:'t1',name:'익명',unit:'201호',contract:'2025/01/01 ~ 2027/01/01'}],bills:{}})}),req={protocol:'rental-sync-v2',action:'syncContractCalendar',expectedRevision:s.get().revision,requestId:crypto.randomUUID()};s.fail(fault);assert.equal(s.post(req).calendar.status,'error');assert.equal(s.events().length,1);s.fail('');assert.equal(s.post(req).calendar.status,'ok');assert.equal(s.events().length,1);}
+});
+test('Calendar mapping loss reidentifies marker events and deleted events are recreated once',()=>{
+ const s=server({raw:JSON.stringify({tenants:[{id:'t1',name:'익명',unit:'201호',contract:'2025/01/01 ~ 2027/01/01'}],bills:{}})}),req=()=>({protocol:'rental-sync-v2',action:'syncContractCalendar',expectedRevision:s.get().revision,requestId:crypto.randomUUID()});s.post(req());const id=s.events()[0].id;s.props.delete('INDEPENDENT_CONTRACT_CALENDAR_EVENTS_V1');assert.equal(s.post(req()).calendar.updated,1);assert.equal(s.events()[0].id,id);s.dropEvent(id);assert.equal(s.post(req()).calendar.created,1);assert.equal(s.post(req()).calendar.updated,1);assert.equal(s.events().length,1);
+});
+test('legacy Calendar event without marker is reused after mapping loss',()=>{
+ const s=server({raw:JSON.stringify({tenants:[{id:'t1',name:'익명',unit:'201호',contract:'2025/01/01 ~ 2027/01/01'}],bills:{}})}),req=()=>({protocol:'rental-sync-v2',action:'syncContractCalendar',expectedRevision:s.get().revision,requestId:crypto.randomUUID()});s.post(req());const id=s.events()[0].id;s.loseMarker();s.props.delete('INDEPENDENT_CONTRACT_CALENDAR_EVENTS_V1');assert.equal(s.post(req()).calendar.updated,1);assert.equal(s.events().length,1);assert.equal(s.events()[0].id,id);
+});
+test('wrong independent Calendar target never writes to personal or original calendars',()=>{
+ const s=server({properties:{INDEPENDENT_CALENDAR_ID:'original-calendar'},raw:JSON.stringify({tenants:[{id:'t1',name:'익명',unit:'201호',contract:'2025/01/01 ~ 2027/01/01'}],bills:{}})});const result=s.post({protocol:'rental-sync-v2',action:'syncContractCalendar',expectedRevision:s.get().revision,requestId:crypto.randomUUID()});assert.equal(result.calendar.status,'error');assert.equal(s.events().length,0);assert.equal(s.writes(),0);
+});
+
+test('wrong tenant event mapping is blocked before modifying that event',()=>{
+ const data={tenants:[{id:'t1',name:'익명1',unit:'201',contract:'2025/01/01 ~ 2027/01/01'},{id:'t2',name:'익명2',unit:'301',contract:'2025/01/01 ~ 2027/02/01'}],bills:{}};
+ const s=server({raw:JSON.stringify(data)}),req=()=>({protocol:'rental-sync-v2',action:'syncContractCalendar',expectedRevision:s.get().revision,requestId:crypto.randomUUID()});s.post(req());const before=s.events();s.props.set('INDEPENDENT_CONTRACT_CALENDAR_EVENTS_V1',JSON.stringify({t1:before[1].id,t2:before[1].id}));assert.equal(s.post(req()).calendar.status,'error');assert.deepEqual(s.events(),before);assert.equal(s.writes(),0);
+});

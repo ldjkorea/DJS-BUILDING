@@ -1,16 +1,12 @@
 /* One-way contract calendar sync. Event IDs stay in Script Properties, never in rental DB data. */
 var CONTRACT_CALENDAR_MAP_PROPERTY = 'INDEPENDENT_CONTRACT_CALENDAR_EVENTS_V1';
+var INDEPENDENT_CONTRACT_CALENDAR_ID = '46b18e877a67e561142297edc9ea44486c33f728809f327cd35e339a8e491c9f@group.calendar.google.com';
 
 function contractCalendarTarget_() {
   var props = PropertiesService.getScriptProperties();
   var calendarId = String(props.getProperty('INDEPENDENT_CALENDAR_ID') || '').trim();
-  var calendar;
-  if(calendarId) {
-    calendar = CalendarApp.getCalendarById(calendarId);
-  } else {
-    calendar = CalendarApp.createCalendar('임대관리 독립앱 - 계약 일정', {timeZone:'Asia/Seoul'});
-    props.setProperty('INDEPENDENT_CALENDAR_ID',calendar.getId());
-  }
+  if (calendarId && calendarId !== INDEPENDENT_CONTRACT_CALENDAR_ID) throw new Error('독립앱 계약 Calendar 설정이 일치하지 않습니다.');
+  var calendar = CalendarApp.getCalendarById(INDEPENDENT_CONTRACT_CALENDAR_ID);
   if (!calendar) throw new Error('연동할 Google Calendar를 찾을 수 없습니다.');
   return calendar;
 }
@@ -86,7 +82,30 @@ function syncContractCalendar_(data, revision) {
   var items = [];
   rows.forEach(function(row) {
     var event = map[row.key] ? calendar.getEventById(map[row.key]) : null;
-    var title = contractCalendarTitle_(row), description = contractCalendarDescription_(row);
+    // A marker is written atomically with event creation. If creation succeeds but
+    // the ID/mapping acknowledgement fails, a retry finds that same event.
+    var marker = '[RENTAL_INDEPENDENT_CONTRACT:' + row.key + ']';
+    var title = contractCalendarTitle_(row), description = contractCalendarDescription_(row) + '\n' + marker;
+    if (event && event.getDescription().indexOf('[RENTAL_INDEPENDENT_CONTRACT:') >= 0 &&
+        event.getDescription().indexOf(marker) < 0) {
+      throw new Error('Calendar 일정이 다른 임차인에 연결되어 있습니다. 일정 매핑을 확인해주세요: ' + row.key);
+    }
+    if (!event) {
+      var candidates = calendar.getEvents(new Date(1900,0,1), new Date(2201,0,1), {search:marker})
+        .filter(function(candidate) { return candidate.getDescription().indexOf(marker) >= 0; });
+      if (candidates.length > 1) throw new Error('동일 계약의 Calendar 일정이 여러 개입니다. 중복 일정을 확인해주세요: ' + row.key);
+      if (candidates.length === 1) { event = candidates[0]; map[row.key] = event.getId(); saveContractCalendarMap_(props,map); }
+      if (!event) {
+        // The copied 1.0 events predate stable tenant markers. Recover only an
+        // exact title + generated description match in this dedicated calendar.
+        var legacy = calendar.getEvents(new Date(1900,0,1), new Date(2201,0,1)).filter(function(candidate) {
+          return candidate.getTitle().indexOf('[임대관리 독립앱] ') === 0 && candidate.getDescription().indexOf('[RENTAL_INDEPENDENT_CONTRACT:') < 0;
+        });
+        var exact = legacy.filter(function(candidate) { return candidate.getTitle() === title && candidate.getDescription() === contractCalendarDescription_(row); });
+        if (exact.length > 1 || (!exact.length && legacy.length)) throw new Error('과거 Calendar 일정 연결을 확정할 수 없습니다. 기존 일정 매핑을 복구한 뒤 다시 시도해주세요.');
+        if (exact.length === 1) { event=exact[0];map[row.key]=event.getId();saveContractCalendarMap_(props,map); }
+      }
+    }
     var result;
     if (event) {
       event.setTitle(title);

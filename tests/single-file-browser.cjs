@@ -1,3 +1,4 @@
+const {navigate:navigateV2}=require('./navigation.cjs');
 /* Isolated release validation: only index.html exists beside the file URL.
    HTTP also serves only index.html; all other requests are recorded and refused. */
 const {chromium} = require('playwright');
@@ -37,7 +38,7 @@ async function layout(page, mobile) {
         const r=e.getBoundingClientRect();return r.left < -1 || r.right > innerWidth+1;
       }).map(e => e.id || e.className);
     return {width:innerWidth,scrollWidth:document.documentElement.scrollWidth,nav:rect(nav),
-      buttons:[...document.querySelectorAll('.pill-item')].map(rect),overflow,
+      buttons:[...document.querySelectorAll('.pill-item')].filter(visible).map(rect),overflow,
       brand:getComputedStyle(document.querySelector('.workspace-brand')).display};
   });
   assert.ok(metrics.scrollWidth <= metrics.width+1, JSON.stringify(metrics));
@@ -59,13 +60,13 @@ async function layout(page, mobile) {
     }));
     assert.ok(bottom.content<=bottom.nav, 'last content must scroll above the navigation: '+JSON.stringify(bottom));
   } else {
-    assert.equal(metrics.nav.x,0);assert.equal(metrics.nav.y,0);assert.equal(metrics.nav.width,234);
+    assert.equal(metrics.nav.x,0);assert.equal(metrics.nav.y,0);assert.equal(metrics.nav.width,236);
   }
 }
 
 async function navigate(page, width, height, prefix) {
   for (const tab of tabs) {
-    await page.locator('#nav-'+tab).click();
+    await navigateV2(page,tab);
     await page.locator('#section-'+tab+'.active').waitFor();
     if (tab==='history') await page.locator('#hist-chips .chip').nth(1).click();
     await layout(page,width<=800);
@@ -75,16 +76,16 @@ async function navigate(page, width, height, prefix) {
 }
 
 async function workflow(page, label) {
-  await page.locator('#nav-tenants').click();
+  await navigateV2(page,'tenants');
   await page.locator('#tenant-search').fill('온유');
   assert.equal(await page.locator('#tenant-list .t-item').count(),1);
   await page.locator('#tenant-search').fill('');
-  await page.locator('#nav-settlement').click();
+  await navigateV2(page,'settlement');
   await page.locator('#sett-elec').fill('115000');
   await page.locator('#sett-water-chk').check();
   await page.locator('#sett-water-total').fill('300000');
   await page.locator('#sett-water-usage').fill('177');
-  await page.locator('#sett-water-f1').fill('41');
+  await page.locator('#sett-water-usage-1').fill('41');
   await page.locator('#sett-elev').fill('150001');
   await page.locator('#sett-waste').fill('100003');
   await page.getByRole('button',{name:/배분 계산하기/}).click();
@@ -95,9 +96,9 @@ async function workflow(page, label) {
   await page.screenshot({path:path.join(out,label+'-allocation.png'),fullPage:true});
   await page.locator('#confirm-settlement').click();
   await page.waitForFunction(()=>settInputs[mk()]?.confirmed);
-  await page.locator('#nav-history').click();
+  await navigateV2(page,'history');
   await page.locator('#hist-chips .chip').filter({hasText:'온유'}).click();
-  await page.getByRole('button',{name:'✏️ 수정',exact:true}).click();
+  await page.getByRole('button',{name:/고지서 수정/,exact:false}).click();
   await page.locator('#bill-electricity').fill('43210');
   await page.locator('#bill-water').fill('12345');
   await page.getByRole('button',{name:'💾 저장',exact:true}).click();
@@ -112,7 +113,7 @@ async function workflow(page, label) {
   assert.equal(await page.evaluate(()=>bills[mk()].demo2.stampedRent),true);
   assert.equal(await page.evaluate(()=>!!bills[mk()].demo2.stampedMgmt),false);
   await layout(page,(await page.viewportSize()).width<=800);
-  await page.locator('#nav-tenants').click();
+  await navigateV2(page,'tenants');
   await page.getByRole('button',{name:/세입자 추가/}).click();
   await page.locator('#inp-name').fill('휴대성 검증');
   await page.locator('#inp-unit').fill('501호');
@@ -123,7 +124,7 @@ async function workflow(page, label) {
   assert.ok(await page.evaluate(()=>tenants.some(t=>t.name==='휴대성 검증')));
   const expected=await page.evaluate(()=>currentData());
   assert.ok(await page.evaluate(()=>!!localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY)));
-  await page.locator('#nav-settings').click();
+  await navigateV2(page,'settings');
   const downloadEvent=page.waitForEvent('download');
   await page.getByRole('button',{name:'📤 파일로 내보내기'}).click();
   const download=await downloadEvent;
@@ -196,7 +197,7 @@ async function workflow(page, label) {
       await pages[i].goto(origin+(i?'/index.html':'/baseline/index.html')+'?demo=1');
       await pages[i].locator('#section-home.active').waitFor();
     }
-    await check('PC '+width+'x'+height+' geometry against 33e61e6',async()=>{
+    await check('PC '+width+'x'+height+' before/after captures and redesigned shell boundaries',async()=>{
       for(const tab of baselineTabs){
         const geometry=[];
         for(let i=0;i<pages.length;i++){
@@ -206,14 +207,13 @@ async function workflow(page, label) {
             .map(e=>{const r=e.getBoundingClientRect();return [Math.round(r.x),Math.round(r.y),Math.round(r.width),Math.round(r.height)];})));
           await pages[i].screenshot({path:path.join(out,'pc-'+(i?'after':'before')+'-'+width+'-'+tab+'.png'),fullPage:true,animations:'disabled'});
         }
-        assert.equal(geometry[1].length,geometry[0].length,tab+' desktop element count');
-        geometry[0].forEach((before,index)=>{
-          const after=geometry[1][index];
-          // Added status, audit and sync controls intentionally increase card height.
-          // Preserve the desktop shell and every content column's horizontal geometry.
-          assert.deepEqual([after[0],after[2]],[before[0],before[2]],tab+' desktop horizontal geometry '+index);
-          if(index<3)assert.deepEqual(after.slice(0,3),before.slice(0,3),tab+' desktop shell geometry '+index);
-        });
+        // V2 intentionally redesigns the shell; retain immutable before screenshots
+        // and enforce the new geometry, while workflow() verifies data compatibility.
+        assert.ok(geometry[1].some(r=>r[0]===0&&r[1]===0&&r[2]===236), 'desktop sidebar bounds');
+        for(const rect of geometry[1].filter(r=>r[2]>0&&r[0]!==0)){
+          assert.ok(rect[0]>=236&&rect[0]+rect[2]<=width+1,tab+' new desktop bounds '+rect);
+        }
+
       }
     });
     await context.close();

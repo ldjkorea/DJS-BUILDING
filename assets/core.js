@@ -72,9 +72,6 @@
       item.key = key;
       seen.add(key);
       if (item.amount != null && item.amount !== '') {
-        let n = typeof item.amount === 'string' ? Number(item.amount.replace(/,/g, '').trim()) : Number(item.amount);
-        if (!Number.isFinite(n) || n < 0) n = 0;
-        item.amount = Math.round(n);
         number(item.amount, '관리비', true);
       }
       if (item.name != null && typeof item.name !== 'string') item.name = String(item.name);
@@ -96,6 +93,10 @@
     if (!Object.hasOwn(input, 'tenants') || !Object.hasOwn(input, 'bills')) fail('세입자와 고지서 데이터가 필요합니다.');
     const data = empty();
     KEYS.forEach(key => { if (Object.hasOwn(input, key)) data[key] = JSON.parse(JSON.stringify(input[key])); });
+    // Preserve extension/history fields across older clients. Export and local
+    // transport metadata are deliberately kept outside the domain document.
+    const metadata=['schemaVersion','exportedAt','localMeta','localDrafts','localSettlementDrafts','reason'];
+    Object.keys(input).forEach(key=>{if(!KEYS.includes(key)&&!metadata.includes(key))data[key]=JSON.parse(JSON.stringify(input[key]));});
     validateList(data.tenants, '세입자', ['rent', 'mgmt', 'elevator', 'elecFixed']);
     data.tenants.forEach(t => {
       flags(t, ['archived'], '세입자');

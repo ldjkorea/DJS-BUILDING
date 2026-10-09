@@ -1,6 +1,6 @@
 {
   "name": "rental-app-independent",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "description": "임대관리 1.4 기반 독립앱 — 별도 GAS·DB·문서·Calendar",
   "scripts": {

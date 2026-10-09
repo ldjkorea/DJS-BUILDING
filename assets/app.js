@@ -33,6 +33,8 @@ let loadedState;
 try { loadedState = RentalCore.load(appStorage); }
 catch (error) { loadedState = {data: RentalCore.empty(), error}; }
 let {tenants, bills, loans, expenses, renewalDone, settInputs, waterRatio, floorOperations} = loadedState.data;
+const domainExtras=data=>Object.fromEntries(Object.entries(data).filter(([key])=>!RentalCore.KEYS.includes(key)));
+let extraDomainData=domainExtras(loadedState.data);
 let storageFault = loadedState.error;
 let conflictingTab = false;
 let revision = 0;
@@ -271,8 +273,9 @@ function historyTenants() {
 }
 let saveTimer=null;
 
-function currentData() { return {tenants, bills, loans, expenses, renewalDone, settInputs, waterRatio, floorOperations}; }
+function currentData() { return {...extraDomainData,tenants, bills, loans, expenses, renewalDone, settInputs, waterRatio, floorOperations}; }
 function assignData(data) {
+  extraDomainData=domainExtras(data);
   ({tenants, bills, loans, expenses, renewalDone, settInputs, waterRatio, floorOperations} = data);
   selTenantId = null;
   settCalcResult = null;
@@ -348,6 +351,7 @@ async function save() {
   } catch(error) {
     failedSaveData=candidate;
     ({tenants,bills,loans,expenses,renewalDone,settInputs,waterRatio,floorOperations}=JSON.parse(JSON.stringify(lastCommitted)));
+    extraDomainData=domainExtras(lastCommitted);
     storageFault=error;
     syncUI('localError');renderAll();
     showDataNotice('저장하지 못해 직전 저장 상태를 유지했습니다. '+error.message+' 입력 내용은 백업 버튼으로 내보낼 수 있습니다.');
@@ -410,6 +414,28 @@ async function cloudRequest(options = {}) {
 }
 function supportsSafeSync(result) {
   return result.capabilities?.conditionalWrite===true && typeof result.revision==='string' && !!result.revision;
+}
+function cloudDifferences(remote, local, path = '', rows = []) {
+  if (JSON.stringify(remote) === JSON.stringify(local)) return rows;
+  if (remote && local && typeof remote === 'object' && typeof local === 'object' && Array.isArray(remote) === Array.isArray(local)) {
+    for (const key of new Set([...Object.keys(remote),...Object.keys(local)])) cloudDifferences(remote[key],local[key],path ? path+'.'+key : key,rows);
+  } else rows.push({path,remote,local});
+  return rows;
+}
+function showCloudConflict(remote, local, serverRevision) {
+  showDataNotice('구글 자료가 다른 기기에서 변경됐습니다. 현재 수정은 이 기기에 보관했습니다. 차이를 확인하고 백업한 뒤 최신 자료를 불러오세요.',[
+    {text:'차이 비교',onClick:()=>{
+      let panel=document.getElementById('cloud-conflict-review');
+      if (!panel) {panel=document.createElement('section');panel.id='cloud-conflict-review';panel.className='card conflict-review';document.getElementById('data-notice').after(panel);}
+      const rows=cloudDifferences(remote,local);
+      const display=value=>value===undefined?'항목 없음':value===null?'미입력 (null)':value===''?'빈 문자열':JSON.stringify(value);
+      panel.innerHTML='<h2 tabindex="-1">다른 기기와의 변경 비교</h2><p>서버 기준 '+esc(serverRevision.slice(0,23))+' · '+rows.length+'개 차이. 자동으로 덮어쓰거나 병합하지 않습니다.</p><div class="table-scroll"><table><thead><tr><th>항목</th><th>Google 자료</th><th>이 기기 수정</th></tr></thead><tbody>'+rows.slice(0,100).map(row=>'<tr><th>'+esc(row.path)+'</th><td>'+esc(display(row.remote))+'</td><td>'+esc(display(row.local))+'</td></tr>').join('')+'</tbody></table></div>';
+      const close=document.createElement('button');close.className='btn btn-secondary';close.textContent='비교 닫기';close.onclick=()=>panel.remove();panel.append(close);panel.querySelector('h2').focus();
+    }},
+    {text:'현재 수정 백업',onClick:exportData},
+    {text:'최신 자료 불러오기',onClick:syncFromSheet},
+    {text:'다시 비교',onClick:()=>doSync({manual:true})}
+  ]);
 }
 function showCurrentStatusResult(report, dbSaved = false) {
   const notice=document.getElementById('current-status-notice');
@@ -485,50 +511,38 @@ async function doSync(options = {}) {
     if(!supportsSafeSync(remote))throw new Error('기존 서버가 버전 비교 저장을 지원하지 않아 업로드를 차단했습니다. 불러오기는 가능합니다.');
     const localData=RentalCore.validateData(currentData());
     if(!cloudBaseRevision) {
-      if(!options.manual && !options.force) {
-        if(JSON.stringify(remoteData)===JSON.stringify(localData)) {
-          cloudBaseRevision=remote.revision;
-        } else {
-          showDataNotice('구글 서버와 기기 데이터의 버전이 다릅니다. 구글 최신 자료를 불러오거나 현재 기기 자료로 저장할 수 있습니다.', [
-            {text: '구글에서 불러오기', onClick: syncFromSheet},
-            {text: '핸드폰 내용으로 저장', onClick: () => doSync({manual: true, force: true})}
-          ]);
-          throw new Error('구글 서버와 기기 데이터의 기준 버전이 다릅니다.');
-        }
-      } else {
-        if(!options.force && !confirm('구글 세입자 '+remoteData.tenants.length+'명 / 고지서 '+Object.keys(remoteData.bills).length+'개월을 현재 기기 자료로 교체할까요? 서버 자료를 이 기기에 별도 보관한 뒤 버전을 비교하여 저장합니다.'))return;
-        appStorage.setItem('rentalApp.cloudRecovery.v1',JSON.stringify(RentalCore.envelope(remoteData)));
-        cloudBaseRevision=remote.revision;
+      if(JSON.stringify(remoteData)!==JSON.stringify(localData)) {
+        showCloudConflict(remoteData,localData,remote.revision);
+        throw new Error('구글과 이 기기의 기준 자료를 비교해야 합니다. 현재 수정 내용은 유지합니다.');
       }
+      cloudBaseRevision=remote.revision;
     }
     if(remote.revision!==cloudBaseRevision) {
-      const isIdentical = JSON.stringify(remoteData)===JSON.stringify(localData);
-      if (isIdentical) {
-        cloudBaseRevision=remote.revision;
-      } else if (!cloudDirty) {
-        assignData(remoteData);
-        cloudBaseRevision=remote.revision;
-        refreshDataViews();
+      let pendingRetry=null;
+      try { pendingRetry=JSON.parse(appStorage.getItem('rentalApp.pendingCloudRequest.v2')||'null'); } catch {}
+      const acknowledgedRetry=pendingRetry && JSON.stringify(pendingRetry.data)===JSON.stringify(localData) && JSON.stringify(remoteData)===JSON.stringify(localData);
+      if(acknowledgedRetry || (!cloudDirty && JSON.stringify(remoteData)===JSON.stringify(localData)))cloudBaseRevision=remote.revision;
+      else if(!cloudDirty) {
+        await writeLocal(remoteData,false,remote.revision);
+        assignData(remoteData);cloudBaseRevision=remote.revision;refreshDataViews();
       } else {
-        const shouldOverwrite = options.force || (options.manual && confirm('구글 서버에 다른 기기(PC 등)의 최신 변경 내용이 있습니다.\n\n[확인]: 핸드폰에서 수정한 내용으로 구글에 저장(덮어쓰기)합니다.\n[취소]: 구글 최신 내용을 유지합니다.'));
-        if (shouldOverwrite) {
-          appStorage.setItem('rentalApp.cloudRecovery.v1', JSON.stringify(RentalCore.envelope(remoteData)));
-          cloudBaseRevision=remote.revision;
-        } else {
-          showDataNotice('구글 자료가 다른 기기에서 변경됐습니다. 최신 내용을 확인해주세요.', [
-            {text: '핸드폰 내용으로 저장', onClick: () => doSync({manual: true, force: true})},
-            {text: '구글에서 불러오기', onClick: syncFromSheet}
-          ]);
-          throw new Error('구글 자료가 다른 기기에서 변경됐습니다. [구글에서 불러오기] 또는 [핸드폰 내용으로 저장]을 선택해주세요.');
-        }
+        showCloudConflict(remoteData,localData,remote.revision);
+        throw new Error('다른 기기의 변경을 발견해 업로드를 중단했습니다. 차이를 확인해주세요.');
       }
     }
     if(!cloudEnabled)throw new Error('동기화가 꺼졌습니다.');
     assertCurrentStorage();
     const sentRevision=revision, data=RentalCore.validateData(currentData());
-    const requestId=crypto.randomUUID();
-    const result=await cloudRequest({method:'POST',body:JSON.stringify({protocol:'rental-sync-v2',expectedRevision:cloudBaseRevision,requestId,data})});
+    const pendingKey='rentalApp.pendingCloudRequest.v2';
+    let pending=null;
+    try { pending=JSON.parse(appStorage.getItem(pendingKey)||'null'); } catch { throw new Error('저장 요청 기록을 확인할 수 없습니다. 백업 후 동기화 상태를 확인해주세요.'); }
+    const reusable=pending && pending.protocol==='rental-sync-v2' && JSON.stringify(pending.data)===JSON.stringify(data);
+    const request=reusable?pending:{protocol:'rental-sync-v2',expectedRevision:cloudBaseRevision,requestId:crypto.randomUUID(),data};
+    const requestId=request.requestId;
+    appStorage.setItem(pendingKey,JSON.stringify(request));
+    const result=await cloudRequest({method:'POST',body:JSON.stringify(request)});
     if(!supportsSafeSync(result)||result.requestId!==requestId)throw new Error('조건부 저장 결과를 검증하지 못했습니다. 다시 불러와 확인해주세요.');
+    googleSavedAt=new Date().toISOString();
     cloudBaseRevision=result.revision;
     // Acknowledgement and the pending marker share the same atomic state write.
     await withStorageLock(()=>{
@@ -538,6 +552,7 @@ async function doSync(options = {}) {
         {cloudPending:cloudDirty,cloudBaseRevision});
       lastCommitted=JSON.parse(JSON.stringify(currentData()));
     });
+    appStorage.removeItem('rentalApp.pendingCloudRequest.v2');
     success=true;showDataNotice('');
     showCurrentStatusResult(result.docs,true);
     syncUI(!cloudEnabled?'local':cloudDirty?'pending':'saved');
@@ -615,7 +630,7 @@ function syncUI(state) {
     pending: ['✓ 기기 저장 · 구글 저장 대기', 'var(--gold)'],
     saving: ['⟳ 구글에 저장 중', 'var(--text2)'],
     loading: ['⟳ 구글에서 불러오는 중', 'var(--text2)'],
-    saved: ['✓ 구글 저장 확인 ' + new Date().toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'}), 'var(--green)'],
+    saved: ['✓ 구글 자료 대조 완료', 'var(--green)'],
     error: ['⚠ 구글 동기화 실패 · 기기 데이터 유지', 'var(--red)'],
     localError: ['⚠ 기기 저장 확인 필요', 'var(--red)'],
     offline: ['오프라인 · 이 기기에 저장', 'var(--gold)'],
@@ -636,7 +651,7 @@ window.addEventListener('storage', event => {
   }
 });
 window.addEventListener('beforeunload', event => {
-  if (persistenceBusy || storageFault || conflictingTab || failedSaveData || retainedBillDrafts !== null || (cloudEnabled && cloudDirty)) { event.preventDefault(); event.returnValue = ''; }
+  if (persistenceBusy || storageFault || conflictingTab || failedSaveData || retainedBillDrafts !== null || retainedSettlementDrafts !== null || settlementDraftError || (cloudEnabled && cloudDirty)) { event.preventDefault(); event.returnValue = ''; }
 });
 
 function changeMonth(d){
@@ -725,7 +740,7 @@ function switchTab(tab){
   if(tab==='history'){renderHistChips();if(selTenantId)renderHistContent();}
   TABS.forEach(t=>document.getElementById('nav-'+t)?.setAttribute('aria-current', t===tab?'page':'false'));
 }
-function renderAll(){renderHome();renderBuildingOperations();renderTenants();renderLoanList();renderExpenseList();}
+function renderAll(){renderHome();renderBuildingOperations();renderTenants();renderLoanList();}
 
 /* ════════════════════════════════════════
    건물 운영현황 — 기존 tenant/bills 계산 결과의 읽기 전용 투영
@@ -905,7 +920,7 @@ function renderHome(){
   const ssEl=document.getElementById('home-sett-status');
   if(ssEl)ssEl.innerHTML=si.confirmed
     ?`<div class="status-bar done">✅ ${cY}년 ${cM}월 정산 완료</div>`
-    :`<div class="status-bar pending">⏳ 정산 미완료 — <a onclick="switchTab('settlement')">정산 입력하기 →</a></div>`;
+    :`<div class="status-bar pending">⏳ 정산 미완료 — <button class="text-button" onclick="switchTab('settlement')">정산 입력하기 →</button></div>`;
 
   tenantsForMonth(key).forEach(t=>{
     const b=(bills[key]||{})[t.id]||{};
@@ -917,7 +932,7 @@ function renderHome(){
     const floor=getFloor(t.unit),floorLabel=floor>0?`${floor}F`:'?F';
     const tagLabel=timing?.unknownDue>0?'납기 확인 필요':timing?.overdue>0?`체납 ${fmt(timing.overdue)}`:timing?.notDue>0&&timing?.paid===0?'지급기일 전':payment.complete?'완납':payment.received>0?'일부 확인':'입금 미확인';
     const stampTag=has?`<span class="tag ${timing?.overdue>0?'tag-pending':payment.complete?'tag-ok':'tag-pending'}">${tagLabel}</span>`:'';
-    html+=`<div class="t-item" onclick="goToHistory('${t.id}')">
+    html+=`<div class="t-item" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();goToHistory('${t.id}')}" onclick="goToHistory('${t.id}')">
       <div class="t-avatar" style="font-size:12px;letter-spacing:-.5px;">${floorLabel}</div>
       <div class="t-info">
         <div class="t-name">${esc(t.biz||t.name)}
@@ -926,14 +941,14 @@ function renderHome(){
         </div>
         <div class="t-unit">${esc(t.name)} · ${esc(t.unit)}</div>
       </div>
-      <div class="t-amount"><div class="label">청구액</div>${fmt(sum)}</div>
+      <div class="t-amount"><div class="label">${has?'청구액':'고지서'}</div>${has?fmt(sum):'미발행'}</div>
     </div>`;
   });
   document.getElementById('home-bill-list').innerHTML=html?html
     :`<div class="empty"><div class="empty-icon">📋</div><div style="font-size:13px;">세입자를 추가해보세요</div></div>`;
   document.getElementById('home-total').textContent=fmt(total);
 
-  renderDashboardMetrics();renderRenewalChecklist();renderLoanInterestSummary();renderExpenseList();
+  renderDashboardMetrics({accumulated,today});renderRenewalChecklist();renderLoanInterestSummary();renderExpenseList();
 }
 
 /* ════════════════════════════════════════
@@ -3385,12 +3400,12 @@ function exportData() {
       const raw = {};
       [RentalCore.STATE_KEY, ...RentalCore.KEYS].forEach(key => raw[key] = appStorage.getItem(key));
       downloadJson({recoveryRaw: raw}, '손상원본');
-    } else downloadJson({...RentalCore.envelope(failedSaveData||currentData()),localDrafts:collectBillDrafts()}, failedSaveData?'미저장작업_복구':'백업');
+    } else downloadJson({...RentalCore.envelope(failedSaveData||currentData()),localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts()}, failedSaveData?'미저장작업_복구':'백업');
     showToast('백업 파일 다운로드를 시작했습니다.');
   } catch (error) { showToast('내보내기 실패: ' + error.message); }
 }
 function backupCurrentData(reason) {
-  const snapshot={reason,...RentalCore.envelope(currentData()),localDrafts:collectBillDrafts()};
+  const snapshot={reason,...RentalCore.envelope(currentData()),localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts()};
   appStorage.setItem(RentalCore.BACKUP_KEY,JSON.stringify(snapshot));
   return snapshot;
 }
@@ -3399,7 +3414,7 @@ function makeRecovery(reason) {
   try { assertCurrentStorage();backupCurrentData(reason); return true; }
   catch { showToast('복원 지점을 저장하지 못해 작업을 중단했습니다. 파일 백업과 저장 공간을 확인해주세요.'); return false; }
 }
-async function replaceData(data, reason, drafts = {}) {
+async function replaceData(data, reason, drafts = {}, settlementDrafts = {}) {
   if(syncBusy||persistenceBusy||conflictingTab)throw new Error('동기화 또는 다른 창의 변경을 먼저 확인해주세요.');
   clearTimeout(saveTimer);persistenceBusy=true;
   try {
@@ -3413,7 +3428,8 @@ async function replaceData(data, reason, drafts = {}) {
     assignData(data);storageFault=null;loadedState.error=null;failedSaveData=null;
     cloudDirty=true;cloudBaseRevision=null;
     const draftsSaved=storeBillDrafts(drafts);
-    showDataNotice(draftsSaved?'':'자료는 복원했으나 초안을 저장하지 못했습니다. 초안은 현재 창에 보관 중이므로 창을 닫기 전에 백업을 내보내주세요.');
+    const settlementDraftsSaved=storeSettlementDrafts(settlementDrafts);
+    showDataNotice(draftsSaved&&settlementDraftsSaved?'':'자료는 복원했으나 초안을 저장하지 못했습니다. 초안은 현재 창에 보관 중이므로 창을 닫기 전에 백업을 내보내주세요.');
     refreshDataViews();syncUI('local');
   } finally {persistenceBusy=false;}
 }
@@ -3425,7 +3441,7 @@ async function restoreRecovery() {
     const backup = JSON.parse(raw);
     const data = RentalCore.validateData(backup);
     if (!confirm(`${backup.reason || '이전 데이터'} (${backup.exportedAt || ''})로 되돌릴까요?`)) return;
-    await replaceData(data, '복원 지점으로 되돌리기 전',validateDrafts(backup.localDrafts));
+    await replaceData(data, '복원 지점으로 되돌리기 전',validateDrafts(backup.localDrafts),backup.localSettlementDrafts);
     showToast('복원 완료 · 구글 저장은 별도로 실행해주세요.');
   } catch (error) { showToast('복원 실패: ' + error.message); }
 }
@@ -3441,7 +3457,7 @@ function importData(event) {
       const data = RentalCore.validateData(parsed);
       if(revision!==startedRevision||draftVersion!==startedDraft)throw new Error('파일을 읽는 동안 편집이 발생했습니다. 다시 가져와주세요.');
       if (!confirm(`세입자 ${data.tenants.length}명, 고지서 ${Object.keys(data.bills).length}개월의 백업으로 교체할까요?`)) return;
-      await replaceData(data, '파일 가져오기 전',validateDrafts(parsed.localDrafts));
+      await replaceData(data, '파일 가져오기 전',validateDrafts(parsed.localDrafts),parsed.localSettlementDrafts);
       showToast('가져오기 완료 · 구글 저장은 별도로 실행해주세요.');
     } catch (error) { showToast('가져오기 실패: ' + error.message); }
   };
@@ -3524,11 +3540,15 @@ document.addEventListener('DOMContentLoaded',()=>{
   setTimeout(checkBackgroundCloudSync, 1000);
 });
 
+let backgroundReadSequence=0;
 async function checkBackgroundCloudSync() {
+  const startedRevision=revision,startedDraft=draftVersion;
   if (!cloudEnabled || isDemo || cloudDirty || storageFault || conflictingTab || persistenceBusy || syncBusy) return;
   if (!navigator.onLine) return;
+  const startedRead=++backgroundReadSequence;
   try {
     const remote = await cloudRequest();
+    if(startedRead!==backgroundReadSequence||revision!==startedRevision||draftVersion!==startedDraft||syncBusy||cloudDirty)return;
     if (!supportsSafeSync(remote)) return;
     const remoteData = RentalCore.validateData(remote.data);
     const localData = RentalCore.validateData(currentData());

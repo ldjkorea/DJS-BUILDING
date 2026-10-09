@@ -2,6 +2,7 @@
 var INDEPENDENT_SPREADSHEET_ID = '1E9YcSQSNTLTC41fqWBYHMNpSRKQrDlvAXeF9AxdDFb8';
 var INDEPENDENT_SHEET_ID = 0;
 var SYNC_FORMAT = 'rental-sync-storage-v2';
+var SYNC_JOURNAL_PROPERTY = 'INDEPENDENT_SYNC_WRITE_JOURNAL';
 var LEASE_STATUSES = ['임대중','재계약예정','계약종료예정','명도소송중','강제집행중','공실(정리중)','임대모집중'];
 function capabilities_() { return {conditionalWrite:true, currentStatus:true, contractCalendar:true}; }
 function json_(value) {
@@ -12,6 +13,14 @@ function hash_(text) {
     .map(function(b) { return ('0' + ((b + 256) % 256).toString(16)).slice(-2); }).join('');
 }
 function validate_(data) {
+  function amount(value, label, decimal) {
+    if (value === null || value === undefined || value === '') return;
+    var numeric = typeof value === 'string' ? value.replace(/,/g,'').trim() : value;
+    var n = Number(numeric);
+    if ((typeof value !== 'number' && typeof value !== 'string') || !isFinite(n) || n < 0 || n > 1e12 || (!decimal && !Number.isSafeInteger(n)))
+      throw new Error(label + ': 0 이상의 유효한 원 단위 금액을 확인해주세요.');
+  }
+  function moneyFields(row, fields, label) { fields.forEach(function(key) { amount(row[key],label + '.' + key); }); }
   function object(v) { return v !== null && typeof v === 'object' && !Array.isArray(v); }
   function walk(v, depth) {
     if (depth > 30) throw new Error('자료 중첩 깊이 초과');
@@ -38,11 +47,22 @@ function validate_(data) {
     if (t.deposit !== undefined && t.deposit !== null && t.deposit !== '' &&
         (!Number.isSafeInteger(t.deposit) || t.deposit < 0 || t.deposit > 1e12)) throw new Error('보증금 값 오류');
     ids[t.id] = true;
+    moneyFields(t,['rent','mgmt','elevator','elecFixed'],'임차인');
+    (t.mgmtItems || []).forEach(function(item) { amount(item.amount,'관리비 항목'); });
   });
   Object.keys(data.bills).forEach(function(month) {
     if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month) || !object(data.bills[month])) throw new Error('고지서 월 형식 오류');
-    Object.keys(data.bills[month]).forEach(function(id) { if (!object(data.bills[month][id])) throw new Error('고지서 형식 오류'); });
+    Object.keys(data.bills[month]).forEach(function(id) {
+      var bill=data.bills[month][id];
+      if (!/^[a-zA-Z0-9_-]{1,100}$/.test(id) || !object(bill)) throw new Error('고지서 형식 오류');
+      moneyFields(bill,['rent','mgmt','elevator','elevatorTotal','electricity','water','waste'],'고지서');
+      amount(bill.waterMeter,'수도 계량기',true);
+      (bill.mgmtItems || []).forEach(function(item) { amount(item.amount,'고지서 관리비 항목'); });
+    });
   });
+  (data.loans || []).forEach(function(row) { amount(row.principal,'대출 원금'); amount(row.rate,'대출 이율',true); });
+  Object.keys(data.expenses || {}).forEach(function(month) { (data.expenses[month] || []).forEach(function(row) { amount(row.amount,'지출'); }); });
+  Object.keys(data.settInputs || {}).forEach(function(month) { moneyFields(data.settInputs[month],['elec','waterTotal','elev','waste'],'정산'); });
   walk(data, 0);
   return data; // Do not normalize or discard historical fields.
 }
@@ -82,7 +102,14 @@ function read_(sheet) {
   var envelope = stored && stored.format === SYNC_FORMAT;
   var data = validate_(envelope ? stored.data : stored);
   if (envelope && (!Array.isArray(stored.receipts) || typeof stored.version !== 'string')) throw new Error('서버 저장 메타데이터 오류');
-  return {raw:raw, data:data, revision:'sha256-' + hash_(raw), receipts:envelope ? stored.receipts : []};
+  var revision='sha256-' + hash_(raw);
+  var pending=PropertiesService.getScriptProperties().getProperty(SYNC_JOURNAL_PROPERTY);
+  if (pending) {
+    var journal=JSON.parse(pending);
+    if (revision !== journal.before && revision !== journal.after)
+      throw new Error('이전 저장이 중단되어 활성 자료 검증이 필요합니다. 쓰기를 차단했습니다. 복구 시트의 검증된 원문을 확인해주세요.');
+  }
+  return {raw:raw, data:data, revision:revision, receipts:envelope ? stored.receipts : []};
 }
 function doGet(e) {
   if (!e || !e.parameter || e.parameter.api !== '1') {
@@ -90,7 +117,7 @@ function doGet(e) {
   }
   return locked_(function() {
     var state = read_(source_().sheet);
-    return {status:'ok', data:state.data, revision:state.revision, capabilities:capabilities_(), protocol:'rental-sync-v2'};
+    return {status:'ok', data:state.data, revision:state.revision, appVersion:'2.0.0', capabilities:capabilities_(), protocol:'rental-sync-v2'};
   });
 }
 function ensureRows_(sheet, count) {
@@ -117,6 +144,25 @@ function backupState_(target, state) {
   }).join('');
   if (saved.length !== count || recovered !== state.raw || 'sha256-' + hash_(recovered) !== state.revision)
     throw new Error('저장 전 복원 백업 원문 재확인 실패');
+  return {batch:batch,first:first,count:count,revision:state.revision};
+}
+function inspectRecovery_(target) {
+  var sheet=target.book.getSheetByName('_RentalSyncRecovery');
+  if (!sheet || !sheet.getLastRow()) throw new Error('복구 원문이 없습니다.');
+  var last=sheet.getLastRow(), tail=sheet.getRange(last,1,1,7).getValues()[0];
+  var count=Number(tail[5]),first=last-count+1;
+  if (!Number.isSafeInteger(count) || count < 1 || first < 1 || Number(tail[4]) !== count || tail[6] !== 'rental-recovery-v2')
+    throw new Error('복구 청크가 완전하지 않습니다. 자동 복원하지 않습니다.');
+  var rows=sheet.getRange(first,1,count,7).getValues(),raw='';
+  rows.forEach(function(row,index) {
+    if (row[1] !== tail[1] || row[3] !== tail[3] || Number(row[4]) !== index+1 || Number(row[5]) !== count || row[6] !== tail[6])
+      throw new Error('복구 청크 메타데이터가 일치하지 않습니다.');
+    raw+=String(row[2] || '');
+  });
+  if ('sha256-'+hash_(raw) !== tail[1]) throw new Error('복구 원문 해시가 일치하지 않습니다.');
+  var parsed=raw ? JSON.parse(raw) : {tenants:[],bills:{}};
+  var data=validate_(parsed.format === SYNC_FORMAT ? parsed.data : parsed);
+  return {revision:tail[1],batch:tail[3],at:tail[0],chunks:count,tenants:data.tenants.length,billMonths:Object.keys(data.bills).length};
 }
 function currentStatusResult_(state) {
   // This catch is intentionally outside the DB save transaction result.
@@ -140,7 +186,12 @@ function doPost(e) {
         typeof req.requestId !== 'string' || !/^[a-zA-Z0-9_-]{16,100}$/.test(req.requestId)) {
       return {status:'unsupported', message:'버전 비교 저장 요청이 필요합니다. 최신 앱에서 다시 불러온 뒤 저장해주세요.'};
     }
-    var target = source_(), state = read_(target.sheet);
+    var target = source_();
+    if (req.action === 'inspectRecovery') {
+      if (Object.prototype.hasOwnProperty.call(req,'data')) throw new Error('복구 점검은 자료를 변경하지 않습니다.');
+      return {status:'ok',requestId:req.requestId,recovery:inspectRecovery_(target)};
+    }
+    var state = read_(target.sheet);
     if (req.action === 'regenerateCurrentStatus') {
       if (Object.prototype.hasOwnProperty.call(req, 'data')) return {status:'error', message:'현재현황 재생성은 저장된 DB만 사용합니다.'};
       if (req.expectedRevision !== state.revision) return {status:'conflict', message:'다른 기기에서 변경된 자료입니다. 다시 불러온 뒤 현재현황을 생성해주세요.'};
@@ -172,7 +223,9 @@ function doPost(e) {
     if (chunks.length === 0) chunks.push(['']);
 
     // Recovery must be durable before touching storage. Never clear the source sheet.
-    backupState_(target, state);
+    var recovery=backupState_(target, state);
+    var props=PropertiesService.getScriptProperties();
+    props.setProperty(SYNC_JOURNAL_PROPERTY,JSON.stringify({before:state.revision,after:'sha256-'+hash_(raw),recovery:recovery}));
 
     var prevLastRow = target.sheet.getLastRow();
     ensureRows_(target.sheet, chunks.length);
@@ -181,6 +234,7 @@ function doPost(e) {
     SpreadsheetApp.flush();
     var verified = read_(target.sheet);
     if (verified.raw !== raw) throw new Error('저장 후 재확인 실패. 다시 불러와 확인해주세요.');
+    props.deleteProperty(SYNC_JOURNAL_PROPERTY);
     return {status:'ok', revision:verified.revision, requestId:req.requestId, capabilities:capabilities_(), docs:currentStatusResult_(verified)};
   });
 }

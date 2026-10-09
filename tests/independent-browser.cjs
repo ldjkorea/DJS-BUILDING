@@ -1,3 +1,4 @@
+const {navigate:navigateV2}=require('./navigation.cjs');
 /* Disposable browser contexts. All cloud calls are mocked; no operating DB writes. */
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
@@ -45,7 +46,7 @@ async function check(name,action){await action();results.push({name,status:'pass
  });
  await check('desktop and mobile menus render without overflow',async()=>{
    for(const width of [1280,390]){await page.setViewportSize({width,height:844});for(const tab of ['home','building','tenants','history','settlement','tax','settings']){
-     await page.locator('#nav-'+tab).click();assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+     await navigateV2(page,tab);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    }}assert.deepEqual(errors,[]);
    await page.screenshot({path:path.join(out,'independent-mobile.png'),fullPage:true});
  });

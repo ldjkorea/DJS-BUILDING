@@ -1,3 +1,4 @@
+const {navigate:navigateV2}=require('./navigation.cjs');
 const TEST_URL=process.env.RENTAL_TEST_URL||'http://127.0.0.1:4173/';
 /* Run against npm start. Uses an existing Playwright installation; no runtime dependency. */
 const {chromium} = require('playwright');
@@ -43,15 +44,15 @@ async function state(page) { return page.evaluate(() => currentData()); }
     const {page, context, errors} = await pageFor();
     assert.equal(await page.locator('#home-bill-list .t-item').count(), 2);
     for (const tab of ['building', 'tenants', 'history', 'settlement', 'settings', 'home']) {
-      await page.locator('#nav-' + tab).click(); assert.ok(await page.locator('#section-' + tab).isVisible());
+      await navigateV2(page,tab); assert.ok(await page.locator('#section-' + tab).isVisible());
     }
     await page.screenshot({path: path.join(out, 'desktop.png'), fullPage: true});
     await page.setViewportSize({width: 390, height: 844});
     for (const tab of ['home', 'building', 'tenants', 'settings']) {
-      await page.locator('#nav-' + tab).click();
+      await navigateV2(page,tab);
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     }
-    await page.locator('#nav-home').click(); await page.screenshot({path: path.join(out, 'mobile.png'), fullPage: true});
+    await navigateV2(page,'home'); await page.screenshot({path: path.join(out, 'mobile.png'), fullPage: true});
     assert.deepEqual(errors, []); await context.close();
   });
   await run('building operations reuses saved status and billing calculations without data writes', async () => {
@@ -62,7 +63,7 @@ async function state(page) { return page.evaluate(() => currentData()); }
       {id:'f4',name:'사층 임차인',biz:'사층 상호',unit:'401호',leaseStatus:'명도소송중',rent:400000,payday:'10일',contract:''}
     ],bills:{'2026-08':{f2:{rent:200000,mgmt:10000,elevator:0,electricityNA:true,waterNA:true,wasteNA:true,unitSnapshot:'201호',paydaySnapshot:'10일'}}}};
     const {page,context,errors}=await pageFor(data);
-    await page.locator('#nav-building').click();
+    await navigateV2(page,'building');
     assert.deepEqual(await page.locator('.building-card').evaluateAll(cards=>cards.map(card=>card.dataset.floor)),['1','2','3','4','5']);
     const fifth=page.locator('.building-card[data-floor="5"]');
     assert.match(await fifth.innerText(),/현재 임차인 없음/);assert.match(await fifth.innerText(),/공실\(정리중\)/);
@@ -122,7 +123,7 @@ async function state(page) { return page.evaluate(() => currentData()); }
   await run('bill edits retain amounts across NA switches and preserve existing metadata', async () => {
     const {page, context, errors} = await pageFor();
     await page.evaluate(() => { bills[mk()] = {t1: {rent: 900000, customField: 'preserve', stampedRent: true, stampedRentDate: '09/01'}}; goToHistory('t1'); });
-    await page.waitForTimeout(100); await page.getByRole('button', {name: '✏️ 수정', exact: true}).click();
+    await page.waitForTimeout(100); await page.getByRole('button', {name: /고지서.*수정|수정하기/, exact: false}).click();
     await page.locator('#bill-electricity').fill('12345'); await page.locator('#bill-water').fill('4321');
     await page.evaluate(() => toggleWasteNA());
     assert.equal(await page.locator('#bill-electricity').inputValue(), '12345');
@@ -133,7 +134,7 @@ async function state(page) { return page.evaluate(() => currentData()); }
     assert.equal(bill.electricity, 12345); assert.deepEqual(errors, []); await context.close();
   });
   await run('zero water ratio survives save and reload without default substitution', async () => {
-    const {page, context} = await pageFor(); await page.locator('#nav-settings').click();
+    const {page, context} = await pageFor(); await navigateV2(page,'settings');
     await page.locator('#wr2').fill('0'); await page.evaluate(() => saveWaterRatio());
     await page.reload(); assert.equal((await state(page)).waterRatio.r2, 0); await context.close();
   });
@@ -199,7 +200,7 @@ async function state(page) { return page.evaluate(() => currentData()); }
       remote=body.data;remoteRevision='r'+uploaded.length;
       return route.fulfill({json:{status:'ok',revision:remoteRevision,requestId:body.requestId,capabilities:{conditionalWrite:true}}});
     });
-    await page.evaluate(async()=>{setCloudEnabled(true);tenants[0].name='first';await save();void manualSync();});
+    await page.evaluate(async()=>{setCloudEnabled(true);cloudBaseRevision='r0';tenants[0].name='first';await save();void manualSync();});
     await page.waitForTimeout(60);
     await page.evaluate(async()=>{tenants[0].name='last';await save();});
     await page.waitForTimeout(2600);
@@ -230,7 +231,7 @@ async function state(page) { return page.evaluate(() => currentData()); }
     assert.equal(await page.locator('#modal-loan').isVisible(), false); assert.deepEqual(errors, []); await context.close();
   });
   await run('waste-only settlement and negative input rejection', async () => {
-    const {page, context, errors} = await pageFor(); await page.locator('#nav-settlement').click();
+    const {page, context, errors} = await pageFor(); await navigateV2(page,'settlement');
     await page.locator('#sett-waste').fill('-10'); await page.evaluate(() => calcSettlement());
     assert.equal(await page.locator('#sett-step2').isVisible(), false);
     await page.locator('#sett-waste').fill('10000'); await page.evaluate(() => calcSettlement());
@@ -249,12 +250,12 @@ async function state(page) { return page.evaluate(() => currentData()); }
     await page.evaluate(() => editThisMonth());
     assert.ok((await page.locator('#bill-total-display').innerText()).includes('1,243,000'));
     await page.evaluate(() => previewKakao());
-    assert.ok((await page.locator('#kakao-text').innerText()).includes('월세 : 1,100,000원'));
+    assert.equal(await page.evaluate(()=>currentKakaoVars['월세']),'1,100,000원');assert.ok((await page.locator('#kakao-text').innerText()).includes('1,100,000원'));
     assert.deepEqual(errors, []); await context.close();
   });
   await run('settlement elevator allocation is actually saved to each bill', async () => {
-    const {page, context, errors} = await pageFor(); await page.locator('#nav-settlement').click();
-    await page.locator('#sett-elev').fill('150000'); await page.evaluate(() => { calcSettlement(); return confirmSettlement(); });
+    const {page, context, errors} = await pageFor(); await navigateV2(page,'settlement');
+    await page.locator('#sett-elev-mode').selectOption('gross');await page.locator('#sett-elev').fill('150000'); await page.evaluate(() => { calcSettlement(); return confirmSettlement(); });
     assert.equal(Object.values((await state(page)).bills)[0].t1.elevatorTotal, 75000);
     await page.evaluate(() => goToHistory('t1')); await page.waitForTimeout(100);
     assert.ok((await page.locator('#hist-content').innerText()).includes('75,000'));
@@ -283,7 +284,7 @@ async function state(page) { return page.evaluate(() => currentData()); }
   });
   await run('tenant add, edit, delete and recovery preserve the full record', async () => {
     const {page, context, errors} = await pageFor(core.empty());
-    await page.locator('#nav-tenants').click(); await page.getByRole('button', {name: '＋ 세입자 추가'}).click();
+    await navigateV2(page,'tenants'); await page.getByRole('button', {name: '＋ 세입자 추가'}).click();
     await page.locator('#inp-name').fill('새 세입자'); await page.locator('#inp-unit').fill('401호');
     await page.locator('#inp-biz').fill('연구실 & 스튜디오'); await page.locator('#inp-rent').fill('1500000');
     await page.evaluate(() => saveTenant());
@@ -300,7 +301,7 @@ async function state(page) { return page.evaluate(() => currentData()); }
     Object.assign(tenant,{contract:'2025/10/20 ~ 2026/10/19',payday:'15일',deposit:40000000,leaseStatus:'재계약예정'});
     data.bills={'2026-09':{t1:billing.freezeBill(tenant,{rent:1000000,mgmt:100000},'2026-09')}};
     data.renewalDone={t1:'2026/10/19'};
-    const {page,context,errors}=await pageFor(data);await page.locator('#nav-tenants').click();
+    const {page,context,errors}=await pageFor(data);await navigateV2(page,'tenants');
     assert.match(await page.locator('#tenant-list').innerText(),/재계약예정/);
     await page.evaluate(()=>completeRenewal('t1'));
     await page.locator('#inp-contract').fill('2026/10/20 ~ 2027/10/19');

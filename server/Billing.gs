@@ -7,7 +7,8 @@
     if (!Number.isSafeInteger(n) || n < 0 || n > 1e12) throw new Error('금액은 0 이상의 원 단위 정수로 입력해주세요.');
     return n;
   };
-  const withVat = value => Number(value || 0) + Math.round(Number(value || 0) / 10);
+  const amount = value => Number(typeof value === 'string' ? value.replace(/,/g,'').trim() : value || 0);
+  const withVat = value => amount(value) + Math.round(amount(value) / 10);
   const floorOf = unit => { const n = Number(String(unit || '').match(/^\d+/)?.[0] || 0); return n >= 100 ? Math.floor(n / 100) : n; };
   function distribute(total, weights) {
     total = won(total);
@@ -91,9 +92,9 @@
     const firstFloor = floorOf(bill.unitSnapshot ?? tenant.unit) === 1;
     return {
       pay_rent:withVat(bill.rent ?? tenant.rent), pay_mgmt:withVat(bill.mgmt ?? tenant.mgmt),
-      pay_elec:bill.electricityNA?0:withVat(bill.electricity), pay_water:bill.waterNA?0:Number(bill.water||0),
-      pay_elev:firstFloor?0:bill.elevatorTotal!=null?Number(bill.elevatorTotal):withVat(bill.elevator??tenant.elevator),
-      pay_waste:bill.wasteNA?0:Number(bill.waste||0),
+      pay_elec:bill.electricityNA?0:withVat(bill.electricity), pay_water:bill.waterNA?0:amount(bill.water),
+      pay_elev:firstFloor?0:bill.elevatorTotal!=null?amount(bill.elevatorTotal):withVat(bill.elevator??tenant.elevator),
+      pay_waste:bill.wasteNA?0:amount(bill.waste),
     };
   }
   const itemKeys = ['pay_rent','pay_mgmt','pay_elec','pay_water','pay_elev','pay_waste'];

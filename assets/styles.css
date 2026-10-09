@@ -1,31 +1,7 @@
 /* ───────────────────────────────────────
    토큰
 ─────────────────────────────────────── */
-:root{
-  --bg:#0a0a0a;
-  --surface:#111;
-  --surface2:#181818;
-  --surface3:#1e1e1e;
-  --border:#252220;
-  --border2:#302a24;
-  --gold:#c9a84c;
-  --gold2:#e8c97a;
-  --gold3:#f5e0a0;
-  --goldbg:rgba(201,168,76,0.08);
-  --goldbg2:rgba(201,168,76,0.16);
-  --text:#f0ead8;
-  --text2:#9a8d7a;
-  --text3:#5c5248;
-  --green:#4caf7d;
-  --red:#e05545;
-  --redbg:rgba(192,57,43,0.10);
-  --r:14px;
-  --r2:10px;
-  /* pill */
-  --pill-h:54px;
-  --pill-bg:#141210;
-  --pill-border:rgba(201,168,76,0.22);
-}
+/* Theme tokens are defined once in workspace.css. */
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;}
 body{
@@ -334,8 +310,8 @@ body::before{
   font-family:'Noto Sans KR',sans-serif;
   white-space:nowrap;
 }
-.pill-item.active .pi-label{color:#f5e0a0;text-shadow:0 0 12px rgba(201,168,76,0.5);}
-.pill-item:hover:not(.active) .pi-label{color:rgba(201,168,76,0.85);}
+.pill-item.active .pi-label{color:inherit;text-shadow:none;}
+.pill-item:hover:not(.active) .pi-label{color:inherit;}
 .pill-divider{width:1px;height:14px;background:rgba(201,168,76,0.2);flex-shrink:0;}
 
 /* ───────────────────────────────────────
@@ -575,4 +551,3 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
   font-size: 14px;
 }
 .bill-actions-modern .btn-kakao-primary:hover { filter: brightness(1.08); }
-

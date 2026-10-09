@@ -1,11 +1,10 @@
-const ASSETS = ['./', './index.html', './manifest.json', './icon.svg', './assets/styles.css', './assets/core.js', './assets/app.js', './assets/billing.js', './assets/enhancements.js', './assets/workspace.css', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png'];
+const ASSETS = ['./', './index.html', './manifest.json', './icon.svg', './assets/styles.css', './assets/core.js', './assets/app.js', './assets/billing.js', './assets/enhancements.js', './assets/workspace.css', './assets/mobile.css', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png'];
 const scope = new URL(self.registration.scope);
 const CACHE_PREFIX = 'rental-independent-20261009-'+encodeURIComponent(scope.pathname)+'-';
-const CACHE_NAME = CACHE_PREFIX+'1.0.0';
+const CACHE_NAME = CACHE_PREFIX+'2.0.0';
 const allowedPaths = new Set(ASSETS.map(path => new URL(path, scope).pathname));
 
 self.addEventListener('install', e => {
-  if (typeof self.skipWaiting === 'function') self.skipWaiting();
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
 });
 

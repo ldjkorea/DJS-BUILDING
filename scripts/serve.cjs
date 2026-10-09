@@ -9,7 +9,7 @@ const types = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; cha
   '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png':'image/png'};
 const publicFiles = new Set(['index.html', 'manifest.json', 'icon.svg', 'sw.js',
   'assets/app.js', 'assets/core.js', 'assets/styles.css', 'assets/billing.js', 'assets/enhancements.js', 'assets/workspace.css',
-  'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png']);
+  'assets/mobile.css', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png']);
 const server = http.createServer((req, res) => {
   let relative;
   try { relative = decodeURIComponent(new URL(req.url, 'http://localhost').pathname).slice(1) || 'index.html'; }
@@ -23,4 +23,3 @@ const server = http.createServer((req, res) => {
 });
 server.on('error', error => { console.error(`실행 실패: ${error.message}`); process.exitCode = 1; });
 server.listen(port, '0.0.0.0', () => console.log(`임대관리 개선본: http://127.0.0.1:${server.address().port} (모바일 접속: http://192.168.55.77:${server.address().port})`));
-
