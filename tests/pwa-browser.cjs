@@ -6,6 +6,7 @@ const http=require('node:http');
 const fs=require('node:fs');
 const path=require('node:path');
 const root=path.resolve(__dirname,'..'),out=path.join(root,'test-results');
+const version=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version;
 const results=[],errors=[],external=[];
 let browser,server,context,update=false;
 const assets=new Set(['index.html','sw.js','manifest.json','icon.svg','assets/core.js','assets/billing.js','assets/app.js','assets/enhancements.js','assets/styles.css','assets/workspace.css','assets/mobile.css','icons/icon-180.png','icons/icon-192.png','icons/icon-512.png','icons/maskable-512.png']);
@@ -22,7 +23,7 @@ async function test(name,action){
     const file=pathname.slice('/rental-app/'.length)||'index.html';
     if(!assets.has(file))return res.writeHead(404).end();
     let body=fs.readFileSync(path.join(root,file));
-    if(file==='sw.js'&&update)body=Buffer.from(body.toString().replace("CACHE_PREFIX+'2.1.0'","CACHE_PREFIX+'2.1.0-test-update'"));
+    if(file==='sw.js'&&update)body=Buffer.from(body.toString().replace(`CACHE_PREFIX+'${version}'`,`CACHE_PREFIX+'${version}-test-update'`));
     res.writeHead(200,{'Content-Type':types[path.extname(file)],'Cache-Control':'no-store'});res.end(body);
   });
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -34,7 +35,7 @@ async function test(name,action){
   await test('PWA installs all application assets and gains control after reload',async()=>{
     await page.goto(url);await page.evaluate(()=>navigator.serviceWorker.ready);
     await page.reload();await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
-    const urls=await page.evaluate(async()=>{const names=await caches.keys();const cache=await caches.open(names.find(k=>k.endsWith('2.1.0')));return (await cache.keys()).map(r=>r.url);});
+    const urls=await page.evaluate(async version=>{const names=await caches.keys(),name=names.find(key=>key.endsWith('-'+version));if(!name)throw Error('Current application cache was not installed');const cache=await caches.open(name);return (await cache.keys()).map(r=>r.url);},version);
     assert.equal(urls.length,15);assert.ok(urls.some(u=>u.endsWith('/assets/billing.js')));assert.ok(urls.some(u=>u.endsWith('/icons/icon-512.png')));
     await page.screenshot({path:path.join(out,'verified-desktop.png'),fullPage:true});
     await page.setViewportSize({width:390,height:844});
@@ -73,8 +74,8 @@ async function test(name,action){
     await page.close();page=await context.newPage();page.on('dialog',d=>d.accept());page.on('pageerror',e=>errors.push(e.message));
     await page.goto(url);await page.waitForFunction(async()=>!(await navigator.serviceWorker.getRegistration()).waiting);
     const names=await page.evaluate(()=>caches.keys());
-    assert.ok(names.includes('rental-independent-20261009-%2Frental-app%2F-2.1.0-test-update'));
-    assert.ok(!names.includes('rental-independent-20261009-%2Frental-app%2F-2.1.0'));
+    assert.ok(names.includes('rental-independent-20261009-%2Frental-app%2F-'+version+'-test-update'));
+    assert.ok(!names.includes('rental-independent-20261009-%2Frental-app%2F-'+version));
     assert.ok(names.includes('rental-foundation-v3'));
     assert.ok(names.includes('unrelated-app-cache'));assert.ok(names.includes('rental-app-%2Fother%2F-1.0'));
     await page.evaluate(()=>goToHistory('demo2'));await page.waitForTimeout(80);await page.evaluate(()=>editThisMonth());

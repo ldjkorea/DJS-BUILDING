@@ -525,7 +525,41 @@
     return {status, overdueRent, overdueUtilities, totalOverdue:overdueRent + overdueUtilities,
       totalUnpaid, lastPaymentDate, unknownDue, notDue, billCount};
   }
-  root.RentalBilling = {won, withVat, floorOf, distribute, calculate, reconcile, charges, payment,
+  function quarterlyStatement(tenants, bills, year, quarter, asOf = new Date()) {
+    if(!Number.isInteger(year)||!monthKey(year,1)||!Number.isInteger(quarter)||quarter<1||quarter>4)
+      throw new Error('집계 연도와 분기를 확인해주세요.');
+    const cutoff=asOfKey(asOf);if(!cutoff)throw new Error('수납 집계 기준일을 확인해주세요.');
+    const months=[0,1,2].map(offset=>monthKey(year,(quarter-1)*3+1+offset));
+    const people=new Map(tenants.map(tenant=>[tenant.id,tenant])),groups=new Map();
+    const fields=['rentNet','mgmtNet','elecNet','taxableNet','vat','otherCharges','gross','received','unpaid','overdue','notDue','unknownDue','billCount','invoiceCount'];
+    const zeros=()=>Object.fromEntries(fields.map(key=>[key,0]));
+    const add=(target,values)=>{for(const key of fields){const next=target[key]+values[key];if(!Number.isSafeInteger(next)||next<0)throw new Error('분기 집계 금액의 정수 범위를 확인해주세요.');target[key]=next;}};
+    for(const month of months)for(const [id,bill] of Object.entries(bills[month]||{})) {
+      if(!bill||!Object.keys(bill).length)continue;
+      const registered=people.get(id),tenant=registered||{id,name:'미등록 임차인',unit:'',rent:0,mgmt:0,elevator:0};
+      const saved=effectiveTenant(tenant,bill),state=historicalPayment({...saved,id},bill,year,Number(month.slice(5)),cutoff);
+      const sameIdentity=!!registered&&['unit','name','biz'].every(key=>String(saved[key]||'')===String(registered[key]||''));
+      // Older invoices do not snapshot registration/deposit metadata. Only use
+      // current registration when the saved occupant identity still matches.
+      const identity={id,unit:String(saved.unit||''),name:String(saved.name||''),biz:String(saved.biz||''),
+        bizNo:sameIdentity?String(registered.bizNo||''):'',repName:sameIdentity?String(registered.repName||registered.name||''):'',
+        deposit:sameIdentity?won(amount(registered.deposit)):0};
+      const key=JSON.stringify([id,identity.unit,identity.name,identity.biz]);
+      if(!groups.has(key))groups.set(key,{...zeros(),identity,months:[],estimatedFields:[],orphan:!registered,archived:registered?.archived===true,metadataSource:sameIdentity?'current':'unavailable'});
+      const row=groups.get(key),items=state.items;
+      const rentNet=items.pay_rent.na?0:won(amount(saved.rent)),mgmtNet=items.pay_mgmt.na?0:won(amount(saved.mgmt)),elecNet=items.pay_elec.na?0:won(amount(bill.electricity));
+      const taxableNet=rentNet+mgmtNet+elecNet;
+      const taxableGross=['pay_rent','pay_mgmt','pay_elec'].reduce((sum,key)=>sum+(items[key].na?0:items[key].amount),0);
+      const otherCharges=['pay_water','pay_elev','pay_waste'].reduce((sum,key)=>sum+(items[key].na?0:items[key].amount),0);
+      const values={rentNet,mgmtNet,elecNet,taxableNet,vat:taxableGross-taxableNet,otherCharges,gross:taxableGross+otherCharges,
+        received:state.received,unpaid:state.unpaid,overdue:state.overdue,notDue:state.notDue,unknownDue:state.unknownDue,billCount:1,invoiceCount:bill.invoiceIssued===true?1:0};
+      add(row,values);row.months.push(month);row.estimatedFields=[...new Set([...row.estimatedFields,...(bill.snapshotEstimated||[])])];
+    }
+    const rows=[...groups.values()].sort((a,b)=>a.identity.unit.localeCompare(b.identity.unit,'ko',{numeric:true})||a.identity.name.localeCompare(b.identity.name,'ko'));
+    const totals=zeros();for(const row of rows)add(totals,row);
+    return {year,quarter,months,asOf:cutoff,rows,totals};
+  }
+  root.RentalBilling = {won, withVat, floorOf, distribute, calculate, reconcile, charges, payment, quarterlyStatement,
     dateISO, contractEndDate, contractDeadline, period, dueDate, historicalPayment, arrears, itemKeys, naFields,
     materializeGroup, invalidateChangedPayments, freezeBill, effectiveTenant, collectionStatus,
     RECEIPT_FORMAT,openReceiptLedger,validateReceiptLedger,appendReceiptEvent,receiptLedgerState,

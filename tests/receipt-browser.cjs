@@ -69,7 +69,7 @@ test('receipt UI overdue balance agrees across operating view quarterly tax row 
  const {page}=await open({...core.empty(),tenants:[tenant],bills:{[pastMonth]:{[tenant.id]:bill}}},1366,pastMonth);const before=await source(page);
  await navigate(page,'building');assert.match(await page.locator('#section-building').innerText(),/101,000/);
  await navigate(page,'tax');await page.locator('#tax-quarter-select').selectOption(`${previous.getFullYear()}-Q${Math.floor(previous.getMonth()/3)+1}`);assert.match(await page.locator('#tax-summary-table').innerText(),/101,000/);
- const csv=await download(page,()=>exportTaxCsv());assert.match(csv,/,"101000"(?:\r?\n|$)/);assert.equal(await source(page),before);
+ const csv=await download(page,()=>exportTaxCsv());assert.match(csv,/,"101000","30000","101000","0","0",/);assert.equal(await source(page),before);
 });
 test('receipt UI typed mock cloud lost acknowledgement retries the same ID and preserves one persisted receipt',async()=>{
  const {page}=await open();await start(page,30000);await commit(page);

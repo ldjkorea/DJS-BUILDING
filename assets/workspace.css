@@ -137,6 +137,29 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 .receipt-entry{display:flex;align-items:start;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
 .receipt-entry>div{min-width:0;flex:1;}.receipt-entry span,.receipt-entry small{display:block;}.receipt-entry p{white-space:pre-wrap;margin:4px 0;}
 .receipt-entry>.btn{width:auto;flex:none;max-width:100%;}
+#tax-summary-basis{margin:12px 0 18px;line-height:1.7;overflow-wrap:anywhere;}
+#tax-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:12px;}
+#tax-metrics .metric-card{min-width:0;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--surface);}
+#tax-metrics .m-label{font-size:.8125rem;color:var(--text2);line-height:1.6;}
+#tax-metrics .m-val{font-size:1.375rem;font-weight:700;line-height:1.6;margin:6px 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+#tax-metrics .m-sub{font-size:.75rem;color:var(--text2);line-height:1.6;overflow-wrap:anywhere;}
+@media(max-width:560px){#tax-metrics{grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr));}}
+#tax-summary-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%;}
+#tax-summary-table caption{text-align:left;padding:12px 16px;white-space:normal;color:var(--text2);}
+#tax-summary-table th,#tax-summary-table td{padding:12px;vertical-align:top;border-bottom:1px solid var(--border);}
+#tax-summary-table th{background:var(--surface2);text-align:left;}#tax-summary-table tfoot{font-weight:700;background:var(--surface2);}
+#tax-summary-table small{display:block;white-space:normal;overflow-wrap:anywhere;max-width:220px;line-height:1.6;color:var(--text2);}
+#tax-summary-table .quarter-money{text-align:right;white-space:nowrap;font-family:'DM Mono',monospace;}
+@media print{
+  @page quarter-statement{size:A4 landscape;margin:10mm;}
+  body.printing-tax #section-tax{page:quarter-statement;display:block!important;}
+  body.printing-tax .section:not(#section-tax),body.printing-tax .section-toolbar select,body.printing-tax .section-toolbar button,body.printing-tax #tax-metrics,body.printing-tax .toast,body.printing-tax .data-notice{display:none!important;}
+  body.printing-tax .content{max-width:none;padding:0;}
+  body.printing-tax #tax-summary-scroll{overflow:visible;max-width:none;}
+  body.printing-tax #tax-summary-table{width:100%;min-width:0!important;table-layout:fixed;font-size:8pt!important;}
+  body.printing-tax #tax-summary-table th,body.printing-tax #tax-summary-table td{font-size:8pt!important;padding:5px;white-space:normal;overflow-wrap:anywhere;}
+  body.printing-tax #tax-summary-table tr{break-inside:avoid;}
+}
 .receipt-panel button,.receipt-modal button.btn{min-height:44px;white-space:normal;}.receipt-panel li{overflow-wrap:anywhere;}
 .receipt-modal{width:min(540px,calc(100vw - 24px));}.receipt-modal fieldset{border:0;padding:0;margin:0;min-width:0;}
 .receipt-modal select,.receipt-modal textarea,.receipt-modal input:not([type=checkbox]){width:100%;box-sizing:border-box;min-width:0;}

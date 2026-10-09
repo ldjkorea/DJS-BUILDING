@@ -2326,7 +2326,7 @@ async function setInvoiceIssued(value) {
 function printCurrentBill() {
   document.body.classList.add('printing-bill');window.print();
 }
-window.addEventListener('afterprint',()=>document.body.classList.remove('printing-bill'));
+window.addEventListener('afterprint',()=>document.body.classList.remove('printing-bill','printing-tax'));
 function buildBillFormHtml(t,year,month){
   const uy=year||cY,um=month||cM;
   const key=`${uy}-${String(um).padStart(2,'0')}`;
@@ -3281,216 +3281,51 @@ function changeTaxQuarter(val) {
   renderTaxSummary();
 }
 
+function currentQuarterStatement() {
+  const quarters=getAvailableQuarters(),defaultKey=`${cY}-Q${Math.floor((cM-1)/3)+1}`;
+  const selected=quarters.find(quarter=>quarter.key===(selTaxQuarter||defaultKey))||quarters[0];
+  selTaxQuarter=selected.key;
+  return RentalBilling.quarterlyStatement(tenants,bills,selected.year,selected.quarter,new Date());
+}
+function quarterPaymentText(row) {
+  if(!row.gross)return '청구 금액 없음';
+  if(!row.unpaid)return '전액 확인';
+  const parts=[];
+  if(row.overdue)parts.push(`${fmt(row.overdue)} 연체`);
+  if(row.notDue-row.unknownDue)parts.push(`${fmt(row.notDue-row.unknownDue)} 납기 전`);
+  if(row.unknownDue)parts.push(`${fmt(row.unknownDue)} 납기 미지정`);
+  return parts.join(' · ');
+}
 function renderTaxSummary() {
-  const quarters = getAvailableQuarters();
-  if (!selTaxQuarter) {
-    const currentQ = Math.floor((cM - 1) / 3) + 1;
-    selTaxQuarter = `${cY}-Q${currentQ}`;
-  }
-  const selQ = quarters.find(q => q.key === selTaxQuarter) || quarters[0];
-  if (!selQ) return;
-
-  const selEl = document.getElementById('tax-quarter-select');
-  if (selEl) {
-    selEl.innerHTML = quarters.map(q => `<option value="${q.key}" ${q.key === selQ.key ? 'selected' : ''}>${q.label}</option>`).join('');
-  }
-
-  const activeTenants = tenants.filter(t => !t.archived);
-  let totalTaxableNet = 0;
-  let totalTaxableVat = 0;
-  let totalExempt = 0;
-  let totalGross = 0;
-  let totalInvoicesExpected = 0;
-  let totalInvoicesIssued = 0;
-
-  const rows = activeTenants.map(t => {
-    let rentNetSum = 0, mgmtNetSum = 0, elecNetSum = 0;
-    let waterSum = 0, elevSum = 0;
-    let issuedCount = 0;
-    let unpaidSum = 0;
-
-    selQ.months.forEach(mk => {
-      const b = (bills[mk] || {})[t.id] || {};
-      const bt = billTenant(t, b);
-      const chg = RentalBilling.charges(bt, b);
-      
-      const rNet = Number(bt.rent) || 0;
-      const mNet = Number(bt.mgmt) || 0;
-      const eNet = b.electricityNA ? 0 : (Number(b.electricity) || 0);
-
-      rentNetSum += rNet;
-      mgmtNetSum += mNet;
-      elecNetSum += eNet;
-
-      waterSum += (chg.pay_water || 0);
-      elevSum += (chg.pay_elev || 0);
-
-      totalInvoicesExpected++;
-      if (b.invoiceIssued) {
-        issuedCount++;
-        totalInvoicesIssued++;
-      }
-
-      const timing = Object.keys(b).length ? RentalBilling.historicalPayment(bt, b, Number(mk.slice(0, 4)), Number(mk.slice(5, 7)), new Date()) : null;
-      if (timing?.overdue) {
-        unpaidSum += timing.overdue;
-      }
-    });
-
-    const taxableNet = rentNetSum + mgmtNetSum + elecNetSum;
-    const vat = withVat(taxableNet) - taxableNet;
-    const exempt = waterSum;
-    const gross = taxableNet + vat + exempt + elevSum;
-
-    totalTaxableNet += taxableNet;
-    totalTaxableVat += vat;
-    totalExempt += (exempt + elevSum);
-    totalGross += gross;
-
-    return {
-      tenant: t,
-      unit: t.unit,
-      name: t.name,
-      biz: t.biz || '-',
-      bizNo: t.bizNo || '-',
-      deposit: t.deposit ? Number(t.deposit) : 0,
-      rentNet: rentNetSum,
-      mgmtNet: mgmtNetSum,
-      elecNet: elecNetSum,
-      taxableNet,
-      vat,
-      exempt: exempt + elevSum,
-      gross,
-      issuedCount,
-      unpaidSum
-    };
-  });
-
-  const metricsEl = document.getElementById('tax-metrics');
-  if (metricsEl) {
-    metricsEl.innerHTML = `
-      <div class="metric-card"><div class="m-label">과세 공급가액 합계</div><div class="m-val" style="color:var(--gold);">${fmt(totalTaxableNet)}</div><div class="m-sub">월세 + 관리비 + 공용전기</div></div>
-      <div class="metric-card"><div class="m-label">부가가치세 (VAT 10%)</div><div class="m-val" style="color:var(--gold2);">${fmt(totalTaxableVat)}</div><div class="m-sub">세금계산서 매출세액</div></div>
-      <div class="metric-card"><div class="m-label">면세 및 실비 합계</div><div class="m-val">${fmt(totalExempt)}</div><div class="m-sub">수도요금(면세) + 승강기 실비</div></div>
-      <div class="metric-card"><div class="m-label">전자세금계산서 발급</div><div class="m-val" style="color:${totalInvoicesIssued === totalInvoicesExpected ? 'var(--green)' : 'var(--gold2)'};">${totalInvoicesIssued} / ${totalInvoicesExpected}건</div><div class="m-sub">${totalInvoicesExpected > 0 ? Math.round(totalInvoicesIssued / totalInvoicesExpected * 100) : 0}% 발급 완료</div></div>
-    `;
-  }
-
-  const tableEl = document.getElementById('tax-summary-table');
-  if (tableEl) {
-    tableEl.innerHTML = `
-      <thead>
-        <tr style="background:var(--surface2);border-bottom:1px solid var(--border2);color:var(--text2);">
-          <th style="padding:10px 12px;text-align:left;">호수</th>
-          <th style="padding:10px 12px;text-align:left;">상호 (성명)</th>
-          <th style="padding:10px 12px;text-align:left;">사업자등록번호</th>
-          <th style="padding:10px 12px;text-align:right;">보증금</th>
-          <th style="padding:10px 12px;text-align:right;">3개월 월세 공급가</th>
-          <th style="padding:10px 12px;text-align:right;">관리비·전기 공급가</th>
-          <th style="padding:10px 12px;text-align:right;color:var(--gold);">과세 공급가 합계</th>
-          <th style="padding:10px 12px;text-align:right;color:var(--gold2);">부가세 (10%)</th>
-          <th style="padding:10px 12px;text-align:right;">수도·실비 (면세)</th>
-          <th style="padding:10px 12px;text-align:center;">전자세금계산서</th>
-          <th style="padding:10px 12px;text-align:center;">수납 현황</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map(r => `
-          <tr style="border-bottom:1px solid var(--border);transition:background .15s;">
-            <td style="padding:11px 12px;font-weight:700;color:var(--gold);">${esc(r.unit)}</td>
-            <td style="padding:11px 12px;"><strong>${esc(r.biz)}</strong> <span style="font-size:11px;color:var(--text3);">(${esc(r.name)})</span></td>
-            <td style="padding:11px 12px;font-family:'DM Mono',monospace;color:var(--text2);">${esc(r.bizNo)}</td>
-            <td style="padding:11px 12px;text-align:right;font-family:'DM Mono',monospace;">${r.deposit ? fmt(r.deposit) : '-'}</td>
-            <td style="padding:11px 12px;text-align:right;font-family:'DM Mono',monospace;">${fmt(r.rentNet)}</td>
-            <td style="padding:11px 12px;text-align:right;font-family:'DM Mono',monospace;">${fmt(r.mgmtNet + r.elecNet)}</td>
-            <td style="padding:11px 12px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:var(--gold);">${fmt(r.taxableNet)}</td>
-            <td style="padding:11px 12px;text-align:right;font-family:'DM Mono',monospace;color:var(--gold2);">${fmt(r.vat)}</td>
-            <td style="padding:11px 12px;text-align:right;font-family:'DM Mono',monospace;color:var(--text3);">${fmt(r.exempt)}</td>
-            <td style="padding:11px 12px;text-align:center;">
-              <span style="display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid ${r.issuedCount === 3 ? 'var(--green)' : 'rgba(201,168,76,.4)'};color:${r.issuedCount === 3 ? 'var(--green)' : 'var(--gold)'};">
-                ${r.issuedCount === 3 ? '3건 완료' : r.issuedCount + '/3건'}
-              </span>
-            </td>
-            <td style="padding:11px 12px;text-align:center;">
-              ${r.unpaidSum > 0 ? `<span style="color:var(--red);font-weight:700;font-size:11px;">${fmt(r.unpaidSum)} 연체</span>` : `<span style="color:var(--green);font-size:11px;">완납</span>`}
-            </td>
-          </tr>
-        `).join('')}
-      </tbody>
-      <tfoot>
-        <tr style="background:var(--surface2);font-weight:700;border-top:2px solid var(--border2);color:var(--text);">
-          <td colspan="3" style="padding:12px;text-align:center;">합 계 (${rows.length}개 호실)</td>
-          <td style="padding:12px;text-align:right;font-family:'DM Mono',monospace;">-</td>
-          <td style="padding:12px;text-align:right;font-family:'DM Mono',monospace;">${fmt(rows.reduce((s, r) => s + r.rentNet, 0))}</td>
-          <td style="padding:12px;text-align:right;font-family:'DM Mono',monospace;">${fmt(rows.reduce((s, r) => s + r.mgmtNet + r.elecNet, 0))}</td>
-          <td style="padding:12px;text-align:right;font-family:'DM Mono',monospace;color:var(--gold);">${fmt(totalTaxableNet)}</td>
-          <td style="padding:12px;text-align:right;font-family:'DM Mono',monospace;color:var(--gold2);">${fmt(totalTaxableVat)}</td>
-          <td style="padding:12px;text-align:right;font-family:'DM Mono',monospace;color:var(--text3);">${fmt(totalExempt)}</td>
-          <td colspan="2" style="padding:12px;text-align:center;color:var(--gold);">공급대가 총합: ${fmt(totalGross)}</td>
-        </tr>
-      </tfoot>
-    `;
+  const metrics=document.getElementById('tax-metrics'),table=document.getElementById('tax-summary-table'),basis=document.getElementById('tax-summary-basis');
+  try {
+    const report=currentQuarterStatement(),t=report.totals,quarters=getAvailableQuarters(),select=document.getElementById('tax-quarter-select');
+    if(select)select.innerHTML=quarters.map(quarter=>`<option value="${quarter.key}" ${quarter.key===selTaxQuarter?'selected':''}>${quarter.label}</option>`).join('');
+    if(basis)basis.textContent=`${report.year}년 ${report.quarter}분기 · 저장된 고지서 ${t.billCount}건 · 수납 기준일 ${report.asOf}. 고지서가 없는 달의 예정 금액은 합계에 포함하지 않습니다. 보관·미등록 임차인의 과거 고지서도 포함합니다. 사업자번호·대표자·보증금은 현재 등록 자료이며 과거 임차 정보와 다르면 확인 필요로 표시합니다. 발급 표시는 앱의 체크 상태입니다.`;
+    const metric=(label,value,note)=>`<div class="metric-card"><div class="m-label">${label}</div><div class="m-val">${value}</div><div class="m-sub">${note}</div></div>`;
+    if(metrics)metrics.innerHTML=metric('과세 공급가액 합계',fmt(t.taxableNet),'저장 고지서의 월세·관리비·공용전기')+metric('고지서 부가세 합계',fmt(t.vat),'고지서 항목별 반올림 금액의 합계')+metric('수도·승강기·오물 실비',fmt(t.otherCharges),'저장 고지서의 나머지 청구액')+metric('세금계산서 발급 표시',`${t.invoiceCount} / ${t.billCount}건`,'발급 체크 / 저장된 고지서')+metric('저장 고지서 청구 총액',fmt(t.gross),'예정 금액을 포함하지 않습니다')+metric('입금 확인액',fmt(t.received),'기존 납부 확인과 새 입금 기록')+metric('미확인 잔액',fmt(t.unpaid),quarterPaymentText(t));
+    const money=value=>`<td class="quarter-money">${fmt(value)}</td>`;
+    if(table)table.innerHTML=`<caption>${report.year}년 ${report.quarter}분기 저장 고지서 명세 · 수납 기준일 ${report.asOf}</caption><thead><tr><th>호수</th><th>상호 (성명)</th><th>사업자등록번호</th><th>보증금</th><th>월세 공급가</th><th>관리비·전기 공급가</th><th>과세 공급가 합계</th><th>고지서 부가세</th><th>수도·승강기·오물</th><th>청구 총액</th><th>발급 표시</th><th>수납 현황</th></tr></thead><tbody>${report.rows.length?report.rows.map(row=>`<tr data-quarter-row><td>${esc(row.identity.unit||'호수 미상')}</td><td><strong>${esc(row.identity.biz||row.identity.name)}</strong><small>${esc(row.identity.name)} · ${esc(row.months.join(', '))}${row.archived?' · 보관 자료':''}${row.orphan?' · 세입자 등록 없음':''}${row.estimatedFields.length?' · 과거 청구 기준 확인 필요':''}</small></td><td>${esc(row.identity.bizNo||'확인 필요')}</td><td class="quarter-money">${row.metadataSource==='current'?fmt(row.identity.deposit):'확인 필요'}</td>${money(row.rentNet)}${money(row.mgmtNet+row.elecNet)}${money(row.taxableNet)}${money(row.vat)}${money(row.otherCharges)}${money(row.gross)}<td>${row.invoiceCount}/${row.billCount}건</td><td>${quarterPaymentText(row)}</td></tr>`).join(''):'<tr><td colspan="12">이 분기에 저장된 고지서가 없습니다.</td></tr>'}</tbody><tfoot><tr><th colspan="4">합계 (${report.rows.length}개 임차 정보 · ${t.billCount}건)</th>${money(t.rentNet)}${money(t.mgmtNet+t.elecNet)}${money(t.taxableNet)}${money(t.vat)}${money(t.otherCharges)}${money(t.gross)}<td>${t.invoiceCount}/${t.billCount}건</td><td>${quarterPaymentText(t)}</td></tr></tfoot>`;
+  } catch(error) {
+    if(metrics)metrics.innerHTML='';if(table)table.innerHTML='<tbody><tr><td>집계하지 못했습니다. 기존 자료를 유지했습니다.</td></tr></tbody>';
+    if(basis)basis.textContent=error.message;
   }
 }
-
 function exportTaxCsv() {
-  const quarters = getAvailableQuarters();
-  const selQ = quarters.find(q => q.key === (selTaxQuarter || quarters[0]?.key)) || quarters[0];
-  if (!selQ) return;
-
-  const header = ['호수', '상호명', '대표자명', '사업자등록번호', '보증금(원)', '3개월 월세 공급가(원)', '3개월 관리비·전기 공급가(원)', '과세 공급가액 합계(원)', '부가가치세(원)', '수도·면세·실비 합계(원)', '공급대가 총합계(원)', '전자세금계산서 발급건수', '체납액(원)'];
-  
-  const activeTenants = tenants.filter(t => !t.archived);
-  const rows = activeTenants.map(t => {
-    let rentNet = 0, mgmtNet = 0, elecNet = 0, waterSum = 0, elevSum = 0, issued = 0, unpaid = 0;
-    selQ.months.forEach(mk => {
-      const b = (bills[mk] || {})[t.id] || {};
-      const bt = billTenant(t, b);
-      const chg = RentalBilling.charges(bt, b);
-      rentNet += (Number(bt.rent) || 0);
-      mgmtNet += (Number(bt.mgmt) || 0);
-      elecNet += (b.electricityNA ? 0 : (Number(b.electricity) || 0));
-      waterSum += (chg.pay_water || 0);
-      elevSum += (chg.pay_elev || 0);
-      if (b.invoiceIssued) issued++;
-      const timing = Object.keys(b).length ? RentalBilling.historicalPayment(bt, b, Number(mk.slice(0, 4)), Number(mk.slice(5, 7)), new Date()) : null;
-      if (timing?.overdue) unpaid += timing.overdue;
-    });
-    const taxable = rentNet + mgmtNet + elecNet;
-    const vat = withVat(taxable) - taxable;
-    const exempt = waterSum + elevSum;
-    return [
-      t.unit,
-      t.biz || '',
-      t.repName || t.name,
-      t.bizNo || '',
-      t.deposit ? String(t.deposit) : '0',
-      String(rentNet),
-      String(mgmtNet + elecNet),
-      String(taxable),
-      String(vat),
-      String(exempt),
-      String(taxable + vat + exempt),
-      `${issued}/3건`,
-      String(unpaid)
-    ];
-  });
-
-  const csvContent = '\uFEFF' + [header, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\r\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `다인빌딩_세무집계표_${selQ.year}년_${selQ.quarter}분기.csv`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  showToast(`${selQ.quarter}분기 세무 집계표 CSV를 다운로드했습니다.`);
+  try {
+    const report=currentQuarterStatement();
+    const header=['호수','상호명','대표자명(현재 등록)','사업자등록번호(현재 등록)','보증금(현재 등록,원)','저장 고지서 월세 공급가(원)','저장 고지서 관리비·전기 공급가(원)','과세 공급가액 합계(원)','고지서 부가세 합계(원)','수도·승강기·오물 실비 합계(원)','저장 고지서 청구 총액(원)','발급 표시/저장 고지서 건수','체납액(원)','입금 확인액(원)','미확인 잔액(원)','납기 전 잔액(원)','납기 미지정 잔액(원)','집계 고지서 월','수납 기준일','등록 정보 출처','과거 청구 기준 확인 필요','고지서 임차인 성명'];
+    const rows=report.rows.map(row=>[row.identity.unit,row.identity.biz,row.identity.repName,row.identity.bizNo,row.metadataSource==='current'?row.identity.deposit:'',row.rentNet,row.mgmtNet+row.elecNet,row.taxableNet,row.vat,row.otherCharges,row.gross,`${row.invoiceCount}/${row.billCount}건`,row.overdue,row.received,row.unpaid,row.notDue-row.unknownDue,row.unknownDue,row.months.join(' · '),report.asOf,row.metadataSource==='current'?'현재 등록':'확인 필요',row.estimatedFields.length?'확인 필요':'',row.identity.name]);
+    const csvContent='\uFEFF'+[header,...rows].map(row=>row.map(cell=>`"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+    const blob=new Blob([csvContent],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download=`다인빌딩_세무집계표_${report.year}년_${report.quarter}분기.csv`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    showToast(`${report.quarter}분기 저장 고지서 집계표를 다운로드했습니다.`);
+  } catch(error) {showToast('집계표를 내보내지 못했습니다. '+error.message);}
 }
 
 function printTaxSummary() {
-  window.print();
+  try {currentQuarterStatement();}catch(error){showToast('집계표를 인쇄하지 못했습니다. '+error.message);return;}
+  document.body.classList.add('printing-tax');window.print();
 }
 
 async function saveWaterRatio() {
