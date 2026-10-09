@@ -1,0 +1,87 @@
+{
+  "version": "2.1.0",
+  "phase": "receipt-storage-step2",
+  "sourceCommit": "731dbbb404eec6c42524c986be31ea1bd2c6f218",
+  "checkedAt": "2026-10-09T20:59:02.274Z",
+  "releaseCandidate": false,
+  "fullPartialPaymentFeatureComplete": false,
+  "uiIntegration": false,
+  "storageIntegration": true,
+  "tests": {
+    "unit": {
+      "passed": 131,
+      "total": 131,
+      "newStorageCases": 7,
+      "newServerCases": 6
+    },
+    "browser": {
+      "passed": 7,
+      "total": 7,
+      "startedAt": "2026-10-09T20:55:17.052Z",
+      "finishedAt": "2026-10-09T20:58:57.076Z"
+    },
+    "audit": {
+      "passed": 69,
+      "total": 69,
+      "newReceiptCases": 4
+    },
+    "build": true,
+    "syntax": true,
+    "generatedFilesCurrent": true
+  },
+  "storage": {
+    "officialField": "bill.receiptLedger",
+    "format": "rental-receipts-v1",
+    "actualPreimageCompared": true,
+    "appendOnlyPrefix": true,
+    "anchorsImmutable": true,
+    "oldWriterRejected": true,
+    "oldReaderRejected": true,
+    "requestIdRevisionLocksRecoveryReadbackPreserved": true
+  },
+  "temporaryUiGuard": {
+    "startup": true,
+    "incomingBackup": true,
+    "backgroundCloudRead": true,
+    "manualCloudSync": true,
+    "exactRawExport": true,
+    "docsUnsupportedForReceiptData": true
+  },
+  "live": {
+    "checkedAt": "2026-10-09T20:56:23.716Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e",
+    "appVersion": "1.0.0",
+    "deployedVersion": 4,
+    "writeExecuted": false,
+    "deploymentExecuted": false
+  },
+  "previousCandidate": {
+    "version": "2.0.6",
+    "tag": "candidate/independent-v206-18237dc",
+    "zipSha256": "fc03fdf04b43da7e9870e6c0e37ccf3ef5fd5cfadb82d318d8ebefecf1aeadd7"
+  },
+  "notVerified": [
+    "partial payment input and history UI",
+    "payment historicalPayment arrears collectionStatus projections",
+    "Kakao CSV and Docs partial balances",
+    "receipt-aware restore and migration UI",
+    "real phone and screen reader",
+    "live 2.x login write readback"
+  ],
+  "files": {
+    "assets/billing.js": "bc11dce2fe587e0546995ecc82d0aa02a5f02583ec3965d782e65df10bd8385e",
+    "assets/core.js": "b10b52212c0b6bec7d7173ed2321ef4d392852e0265d54d64453f299692e7f17",
+    "assets/app.js": "a73722d03b397188faab8142d09de6d606ff92253c1329608905eb557bb0148d",
+    "assets/enhancements.js": "9b86a1388f17a321e393d7597bb52b1b49753738183c50c500d46f585dfc571d",
+    "server/Code.gs": "3406ebdaf6377d5b9b7d7541ee140ba01248f4d54a5cde405a47d01c995176ec",
+    "server/Billing.gs": "b9062c06e65340b5f0bc3a755d5f986f118c3dff0b5a68dcc700329772733c46",
+    "index.html": "cdac8c27db09fe20ee98b5725416b471e5304355935b385321580dc8d128d1b4"
+  }
+}
