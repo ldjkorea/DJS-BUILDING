@@ -1,0 +1,204 @@
+{
+  "version": "2.1.4",
+  "sourceCommit": "03a05e2b86172aff4f5bf37f29ce30cbde056a58",
+  "productValidationCommit": "9ab701ff997ae9fba42b824d2c5d886a89f0621d",
+  "archiveSha256": "c151f751859517a307dfe0d44dcffeec7b618c0f77d8440d1610ccb997c87020",
+  "startedAt": "2026-10-09T23:50:25.482Z",
+  "finishedAt": "2026-10-09T23:51:55.092Z",
+  "serverMockTests": 42,
+  "browserCases": {
+    "receipt": 11,
+    "receipt-basis": 8,
+    "bill-basis": 11,
+    "quarter": 8,
+    "restored-data": 6
+  },
+  "restoredData": {
+    "appVersion": "2.1.4",
+    "startedAt": "2026-10-09T23:51:42.811Z",
+    "finishedAt": "2026-10-09T23:51:54.791Z",
+    "inputSha256": "df664dd26e9f86326aa8ad1f24fa506740fb78f6e06ddf9130ad8c0bd4126061",
+    "privateInput": false,
+    "sourceFilePreserved": true,
+    "screenshotsTaken": false,
+    "googleRequestsPerformed": false,
+    "asOf": "2026-10-10",
+    "tenantCount": 3,
+    "billCount": 3,
+    "monthCount": 2,
+    "results": [
+      {
+        "name": "backup preview cancel apply reload and JSON roundtrip preserve every domain field on PC and mobile",
+        "status": "pass"
+      },
+      {
+        "name": "every stored invoice renders exact charges and keeps estimated basis unconfirmed without data writes",
+        "status": "pass"
+      },
+      {
+        "name": "monthly CSV contains only saved invoices including archived and orphan rows and matches exact shared totals",
+        "status": "pass"
+      },
+      {
+        "name": "empty invoice placeholders remain unissued after reload and open an editor without saved-invoice actions",
+        "status": "pass",
+        "coverage": {
+          "unissuedCaseAvailable": true
+        }
+      },
+      {
+        "name": "quarter screen and downloaded CSV match all saved quarter totals after full backup restoration",
+        "status": "pass"
+      },
+      {
+        "name": "restored full data keeps all seven menus within six viewport widths without source changes",
+        "status": "pass"
+      }
+    ]
+  },
+  "extractedAppHtmlSha256": "1593263a170b3562f412d1ad5fc306cc74c8cad8281fd83cac4b4b632dbb5ef4",
+  "readFromZip": true,
+  "realGoogleWrites": false,
+  "productionDeployed": false,
+  "results": [
+    {
+      "file": "server.test.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "receipt-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "receipt-basis-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "bill-basis-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "quarter-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "restored-data-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ],
+  "recordedAt": "2026-10-09T23:52:56.595Z",
+  "reviewCandidate": true,
+  "productionReady": false,
+  "verificationToolCommit": "03a05e2b86172aff4f5bf37f29ce30cbde056a58",
+  "verificationToolSha256": "d55b91135bdb4ad4f15e64aca3546cb030b167bfb5c5f92de7365f5242a8b158",
+  "package": {
+    "archive": {
+      "file": "rental-independent-gas-2.1.4.zip",
+      "bytes": 1704221,
+      "sha256": "c151f751859517a307dfe0d44dcffeec7b618c0f77d8440d1610ccb997c87020"
+    },
+    "files": [
+      {
+        "name": "App.html",
+        "bytes": 2625467,
+        "sha256": "1593263a170b3562f412d1ad5fc306cc74c8cad8281fd83cac4b4b632dbb5ef4"
+      },
+      {
+        "name": "AuthorizeDocs.gs",
+        "bytes": 265,
+        "sha256": "5512c7b1828320898d8c86fc78163c2860bc9b63d9317ec98f81a4bac838efbb"
+      },
+      {
+        "name": "Billing.gs",
+        "bytes": 41951,
+        "sha256": "a20d4072e65d8bc129d1b5e9c5e0a2d171595ba623d4d8fc9c080a5d9dab20fc"
+      },
+      {
+        "name": "CalendarSync.gs",
+        "bytes": 6694,
+        "sha256": "501747cb87a69dd4f61cf26e86960d45e4bc156f788188805a551738a4c39a6c"
+      },
+      {
+        "name": "Code.gs",
+        "bytes": 17100,
+        "sha256": "741643aac1a729d99a71ce9ea3d5b4681a589daea17d2d73e41c3ee52844e8b9"
+      },
+      {
+        "name": "CurrentStatus.gs",
+        "bytes": 7801,
+        "sha256": "8dcf4fc79d5d8f388797b0ca0babe93e0b6bcec3ea3bd543803b75ea3a9cff7f"
+      },
+      {
+        "name": "IndependentApp.gs",
+        "bytes": 1136,
+        "sha256": "c97eb66869f7c898b09763710e6d8fa5b370c468f924ef77ee9b01b5f2550f41"
+      },
+      {
+        "name": "appsscript.json",
+        "bytes": 353,
+        "sha256": "a6954c274b74d412d9ff0968b40641931869fcc31f5a0eb622a54575ca8d1247"
+      }
+    ]
+  },
+  "packagingTests": {
+    "total": 8,
+    "passed": 8,
+    "command": "node --test tests/package-gas.test.cjs"
+  },
+  "productValidation": {
+    "record": "development-2.1.4.json",
+    "sourceCommit": "9ab701ff997ae9fba42b824d2c5d886a89f0621d",
+    "unit": {
+      "total": 178,
+      "passed": 178
+    },
+    "browserSuiteCount": 12,
+    "startedAt": "2026-10-09T23:41:54.709Z",
+    "finishedAt": "2026-10-09T23:47:13.899Z",
+    "sameProductSourceVerified": true,
+    "rerunInThisPhase": false
+  },
+  "privacy": {
+    "explicitRestoreInputEnvironmentDiscarded": true,
+    "anonymousFixturesOnly": true,
+    "realDataIncludedInArchive": false,
+    "archiveInspection": {
+      "checkedAt": "2026-10-09T23:54:06.877Z",
+      "entriesChecked": 8,
+      "exactStoredTenantValuesDetected": false,
+      "fieldsChecked": [
+        "name",
+        "biz",
+        "phone",
+        "tel",
+        "email",
+        "account",
+        "bankAccount"
+      ],
+      "privatePathsIncluded": false
+    }
+  },
+  "preservedCandidates": [
+    {
+      "version": "2.0.6",
+      "file": "rental-independent-gas-2.0.6.zip",
+      "sha256": "fc03fdf04b43da7e9870e6c0e37ccf3ef5fd5cfadb82d318d8ebefecf1aeadd7",
+      "bytes": 1680584,
+      "preserved": true
+    },
+    {
+      "version": "2.1.3",
+      "file": "rental-independent-gas-2.1.3.zip",
+      "bytes": 1704106,
+      "sha256": "46e4f65eab6cbf69344aae34d3ac245c1bc5c66cea3b7392b8ce8c87d0648e10",
+      "preserved": true
+    }
+  ],
+  "scope": "Tests execute the ZIP readback in local VM and isolated Edge. Google services mocked. No GAS iframe login or actual Google write; no physical phone or packaged PWA proof."
+}
