@@ -61,7 +61,8 @@ function server(options={}) {
     LockService:{getScriptLock:()=>({tryLock:()=>!held&&(held=true),releaseLock:()=>{held=false;}})},SpreadsheetApp:{openById:id=>{assert.equal(id,'1E9YcSQSNTLTC41fqWBYHMNpSRKQrDlvAXeF9AxdDFb8');return book;},flush:()=>{}},DocumentApp,DriveApp,CalendarApp,
     PropertiesService:{getScriptProperties:()=>({getProperty:key=>props.get(key)??null,deleteProperty:key=>props.delete(key),setProperty:(key,value)=>{if(fail==='calendar-map'&&key==='INDEPENDENT_CONTRACT_CALENDAR_EVENTS_V1')throw Error('mapping write failed');return props.set(key,value);}})}
   });
-  for(const file of ['Billing.gs','CurrentStatus.gs','CalendarSync.gs','Code.gs'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../server',file),'utf8'),c,{filename:file});
+  const gasRoot=process.env.RENTAL_GAS_TEST_ROOT||path.join(__dirname,'../server');
+  for(const file of ['Billing.gs','CurrentStatus.gs','CalendarSync.gs','Code.gs'])vm.runInContext(fs.readFileSync(path.join(gasRoot,file),'utf8'),c,{filename:file});
   c.INDEPENDENT_CONTRACT_CALENDAR_ID='independent-calendar';
   const get=(params={})=>JSON.parse(c.doGet({parameter:{api:'1',...params}})),post=req=>JSON.parse(c.doPost({postData:{contents:JSON.stringify(req)}}));
   const request=(data={tenants:[],bills:{}})=>({protocol:'rental-sync-v2',expectedRevision:get({receiptLedgerProtocol:'rental-receipts-v1'}).revision,requestId:crypto.randomUUID(),data});
