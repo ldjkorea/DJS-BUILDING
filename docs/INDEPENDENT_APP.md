@@ -10,6 +10,8 @@
 
 현재 독립 배포 버전은 4다. 서버와 `App` HTML을 포함한 8개 파일의 업로드 후 원격 내용을 재조회해 로컬 소스와 동일한 것을 확인했다.
 
+2026-10-10 사용자 요청에 따라 독립 GAS 편집기에서 Google 권한 상태를 재확인했다. 기존 승인이 유효해 추가 승인 창은 나타나지 않았으며, `authorizeCurrentStatusDocumentAccess`와 `initializeIndependentApp` 실행이 오류 없이 완료됐다. 초기화 함수는 독립 시트·문서·Calendar를 열어 확인한다. 이 권한 재확인 중 앱 데이터 저장·문서 재생성·일정 동기화는 실행하지 않았다. 실행 기록은 Git에서 제외한 `.private/google-auth-confirmed-20261010.json`과 `test-results/google-auth-confirmed.png`에 보관한다. 후속 웹 2.x 로컬 후보는 이 운영 배포에 아직 반영하지 않았다.
+
 | 구분 | 독립앱의 연결 대상 |
 |---|---|
 | 자료 폴더 | [임대관리 독립앱 - 2026-10-09](https://drive.google.com/drive/folders/1W1s4IzT4sBDymE7xK-KKvEiE0424SbxC) |

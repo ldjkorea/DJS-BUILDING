@@ -1,0 +1,119 @@
+{
+  "sourceCommit": "0300cbcc8bd22b048fc018a21e0148249d46e085",
+  "screenReader": "NOT TESTED",
+  "physicalDeviceKeyboard": "NOT TESTED",
+  "version": "2.0.5",
+  "baseline": "c50c076",
+  "validatedAt": "2026-10-09T20:10:16.598Z",
+  "unit": {
+    "tests": 103,
+    "passed": 103,
+    "failed": 0
+  },
+  "audit": {
+    "tests": 57,
+    "passed": 57
+  },
+  "browserSuites": [
+    {
+      "suite": "browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "audit-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "pwa-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "single-file-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "integrity-v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "independent-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ],
+  "addedRecoveryViewerScenarios": [
+    {
+      "name": "recovery viewer empty inventory is available from settings without storage or domain writes",
+      "status": "pass"
+    },
+    {
+      "name": "recovery viewer distinguishes stored memory and current source records without applying raw data",
+      "status": "pass"
+    },
+    {
+      "name": "recovery viewer lazy literal preview and individual download preserve exact original text",
+      "status": "pass"
+    },
+    {
+      "name": "recovery viewer retry preserves the source on quota failure and verifies durable archive after success",
+      "status": "pass"
+    },
+    {
+      "name": "recovery viewer follows other tab changes and keeps expanded preview and text selection",
+      "status": "pass"
+    },
+    {
+      "name": "recovery viewer read failures are explicit while current window raw stays downloadable",
+      "status": "pass"
+    },
+    {
+      "name": "recovery viewer PC mobile and large text keep actions usable and keyboard focus contained",
+      "status": "pass"
+    },
+    {
+      "name": "recovery viewer keeps original and demo journals isolated and full backup preserves the archive",
+      "status": "pass"
+    }
+  ],
+  "crossTabProbe": {
+    "runs": 12,
+    "bothExactOriginalRecordsRetainedAfterReload": 12,
+    "bothExactOriginalRecordsRetainedInFreshReader": 12,
+    "immediateReadsWithOneRecord": 1,
+    "scope": "Local Edge isolated sample contexts; not a guarantee for every browser",
+    "storageReference": "https://html.spec.whatwg.org/multipage/webstorage.html"
+  },
+  "liveReadOnlyProof": {
+    "checkedAt": "2026-10-09T19:58:43.101Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e"
+  },
+  "archive": {
+    "file": "rental-independent-gas-2.0.5.zip",
+    "sha256": "5f226f93c0039d16ce76931eb030b52d7285fedb89e96eed34d5d163d207c5eb",
+    "verifiedFiles": 8,
+    "archiveContentsMatchManifest": true,
+    "checkedAt": "2026-10-09T19:59:53.5984111Z"
+  },
+  "previousCandidatePreserved": true,
+  "deploymentPerformed": false,
+  "androidNativeChanged": false,
+  "androidOwnerLogin": "NOT TESTED",
+  "remotePushPerformed": false
+}
