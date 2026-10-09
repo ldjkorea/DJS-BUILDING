@@ -30,6 +30,8 @@
 
 최종 `npm run test:all`에서 단위 검사 147/147, 브라우저 묶음 10/10, audit 69/69, 기존 입금 화면 11/11, 대조 화면 8/8, 분기 집계 8/8을 확인했다. 빌드·문법·생성 파일 일치도 통과했다.
 
+검증 소스는 `1db025d`이다. [개발 검증 요약](../releases/development-receipt-basis-2.1.2.json)에 수행 시각, 시나리오 결과, 파일 해시와 미완료 범위를 기록한다.
+
 ![모바일 입금 입력으로 이동](screenshots/receipt-basis-input-390.png)
 ![PC 청구 기준 대조 필요](screenshots/receipt-basis-blocked-1366.png)
 

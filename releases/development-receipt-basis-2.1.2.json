@@ -1,0 +1,211 @@
+{
+  "version": "2.1.2",
+  "phase": "receipt-opening-basis-review",
+  "sourceCommit": "1db025d8204bc735327f956df0ae9a53850dba1a",
+  "checkedAt": "2026-10-09T22:18:15.997Z",
+  "releaseCandidate": false,
+  "behavior": {
+    "savedBillIdentityDisplayed": true,
+    "sixItemChargesConfirmationsBalances": true,
+    "sharedReceiptProjection": true,
+    "vatInclusiveAmounts": true,
+    "naAmountsZero": true,
+    "undatedLegacyPreserved": true,
+    "futureLegacyDatesSeparated": true,
+    "readableEstimateLabels": true,
+    "estimateSourceNamesUnchanged": true,
+    "storagePreflightReadOnly": true,
+    "openingAnchorMismatchBeforeInput": true,
+    "separateManualBillSaveRequired": true,
+    "comparisonNavigationDoesNotSave": true,
+    "staleComparisonNavigationBlocked": true,
+    "inputFocusShortcut": true,
+    "receiptLedgerFormatUnchanged": true,
+    "jsonSchemaUnchanged": true,
+    "moneyAndPersistenceImplementationUnchanged": true
+  },
+  "tests": {
+    "unit": {
+      "passed": 147,
+      "total": 147,
+      "newCases": 0
+    },
+    "browser": {
+      "passed": 10,
+      "total": 10,
+      "startedAt": "2026-10-09T22:12:43.629Z",
+      "finishedAt": "2026-10-09T22:17:18.014Z",
+      "node": "v24.18.0",
+      "results": [
+        {
+          "suite": "browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "audit-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "quarter-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "pwa-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "single-file-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "integrity-v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "independent-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        }
+      ]
+    },
+    "audit": {
+      "passed": 69,
+      "total": 69
+    },
+    "receiptUi": {
+      "passed": 11,
+      "total": 11
+    },
+    "quarterUi": {
+      "passed": 8,
+      "total": 8
+    },
+    "basisUi": {
+      "passed": 8,
+      "total": 8,
+      "results": [
+        {
+          "name": "basis opening PC mobile shows all saved charges confirmations balances and past identity without writes",
+          "status": "pass"
+        },
+        {
+          "name": "basis estimates use readable labels escape unknown fields and preserve checked estimate source",
+          "status": "pass"
+        },
+        {
+          "name": "basis incomplete stored snapshots block before input and keep the original storage unchanged",
+          "status": "pass"
+        },
+        {
+          "name": "basis comparison route needs separate manual save then retains legacy source on receipt opening",
+          "status": "pass"
+        },
+        {
+          "name": "basis future legacy dates stay visible without fabricating current confirmation or a new receipt",
+          "status": "pass"
+        },
+        {
+          "name": "basis existing ledger shows partial balances and keeps saved header and events on cancel",
+          "status": "pass"
+        },
+        {
+          "name": "basis six viewports and 200 percent text wrap large amounts with keyboard and storage preserved",
+          "status": "pass"
+        },
+        {
+          "name": "basis stale blocked comparison route stops after another tab saves and never changes newer data",
+          "status": "pass"
+        }
+      ]
+    },
+    "build": true,
+    "syntax": true,
+    "generatedFilesMatch": true,
+    "externalRequestsBlocked": true
+  },
+  "reproduction": {
+    "committedBaseline": "365762b",
+    "actualLocalBrowser": true,
+    "legacyDate": "2199/07/05",
+    "previousModalConfirmed": 110000,
+    "currentSharedConfirmed": 0,
+    "correctedModalConfirmed": 0
+  },
+  "operating": {
+    "unchangedGetOnlyProof": {
+      "checkedAt": "2026-10-09T22:02:38.168Z",
+      "sourceUnchanged": true,
+      "deploymentsUnchanged": true,
+      "fileCount": 8,
+      "versions": [
+        null,
+        4
+      ],
+      "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e"
+    },
+    "liveAppVersion": "1.0.0",
+    "liveDeploymentVersion": 4,
+    "liveDataWrite": false,
+    "documentRegeneration": false,
+    "calendarSync": false,
+    "deployed": false,
+    "remotePush": false,
+    "androidRebuild": false
+  },
+  "preservedCandidate": {
+    "version": "2.0.6",
+    "path": "releases/rental-independent-gas-2.0.6.zip",
+    "sha256": "fc03fdf04b43da7e9870e6c0e37ccf3ef5fd5cfadb82d318d8ebefecf1aeadd7"
+  },
+  "previousQuarterEvidence": "releases/development-quarter-2.1.1.json",
+  "files": {
+    "assets/app.js": "4417cab49236630aaf47a0028edb1a1cfa0521ad468f6bd80d961ebde2d4eea8",
+    "assets/core.js": "b10b52212c0b6bec7d7173ed2321ef4d392852e0265d54d64453f299692e7f17",
+    "assets/billing.js": "1072633df245402bbde1ccfb7757fc0772266a3e39bdba4c291bb5afb90077b7",
+    "assets/enhancements.js": "ce0ef7a53728ed1f959786257fafdbb38a9c67baefbf9c63a03220b63f7e4e2d",
+    "assets/workspace.css": "1e8903a5413f8bdbf0e75c8ad1c9860bd9a2d850c799eba47e323ff9c295418f",
+    "src/index.template.html": "a848111a66dd5d3c452992f85f54b8fc0510f69ca5dba2b4c87e8cc2cdb32f52",
+    "index.html": "4a8b58e14b64cd623c881f5ae995b3fa342849561147bf410f9a6aa4eb56e2fe",
+    "server/Billing.gs": "d68bf373047804fc82bafd0efad7ce6b4e2040e7c47e711a204f5c2b894f523a",
+    "server/Code.gs": "24bfca6a8b5472779ec84ccc19899f7fb7c2604e0b7d25462139bde1c78c033f",
+    "sw.js": "ce5f3c430509fe45794e4e86a7cafb80b19f20858140e8efc5f6deb358b401fb",
+    "tests/receipt-basis-browser.cjs": "28a70e19cf94c68c4f8a1d97fb97de104930e25d7fe715b9f4f243c22fb149c1",
+    "scripts/test-browser.cjs": "59bfe3dbdd41a0e3bf7f8bce2bfbf29f0ec47ab55743981ab55d31ceabb5cd2f"
+  },
+  "screenshots": {
+    "docs/screenshots/receipt-basis-1366.png": "3d0a9bf298ad63b5bed413d87d8276275ad0158029be27d076bd65192094feab",
+    "docs/screenshots/receipt-basis-390.png": "c6b6ba69be08aef270b4a49ce116d831908034f287bd0ceeb0bf65579d439c6e",
+    "docs/screenshots/receipt-basis-blocked-1366.png": "15961cecd827d806091a1d84f8d07054cc1761f5eca4eeb86dff762274632a14",
+    "docs/screenshots/receipt-basis-blocked-390.png": "e95589941b0cb7a236b593665da4f00e28f9b7a14f82d81283936afe5d0d24e8",
+    "docs/screenshots/receipt-basis-input-1366.png": "4486a182e783bd81b00acd09e2376b5888cd3f4fb4d0df780c71643723721bbe",
+    "docs/screenshots/receipt-basis-input-390.png": "8d153a5570d5fdbd1a4bf8377ee7aca6da49ae3b61c3a50dba0161b6428fa5c4"
+  },
+  "remaining": [
+    "Explicit pre-journal correction workflow for past fixed charges and contract information",
+    "Policy and workflow for changing an established receipt journal invoice basis",
+    "Original operating dataset reconciliation",
+    "Release candidate packaging and explicitly authorized independent Google end-to-end write verification",
+    "Physical phone and screen reader verification"
+  ]
+}
