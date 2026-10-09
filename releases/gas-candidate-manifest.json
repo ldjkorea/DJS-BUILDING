@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "target": "independent-owner-only-project",
+  "operation": "source candidate only; no deployment performed",
+  "files": [
+    {
+      "name": "appsscript.json",
+      "bytes": 353,
+      "sha256": "a6954c274b74d412d9ff0968b40641931869fcc31f5a0eb622a54575ca8d1247"
+    },
+    {
+      "name": "AuthorizeDocs.gs",
+      "bytes": 265,
+      "sha256": "5512c7b1828320898d8c86fc78163c2860bc9b63d9317ec98f81a4bac838efbb"
+    },
+    {
+      "name": "Billing.gs",
+      "bytes": 18685,
+      "sha256": "4bf365c8d11b799e1acbb447448326c734858e53434b920201f6956bc9de5a4a"
+    },
+    {
+      "name": "CalendarSync.gs",
+      "bytes": 6694,
+      "sha256": "501747cb87a69dd4f61cf26e86960d45e4bc156f788188805a551738a4c39a6c"
+    },
+    {
+      "name": "Code.gs",
+      "bytes": 16079,
+      "sha256": "00ce9640bfa6ef7cc493e97d6ec13f88d9809a7064b3a4a8a01c4851abd7a505"
+    },
+    {
+      "name": "CurrentStatus.gs",
+      "bytes": 7585,
+      "sha256": "c27a34b1fe72f14b8af8afc0abfa14140f9d53ca18dca89b62ce1891f6af50b1"
+    },
+    {
+      "name": "IndependentApp.gs",
+      "bytes": 1084,
+      "sha256": "cf9c7abc3e6e4d637ca084cba06c987b355addaff122e8d2c8a5a7281fa275f1"
+    },
+    {
+      "name": "App.html",
+      "bytes": 2513361,
+      "sha256": "5bc7e5cdd493c9c6dffb67cc566593b1ddacc6bab76ac169242f5c843b5abfbb"
+    }
+  ]
+}

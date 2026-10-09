@@ -1,0 +1,144 @@
+{
+  "version": "2.0.0",
+  "validatedAt": "2026-10-09T18:18:01.266Z",
+  "node": "v24.18.0",
+  "unit": {
+    "tests": 102,
+    "passed": 102,
+    "failed": 0
+  },
+  "browserSuites": [
+    {
+      "suite": "browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "audit-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "pwa-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "single-file-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "integrity-v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "independent-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ],
+  "independentBrowserScenarios": 7,
+  "integrityAcceptance": {
+    "results": [
+      {
+        "name": "PC and mobile clients block same and different tenant overwrites with a visible diff",
+        "status": "pass"
+      },
+      {
+        "name": "lost save acknowledgement retries one request ID after reload and writes once",
+        "status": "pass"
+      },
+      {
+        "name": "revision changes between preflight and POST never overwrite server state",
+        "status": "pass"
+      },
+      {
+        "name": "offline edit reconnects through version comparison and saves the retained candidate",
+        "status": "pass"
+      },
+      {
+        "name": "settlement drafts keep period and input across navigation and reload, stale data is not applied",
+        "status": "pass"
+      },
+      {
+        "name": "late background reads preserve the form edited while downloading",
+        "status": "pass"
+      },
+      {
+        "name": "reversed background revision responses cannot move the client base backwards",
+        "status": "pass"
+      },
+      {
+        "name": "restored local data cannot overwrite a different Google baseline",
+        "status": "pass"
+      },
+      {
+        "name": "unissued bills show no fabricated zero totals and all seven destinations fit six viewports",
+        "status": "pass"
+      },
+      {
+        "name": "200 percent text, long names and large amounts remain inside the workspace",
+        "status": "pass"
+      },
+      {
+        "name": "500-tenant render measurement",
+        "status": "pass",
+        "ms": 135.39999999850988
+      },
+      {
+        "name": "large anonymous dataset renders within a measured two second local budget",
+        "status": "pass"
+      }
+    ],
+    "errors": [],
+    "externalGoogleWrites": 0
+  },
+  "android": {
+    "releaseBuild": "PASS",
+    "lintErrors": 0,
+    "lintWarnings": 1,
+    "lintWarning": "UIAutomator test dependency newer version available",
+    "unitPassed": 1,
+    "instrumentationPassed": 1,
+    "signedReleaseInstalled": "PASS",
+    "sameVersionReinstall": "PASS",
+    "googleOwnerLogin": "NOT TESTED",
+    "physicalPhone": "NOT TESTED"
+  },
+  "originalSource": {
+    "sourceGasUnchanged": true,
+    "sourceDeploymentsUnchanged": true,
+    "originalDocModified": "2026-10-04T01:58:39.569Z",
+    "copyDocModified": "2026-10-09T14:24:44.077Z"
+  },
+  "independentLiveSource": {
+    "checkedAt": "2026-10-09T18:12:45.861Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e"
+  },
+  "actualDataValidator": {
+    "actualDataValidation": "pass",
+    "oldAndNewValidatorDifferences": [],
+    "tenants": 4,
+    "billMonths": 11
+  },
+  "liveVersion": 4,
+  "candidateDeployed": false,
+  "remotePushPerformed": false,
+  "sourceCommit": "d4c01a5",
+  "androidCommit": "8bc9c37",
+  "baselineCommit": "5978818"
+}

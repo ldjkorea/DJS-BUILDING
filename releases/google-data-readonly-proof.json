@@ -1,0 +1,9 @@
+{
+  "date": "2026-10-10 KST",
+  "operation": "read-only comparison",
+  "originalSheetUnchanged": true,
+  "independentDomainMatchesOriginal": true,
+  "tenants": 4,
+  "billMonths": 11,
+  "privateRawEvidence": ".private/ original and independent snapshots (not committed)"
+}
