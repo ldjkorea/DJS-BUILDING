@@ -1,0 +1,138 @@
+{
+  "version": "2.1.3",
+  "sourceCommit": "8345a8a90bbcf262e0588e0e1500bae6557dfb03",
+  "productValidationCommit": "e08f91527eb3389e5a5b0917b9baeb73fedbb151",
+  "archiveSha256": "46e4f65eab6cbf69344aae34d3ac245c1bc5c66cea3b7392b8ce8c87d0648e10",
+  "startedAt": "2026-10-09T23:00:08.069Z",
+  "finishedAt": "2026-10-09T23:01:24.139Z",
+  "serverMockTests": 42,
+  "browserCases": {
+    "receipt": 11,
+    "receipt-basis": 8,
+    "bill-basis": 11,
+    "quarter": 8
+  },
+  "extractedAppHtmlSha256": "9cec30c135162c95b1a3978b12557d4668410aee54fa61f92643db153ca93c50",
+  "readFromZip": true,
+  "realGoogleWrites": false,
+  "productionDeployed": false,
+  "results": [
+    {
+      "file": "server.test.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "receipt-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "receipt-basis-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "bill-basis-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "quarter-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ],
+  "recordedAt": "2026-10-09T23:04:01.365Z",
+  "reviewCandidate": true,
+  "productionReady": false,
+  "unit": {
+    "total": 164,
+    "passed": 164,
+    "newPackagingTests": 6
+  },
+  "package": {
+    "archive": {
+      "file": "rental-independent-gas-2.1.3.zip",
+      "bytes": 1704106,
+      "sha256": "46e4f65eab6cbf69344aae34d3ac245c1bc5c66cea3b7392b8ce8c87d0648e10"
+    },
+    "files": [
+      {
+        "name": "App.html",
+        "bytes": 2625180,
+        "sha256": "9cec30c135162c95b1a3978b12557d4668410aee54fa61f92643db153ca93c50"
+      },
+      {
+        "name": "AuthorizeDocs.gs",
+        "bytes": 265,
+        "sha256": "5512c7b1828320898d8c86fc78163c2860bc9b63d9317ec98f81a4bac838efbb"
+      },
+      {
+        "name": "Billing.gs",
+        "bytes": 41951,
+        "sha256": "a20d4072e65d8bc129d1b5e9c5e0a2d171595ba623d4d8fc9c080a5d9dab20fc"
+      },
+      {
+        "name": "CalendarSync.gs",
+        "bytes": 6694,
+        "sha256": "501747cb87a69dd4f61cf26e86960d45e4bc156f788188805a551738a4c39a6c"
+      },
+      {
+        "name": "Code.gs",
+        "bytes": 17100,
+        "sha256": "efdafb7cf306830846cbb8cd7e45a5b95d242569c388cb130786246ae0209211"
+      },
+      {
+        "name": "CurrentStatus.gs",
+        "bytes": 7801,
+        "sha256": "8dcf4fc79d5d8f388797b0ca0babe93e0b6bcec3ea3bd543803b75ea3a9cff7f"
+      },
+      {
+        "name": "IndependentApp.gs",
+        "bytes": 1136,
+        "sha256": "c97eb66869f7c898b09763710e6d8fa5b370c468f924ef77ee9b01b5f2550f41"
+      },
+      {
+        "name": "appsscript.json",
+        "bytes": 353,
+        "sha256": "a6954c274b74d412d9ff0968b40641931869fcc31f5a0eb622a54575ca8d1247"
+      }
+    ],
+    "deterministicSameRuntime": true,
+    "secondInvocationReusedWithoutOverwrite": true
+  },
+  "productEvidence": {
+    "path": "releases/development-bill-basis-2.1.3.json",
+    "sha256": "42d32709c1c11858a5577d166745e20fed1e3d4991d11cb93925984a84d072ea",
+    "previousWholeBrowserSuiteCount": 11,
+    "previousWholeBrowserScope": "Product source; PWA is not in this GAS ZIP"
+  },
+  "operating": {
+    "checkedAt": "2026-10-09T23:01:16.380Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e",
+    "appVersion": "1.0.0",
+    "deploymentVersion": 4,
+    "verification": "GET project source and deployments only",
+    "actualGoogleWrite": false,
+    "actualDocsRegeneration": false,
+    "actualCalendarSync": false
+  },
+  "previousCandidate": {
+    "version": "2.0.6",
+    "sha256": "fc03fdf04b43da7e9870e6c0e37ccf3ef5fd5cfadb82d318d8ebefecf1aeadd7"
+  },
+  "remaining": [
+    "Opened-journal basis migration policy",
+    "Actual operating data reconciliation",
+    "Authorized Google write/readback Docs and Calendar verification",
+    "Physical phone offline update printing and screen reader checks"
+  ]
+}

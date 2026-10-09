@@ -1,6 +1,6 @@
 # 임대관리 독립앱 2.0 — 릴리스 후보
 
-이 문서는 `candidate/independent-v2-74df177`의 2.0.0 기준 기록이다. 이후 소스 개선과 최신 2.0.1 후보는 [지속 보완 기록](CONTINUOUS_IMPROVEMENT.md)을 참고한다. 기존 APK 및 2.0.0 ZIP/해시는 해당 기준 산출물로 보존한다.
+이 문서는 `candidate/independent-v2-74df177`의 2.0.0 기준 기록이다. 이후 소스 개선과 [2.1.3 GAS 검토 후보](GAS_REVIEW_CANDIDATE_2.1.3.md)는 [지속 보완 기록](CONTINUOUS_IMPROVEMENT.md)을 참고한다. 아래 APK·에뮬레이터·배포 판정은 당시 2.0.0에 대한 기록이며 새 후보의 운영 검증으로 해석하지 않는다. 기존 APK 및 2.0.0 ZIP/해시는 해당 기준 산출물로 보존한다.
 
 작성: 2026-10-10 KST. 대상은 독립앱이며 운영 Google 자료와 기존 원본을 변경하지 않는 로컬 후보다.
 
