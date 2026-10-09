@@ -62,6 +62,8 @@ const DRAFT_RECOVERY_PREFIX='rentalApp.draftRecovery.v1.';
 const DRAFT_RECOVERY_FORMAT='rental-draft-recovery-v1';
 const pendingDraftRecovery=new Map(),draftDiagnostics=new Map();
 let draftRecoveryWriteFailed=false,draftNoticeSignature='';
+const draftRecoveryViewKeys=new Map();
+const draftStorageReadFailures=new Set();
 function draftContentChanged(original,clean){
   if(original&&clean&&typeof original==='object'&&typeof clean==='object'&&Array.isArray(original)===Array.isArray(clean))
     return Object.keys(original).some(key=>!Object.hasOwn(clean,key)||draftContentChanged(original[key],clean[key]));
@@ -77,10 +79,11 @@ function inspectDraftText(raw,source){
 function readDraftStorage(key,source){
   try {
     const raw=appStorage.getItem(key),inspection=inspectDraftText(raw,source);
+    draftStorageReadFailures.delete(source);
     if(inspection.problem)draftDiagnostics.set(source,raw);else draftDiagnostics.delete(source);
     renderDraftRecoveryNotice();return inspection.clean;
   } catch {
-    draftRecoveryWriteFailed=true;renderDraftRecoveryNotice();return {};
+    draftStorageReadFailures.add(source);renderDraftRecoveryNotice();return {};
   }
 }
 function storedDraftRecovery(){
@@ -98,6 +101,7 @@ function storedDraftRecovery(){
 }
 function collectDraftRecovery(){
   readDraftStorage(DRAFT_KEY,'bill');readDraftStorage(SETT_DRAFT_KEY,'settlement');
+  if(draftStorageReadFailures.size)throw new Error('초안 저장소를 읽지 못해 전체 원문을 확인할 수 없습니다.');
   const entries=[...storedDraftRecovery(),...pendingDraftRecovery.values()];
   for(const [source,raw] of draftDiagnostics)if(!entries.some(entry=>entry.source===source&&entry.raw===raw))entries.push({source,raw,at:'',id:''});
   return {format:DRAFT_RECOVERY_FORMAT,entries};
@@ -145,20 +149,98 @@ function exportDraftRecovery(){
   try {downloadJson(collectDraftRecovery(),'초안원문');showToast('초안 원문 파일 다운로드를 시작했습니다.');}
   catch {showToast('초안 원문을 내보내지 못했습니다. 이 창을 유지하고 저장소 접근 상태를 확인해주세요.');}
 }
+function draftRecoveryInventory(){
+  let stored=[],unreadable=false;
+  try{stored=storedDraftRecovery();}catch{unreadable=true;}
+  const records=new Map();
+  const add=(entry,state)=>{
+    const identity=entry.source+'\n'+entry.raw;
+    let row=records.get(identity);
+    if(!row){
+      if(!draftRecoveryViewKeys.has(identity))draftRecoveryViewKeys.set(identity,'draft-record-'+draftRecoveryViewKeys.size);
+      row={entry,key:draftRecoveryViewKeys.get(identity),stored:false,pending:false,current:false};records.set(identity,row);
+    }
+    row[state]=true;
+  };
+  stored.forEach(entry=>add(entry,'stored'));
+  pendingDraftRecovery.forEach(entry=>add(entry,'pending'));
+  draftDiagnostics.forEach((raw,source)=>add({source,raw,at:'',id:''},'current'));
+  return {rows:[...records.values()],unreadable};
+}
+function openDraftRecovery(){
+  readDraftStorage(DRAFT_KEY,'bill');readDraftStorage(SETT_DRAFT_KEY,'settlement');
+  openModal('modal-draft-recovery');renderDraftRecoveryView();
+}
+function refreshDraftRecovery(){
+  readDraftStorage(DRAFT_KEY,'bill');readDraftStorage(SETT_DRAFT_KEY,'settlement');renderDraftRecoveryView();
+}
+function retryDraftRecovery(row){
+  try{
+    if(!preserveDraftText(row.entry.source,row.entry.raw))throw new Error('초안 원문 보관 실패');
+    showToast('초안 원문을 기기에 보관했습니다. 기존 초안과 임대 자료는 유지됩니다.');
+  }catch{showToast('초안 원문을 기기에 보관하지 못했습니다. 이 창을 유지하고 파일로 내보내주세요.');}
+  renderDraftRecoveryView();
+}
+function exportDraftRecoveryEntry(row){
+  try{downloadJson({format:DRAFT_RECOVERY_FORMAT,entries:[row.entry]},'초안원문_개별');showToast('선택한 원문 파일 다운로드를 시작했습니다. 파일이 저장됐는지 확인해주세요.');}
+  catch{showToast('선택한 원문을 내보내지 못했습니다. 이 창을 유지해주세요.');}
+}
+function renderDraftRecoveryView(){
+  const modal=document.getElementById('modal-draft-recovery');if(!modal?.classList.contains('open'))return;
+  const inventory=draftRecoveryInventory(),rows=inventory.rows,unreadable=inventory.unreadable||draftStorageReadFailures.size>0,list=document.getElementById('draft-recovery-list');
+  const focused=document.activeElement,focusKey=focused?.dataset.focusKey;
+  const expanded=new Set([...list.querySelectorAll('details[open]')].map(el=>el.dataset.recordKey));
+  const selection=focused?.tagName==='TEXTAREA'?{start:focused.selectionStart,end:focused.selectionEnd}:null;
+  const scrollTop=modal.querySelector('.modal').scrollTop;
+  const error=document.getElementById('draft-recovery-read-error');error.hidden=!unreadable;error.textContent=unreadable?'초안 원문 저장소를 읽지 못했습니다. 저장소 접근 상태를 확인해주세요. 아래 목록에는 현재 창에서 확인할 수 있는 원문만 표시합니다.':'';
+  document.getElementById('draft-recovery-summary').textContent=rows.length?'확인된 원문 '+rows.length+'건 · 기기 보관 '+rows.filter(r=>r.stored).length+' · 기기 미보관 '+rows.filter(r=>!r.stored).length+(unreadable?' · 기기 기록 확인 필요':''):unreadable?'기기 기록 확인 필요':'확인된 복구 원문이 없습니다.';
+  list.replaceChildren();
+  for(const row of rows){
+    const card=document.createElement('article');card.className='draft-recovery-record';card.dataset.recordKey=row.key;card.dataset.source=row.entry.source;
+    const title=document.createElement('h3');title.textContent=({bill:'고지서 초안',settlement:'정산 초안',recovery:'복구 기록 원문'})[row.entry.source];
+    const status=document.createElement('p');status.className='draft-recovery-state';status.textContent=(row.stored?'기기에 보관됨':row.pending?'현재 창에만 있음 · 기기 보관 실패':'기존 초안 저장소에 있음 · 별도 보관 전')+(row.current?' · 현재 초안 확인 필요':'');
+    const metadata=document.createElement('p');metadata.className='card-sub';
+    const at=typeof row.entry.at==='string'?new Date(row.entry.at):new Date(NaN),bytes=new Blob([row.entry.raw]).size;
+    metadata.textContent='보관 시각 '+(row.stored&&!Number.isNaN(at.getTime())?at.toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}):'확인되지 않음')+' · 원문 '+bytes.toLocaleString()+'B';
+    const actions=document.createElement('div');actions.className='draft-recovery-actions';
+    const download=document.createElement('button');download.type='button';download.className='btn btn-secondary';download.textContent='이 원문 내보내기';download.dataset.focusKey=row.key+'-export';download.onclick=()=>exportDraftRecoveryEntry(row);actions.append(download);
+    if(!row.stored){const retry=document.createElement('button');retry.type='button';retry.className='btn btn-secondary';retry.textContent='기기에 보관 다시 시도';retry.dataset.focusKey=row.key+'-retry';retry.onclick=()=>retryDraftRecovery(row);actions.append(retry);}
+    const details=document.createElement('details');details.dataset.recordKey=row.key;
+    const summary=document.createElement('summary');summary.textContent='원문 보기';summary.dataset.focusKey=row.key+'-summary';details.append(summary);
+    const showRaw=()=>{
+      if(!details.open||details.querySelector('textarea'))return;
+      const label=document.createElement('label');label.textContent='원문 내용';label.htmlFor=row.key+'-raw';
+      const raw=document.createElement('textarea');raw.id=label.htmlFor;raw.className='draft-raw-text';raw.readOnly=true;raw.rows=6;raw.value=row.entry.raw;raw.dataset.focusKey=row.key+'-raw';details.append(label,raw);
+    };
+    details.addEventListener('toggle',showRaw);details.open=expanded.has(row.key);showRaw();
+    card.append(title,status,metadata,actions,details);list.append(card);
+  }
+  modal.querySelector('.modal').scrollTop=scrollTop;
+  if(focusKey&&list.contains(focused)===false&&!focused?.isConnected){
+    const replacement=list.querySelector('[data-focus-key="'+CSS.escape(focusKey)+'"]')||list.querySelector('[data-focus-key="'+CSS.escape(focusKey.replace(/-(retry|export|raw)$/,'-summary'))+'"]')||modal.querySelector('.modal-title');
+    replacement?.focus({preventScroll:true});if(selection&&replacement?.tagName==='TEXTAREA')replacement.setSelectionRange(selection.start,selection.end);
+  }
+}
 function renderDraftRecoveryNotice(){
+  renderDraftRecoveryView();
   const anchor=document.getElementById('data-notice');if(!anchor)return;
-  let count=0;try{count=storedDraftRecovery().length+pendingDraftRecovery.size;}catch{draftRecoveryWriteFailed=true;}
-  const active=draftDiagnostics.size,signature=[count,active,draftRecoveryWriteFailed].join(':');
+  let count=0,readFailed=draftStorageReadFailures.size>0;try{count=storedDraftRecovery().length+pendingDraftRecovery.size;}catch{readFailed=true;}
+  const active=draftDiagnostics.size,signature=[count,active,draftRecoveryWriteFailed,readFailed].join(':');
   if(signature===draftNoticeSignature)return;draftNoticeSignature=signature;
   let panel=document.getElementById('draft-recovery-notice');
   if(!panel){panel=document.createElement('section');panel.id='draft-recovery-notice';panel.className='data-notice draft-recovery-notice';panel.setAttribute('role','status');anchor.after(panel);}
-  panel.hidden=!count&&!active&&!draftRecoveryWriteFailed;panel.replaceChildren();if(panel.hidden)return;
+  panel.hidden=!count&&!active&&!draftRecoveryWriteFailed&&!readFailed;panel.replaceChildren();if(panel.hidden)return;
   const text=document.createElement('p');
-  text.textContent=draftRecoveryWriteFailed?'초안 원문을 기기에 보관하지 못했습니다. 기존 초안 저장소는 유지합니다. 이 창을 닫기 전에 원문과 현재 입력을 파일로 내보내주세요.':active?'초안 확인 필요 · 읽지 못하거나 지원하지 않는 내용이 있습니다. 정상 고지서·정산 자료는 유지하며, 해당 원문은 초안에 자동 적용하지 않습니다.':'초안 복구 원문 '+count+'건을 이 기기에 보관했습니다. 파일로 내보내 장기 보관할 수 있습니다.';
-  const button=document.createElement('button');button.type='button';button.className='btn btn-secondary';button.textContent='초안 원문 내보내기';button.onclick=exportDraftRecovery;panel.append(text,button);
+  text.textContent=readFailed?'초안 기록을 읽지 못했습니다. 복구 원문 확인에서 현재 확인 가능한 기록을 내보내고 저장소 접근 상태를 확인해주세요.':draftRecoveryWriteFailed?'초안 원문을 기기에 보관하지 못했습니다. 기존 초안 저장소는 유지합니다. 이 창을 닫기 전에 원문과 현재 입력을 파일로 내보내주세요.':active?'초안 확인 필요 · 읽지 못하거나 지원하지 않는 내용이 있습니다. 정상 고지서·정산 자료는 유지하며, 해당 원문은 초안에 자동 적용하지 않습니다.':'초안 복구 원문 '+count+'건을 이 기기에 보관했습니다. 파일로 내보내 장기 보관할 수 있습니다.';
+  const button=document.createElement('button');button.type='button';button.className='btn btn-secondary';button.textContent='초안 원문 내보내기';button.onclick=exportDraftRecovery;
+  const inspect=document.createElement('button');inspect.type='button';inspect.className='btn btn-secondary';inspect.textContent='복구 원문 확인';inspect.dataset.focusKey='draft-recovery-open-notice';inspect.onclick=openDraftRecovery;panel.append(text,inspect,button);
 }
 document.addEventListener('DOMContentLoaded',()=>{readDraftStorage(DRAFT_KEY,'bill');readDraftStorage(SETT_DRAFT_KEY,'settlement');renderDraftRecoveryNotice();});
-window.addEventListener('storage',event=>{if(event.key?.startsWith(STORAGE_PREFIX+(isDemo?'rentalDemo.':'')+DRAFT_RECOVERY_PREFIX))renderDraftRecoveryNotice();});
+window.addEventListener('storage',event=>{
+  const scope=STORAGE_PREFIX+(isDemo?'rentalDemo.':'');
+  if([scope+DRAFT_KEY,scope+SETT_DRAFT_KEY].includes(event.key))refreshDraftRecovery();
+  else if(event.key?.startsWith(scope+DRAFT_RECOVERY_PREFIX))renderDraftRecoveryNotice();
+});
 function discardBillDraft(){
   clearBillDraft();editThisMonth();showToast('초안을 지우고 저장된 고지서를 표시합니다.');
 }
@@ -350,7 +432,7 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.0.4';
+const APPLICATION_VERSION='2.0.5';
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
   const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';
