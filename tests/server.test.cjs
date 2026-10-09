@@ -24,8 +24,8 @@ function server(options={}) {
       })
     };
   }
-  const target=sheet(7,targetRows),backup=sheet(8,backupRows,true);
-  const book={getActiveSheet:()=>target,getSheetById:id=>id===7?target:null,getSheetByName:name=>name==='_RentalSyncRecovery'?backup:null,insertSheet:()=>backup};
+  const target=sheet(0,targetRows),backup=sheet(8,backupRows,true);
+  const book={getActiveSheet:()=>target,getSheetById:id=>id===0?target:null,getSheetByName:name=>name==='_RentalSyncRecovery'?backup:null,insertSheet:()=>backup};
   class Paragraph {constructor(value){this.value=String(value);}getText(){return this.value;}getType(){return 'PARAGRAPH';}setHeading(){return this;}}
   class Body {
     constructor(texts=[]){this.children=texts.map(text=>new Paragraph(text));}
@@ -34,10 +34,10 @@ function server(options={}) {
     insertParagraph(index,text){const p=new Paragraph(text);this.children.splice(index,0,p);return p;}
     removeChild(child){const index=this.children.indexOf(child);if(index>=0)this.children.splice(index,1);}
   }
-  const docId='status-doc-1';
+  const docId='1YjTZPiRA2vnfAuWp1UTBci8F4yUNozQjYhE9QwMdtuQ';
   const body=new Body(options.documentTexts||['사용자 메모 위','[RENTAL_CURRENT_STATUS_BEGIN]','이전 자동 내용','[RENTAL_CURRENT_STATUS_END]','사용자 메모 아래']);
   const document={getId:()=>docId,getUrl:()=>`https://docs.google.com/document/d/${docId}/edit`,getBody:()=>body,saveAndClose:()=>{}};
-  const defaultStatusDocumentId='1-HZYrBDD8HPZYO8sNCy33Q298DJ91LJIJAWRuWdQgFI';
+  const defaultStatusDocumentId='1YjTZPiRA2vnfAuWp1UTBci8F4yUNozQjYhE9QwMdtuQ';
   const DocumentApp={ElementType:{PARAGRAPH:'PARAGRAPH'},ParagraphHeading:{HEADING1:'HEADING1',HEADING2:'HEADING2'},openById:id=>{if(fail==='docs'||(id!==docId&&id!==defaultStatusDocumentId))throw Error('document unavailable');return document;},create:()=>{throw Error('unexpected document creation');}};
   const DriveApp={getFilesByName:()=>{throw Error('unexpected filename lookup');}};
   const calendarEvents=new Map();let calendarSequence=0;
@@ -47,20 +47,20 @@ function server(options={}) {
     getId(){return this.id;}setTitle(value){this.title=value;return this;}setDescription(value){this.description=value;return this;}
     setAllDayDate(value){this.date=dateKey(value);return this;}
   }
-  const calendar={
+  const calendar={getId:()=>'independent-calendar',
     getEventById:id=>{if(fail==='calendar')throw Error('calendar unavailable');return calendarEvents.get(id)||null;},
     createAllDayEvent:(title,date,config)=>{if(fail==='calendar'||fail==='calendar-permission')throw Error('calendar permission denied');const event=new CalendarEvent(title,date,config?.description);calendarEvents.set(event.id,event);return event;}
   };
-  const CalendarApp={getDefaultCalendar:()=>{if(fail==='calendar-permission')throw Error('calendar permission denied');return calendar;},getCalendarById:id=>{if(fail==='calendar-permission')throw Error('calendar permission denied');return id==='missing'?null:calendar;}};
+  const CalendarApp={getDefaultCalendar:()=>{throw Error('original calendar must never be used');},createCalendar:()=>{if(fail==='calendar-permission')throw Error('calendar permission denied');return calendar;},getCalendarById:id=>{if(fail==='calendar-permission')throw Error('calendar permission denied');return id==='missing'?null:calendar;}};
   if(options.existingDocument!==false&&!props.has('RENTAL_STATUS_DOCUMENT_ID'))props.set('RENTAL_STATUS_DOCUMENT_ID',docId);
   const c=vm.createContext({
     ContentService:{MimeType:{JSON:'json'},createTextOutput:s=>({setMimeType:()=>s})},
     Utilities:{DigestAlgorithm:{SHA_256:'sha256'},Charset:{UTF_8:'utf8'},computeDigest:(a,s)=>[...crypto.createHash('sha256').update(s).digest()],getUuid:()=>crypto.randomUUID(),formatDate:(date,_zone,format)=>format==='yyyy-MM-dd'?date.toISOString().slice(0,10):date.toISOString().replace('T',' ').slice(0,19)},
-    LockService:{getScriptLock:()=>({tryLock:()=>!held&&(held=true),releaseLock:()=>{held=false;}})},SpreadsheetApp:{getActiveSpreadsheet:()=>book,flush:()=>{}},DocumentApp,DriveApp,CalendarApp,
+    LockService:{getScriptLock:()=>({tryLock:()=>!held&&(held=true),releaseLock:()=>{held=false;}})},SpreadsheetApp:{openById:id=>{assert.equal(id,'1E9YcSQSNTLTC41fqWBYHMNpSRKQrDlvAXeF9AxdDFb8');return book;},flush:()=>{}},DocumentApp,DriveApp,CalendarApp,
     PropertiesService:{getScriptProperties:()=>({getProperty:key=>props.get(key)??null,setProperty:(key,value)=>props.set(key,value)})}
   });
   for(const file of ['Billing.gs','CurrentStatus.gs','CalendarSync.gs','Code.gs'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../server',file),'utf8'),c,{filename:file});
-  const get=()=>JSON.parse(c.doGet({})),post=req=>JSON.parse(c.doPost({postData:{contents:JSON.stringify(req)}}));
+  const get=()=>JSON.parse(c.doGet({parameter:{api:'1'}})),post=req=>JSON.parse(c.doPost({postData:{contents:JSON.stringify(req)}}));
   const request=(data={tenants:[],bills:{}})=>({protocol:'rental-sync-v2',expectedRevision:get().revision,requestId:crypto.randomUUID(),data});
   return {get,post,request,writes:()=>writes,backupRows,body,props,events:()=>[...calendarEvents.values()].map(event=>({...event})),raw:()=>targetRows.map(row=>String(row[0]||'')).join(''),fail:value=>{fail=value;},hold:value=>{held=value;},corrupt:value=>{targetRows.splice(0,targetRows.length,[value]);}};
 }
@@ -113,5 +113,5 @@ test('Calendar permission and API failures are isolated from DB and reject stale
 test('generated document replaces only marked region and preserves user text',()=>{const s=server(),r=s.request({tenants:[{id:'t1',name:'임차인',unit:'201호',payday:'15일',rent:100000,mgmt:10000}],bills:{}});assert.equal(s.post(r).docs.status,'ok');const values=s.body.children.map(child=>child.getText());assert.equal(values[0],'사용자 메모 위');assert.equal(values.at(-1),'사용자 메모 아래');assert.ok(values.includes('201호 · 임차인'));assert.ok(!values.includes('이전 자동 내용'));});
 test('current status omits archived historical tenants',()=>{const s=server(),r=s.request({tenants:[{id:'old',name:'이전 임차인',unit:'201호',archived:true}],bills:{}});assert.equal(s.post(r).docs.status,'ok');assert.ok(!s.body.children.some(child=>child.getText().includes('이전 임차인')));});
 test('missing configured document ID reports an error without creating a replacement',()=>{const s=server({properties:{RENTAL_STATUS_DOCUMENT_ID:'missing-doc'}}),ack=s.post(s.request());assert.equal(ack.status,'ok');assert.equal(ack.docs.status,'error');assert.equal(s.props.get('RENTAL_STATUS_DOCUMENT_ID'),'missing-doc');});
-test('missing document property restores the fixed operating ID and ignores document title',()=>{const s=server({existingDocument:false}),ack=s.post(s.request());assert.equal(ack.status,'ok');assert.equal(ack.docs.status,'ok');assert.equal(s.props.get('RENTAL_STATUS_DOCUMENT_ID'),'1-HZYrBDD8HPZYO8sNCy33Q298DJ91LJIJAWRuWdQgFI');});
+test('missing document property uses only the copied document ID and ignores document title',()=>{const s=server({existingDocument:false}),ack=s.post(s.request());assert.equal(ack.status,'ok');assert.equal(ack.docs.status,'ok');assert.equal(s.props.get('RENTAL_STATUS_DOCUMENT_ID'),'1YjTZPiRA2vnfAuWp1UTBci8F4yUNozQjYhE9QwMdtuQ');});
 test('corrupt persisted data is never replaced and busy lock prevents writes',()=>{const s=server(),r=s.request();s.corrupt('{broken');assert.equal(s.post(r).status,'error');assert.equal(s.raw(),'{broken');const busy=server();busy.hold(true);assert.equal(busy.post(busy.request()).status,'busy');assert.equal(busy.writes(),0);});

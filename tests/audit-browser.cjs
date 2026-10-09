@@ -29,7 +29,7 @@ async function open(data=sample(),options={}) {
   });
   await context.addInitScript(({data,stateKey,origin})=>{
     if(location.origin!==origin||!['http:','https:'].includes(location.protocol))return;
-    if(!localStorage.getItem(stateKey))localStorage.setItem(stateKey,JSON.stringify(data));
+    if(!localStorage.getItem('rentalIndependent20261009.'+stateKey))localStorage.setItem('rentalIndependent20261009.'+stateKey,JSON.stringify(data));
   },{data,stateKey:core.STATE_KEY,origin:new URL(TEST_URL).origin});
   const page=await context.newPage();
   page.on('dialog',d=>d.accept());page.on('pageerror',e=>errors.push(e.message));
@@ -52,14 +52,14 @@ async function failStorage(page,storageKey) {
       if(key===storageKey)throw new DOMException('test quota','QuotaExceededError');
       return window.originalStorageWrite.call(this,key,value);
     };
-  },storageKey);
+  },"rentalIndependent20261009."+storageKey);
 }
 test('failed bill save preserves committed data and exports unsaved input',async()=>{
   const {page}=await open();await history(page,'audit1',past,true);
-  const before=await page.evaluate(()=>localStorage.getItem(RentalCore.STATE_KEY));
+  const before=await page.evaluate(()=>localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY));
   await page.locator('#bill-electricity').fill('45678');await failStorage(page,core.STATE_KEY);
   await page.evaluate(()=>saveBill());
-  assert.equal(await page.evaluate(()=>localStorage.getItem(RentalCore.STATE_KEY)),before);
+  assert.equal(await page.evaluate(()=>localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY)),before);
   assert.equal(await page.evaluate(past=>bills[past].audit1.electricity,past),35000);
   assert.equal(await page.locator('#bill-electricity').inputValue(),'45678');
   assert.equal((await exportBackup(page)).bills[past].audit1.electricity,45678);

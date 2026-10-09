@@ -4,10 +4,12 @@
 let cY=new Date().getFullYear(), cM=new Date().getMonth()+1;
 const esc = RentalCore.escapeHtml;
 const isDemo = new URLSearchParams(location.search).get('demo') === '1';
+const STORAGE_PREFIX = 'rentalIndependent20261009.';
+const hostedInGas = typeof google !== 'undefined' && !!google.script?.run;
 const appStorage = {
-  getItem:key=>localStorage.getItem((isDemo?'rentalDemo.':'')+key),
-  setItem:(key,value)=>localStorage.setItem((isDemo?'rentalDemo.':'')+key,value),
-  removeItem:key=>localStorage.removeItem((isDemo?'rentalDemo.':'')+key),
+  getItem:key=>localStorage.getItem(STORAGE_PREFIX+(isDemo?'rentalDemo.':'')+key),
+  setItem:(key,value)=>localStorage.setItem(STORAGE_PREFIX+(isDemo?'rentalDemo.':'')+key,value),
+  removeItem:key=>localStorage.removeItem(STORAGE_PREFIX+(isDemo?'rentalDemo.':'')+key),
 };
 if(isDemo) {
   try {
@@ -43,7 +45,7 @@ let expectedStorageToken;try{expectedStorageToken=RentalCore.storageToken(appSto
 let lastCommitted=JSON.parse(JSON.stringify(loadedState.data)), failedSaveData=null, persistenceBusy=false;
 const productionSite = location.hostname === 'ldjkorea.github.io' && location.pathname.startsWith('/rental-app/');
 let cloudEnabled = false;
-try { cloudEnabled = appStorage.getItem('rentalApp.cloudEnabled') === 'true'; }
+try { const setting=appStorage.getItem('rentalApp.cloudEnabled'); cloudEnabled = setting === null ? hostedInGas : setting === 'true'; }
 catch { cloudEnabled = false; }
 if(isDemo)cloudEnabled=false;
 
@@ -57,7 +59,7 @@ let selTenantId  = null; // 고지서 탭 선택 세입자
 let histY=cY, histM=cM;
 let settCalcResult = null;
 
-const SHEET_URL='https://script.google.com/macros/s/AKfycbzZ5g7ljLVaqGSrd-BnkYAouhXjAGpiHhlbdoThlZP45nUGP-a7lvWyrxR-Qr9Cafv9/exec';
+const SHEET_URL='https://script.google.com/macros/s/AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae/exec?api=1';
 
 /* 관리비 항목 (2026.05.12 관리비 공개 기준) */
 const ALL_MGMT_ITEMS=[
@@ -311,7 +313,7 @@ function showDataNotice(message, actions = []) {
 }
 function withStorageLock(action) {
   if (!navigator.locks?.request) throw new Error('안전한 저장에는 HTTPS 또는 localhost의 최신 브라우저가 필요합니다.');
-  return navigator.locks.request((isDemo?'rentalDemo.':'')+'rentalApp.write', action);
+  return navigator.locks.request(STORAGE_PREFIX+(isDemo?'rentalDemo.':'')+'rentalApp.write', action);
 }
 function assertCurrentStorage() {
   if (conflictingTab || RentalCore.storageToken(appStorage)!==expectedStorageToken) {
@@ -373,7 +375,20 @@ async function cloudRequest(options = {}) {
 
     let response;
     try {
-      response = await fetch(fetchUrl, fetchOptions);
+      if (hostedInGas) {
+        response = await new Promise((resolve, reject) => {
+          let settled=false;
+          const finish=(callback,value)=>{if(settled)return;settled=true;controller.signal.removeEventListener('abort',abort);callback(value);};
+          const abort=()=>finish(reject,new Error('구글 요청이 중단되었습니다. 저장 결과는 다시 불러와 확인해주세요.'));
+          controller.signal.addEventListener('abort',abort,{once:true});
+          google.script.run.withSuccessHandler(result=>finish(resolve,{ok:true,json:async()=>JSON.parse(result)}))
+            .withFailureHandler(error=>finish(reject,new Error(error.message||'구글 서버 연결 실패')))
+            .independentRequest({method:isPost?'POST':'GET',body:isPost?options.body:null});
+        });
+      } else {
+        if(!SHEET_URL)throw new Error('새 GAS 앱 주소에서 열어주세요. 이 화면은 기기 저장만 사용할 수 있습니다.');
+        response = await fetch(fetchUrl, fetchOptions);
+      }
     } catch (netErr) {
       if (controller.signal.aborted) {
         throw new Error(`구글 서버 응답 시간 초과(${Math.round(timeoutMs/1000)}초). 잠시 후 다시 시도해주세요.`);
@@ -615,7 +630,7 @@ function syncUI(state) {
 window.addEventListener('online', () => { if (cloudEnabled && cloudDirty) doSync(); });
 window.addEventListener('offline', () => syncUI('offline'));
 window.addEventListener('storage', event => {
-  if (event.key === (isDemo?'rentalDemo.':'')+RentalCore.STATE_KEY || event.key === null) {
+  if (event.key === STORAGE_PREFIX+(isDemo?'rentalDemo.':'')+RentalCore.STATE_KEY || event.key === null) {
     conflictingTab = true; clearTimeout(saveTimer); syncController?.abort(); syncUI('localError');
     showDataNotice('다른 창에서 데이터가 변경됐습니다. 이 창의 덮어쓰기를 막았습니다. 새로고침 후 계속해주세요.');
   }
@@ -2937,7 +2952,7 @@ function getDefaultKakaoTemplate(tab) {
 
 function loadKakaoTemplates() {
   try {
-    const raw = localStorage.getItem(KAKAO_TEMPLATE_STORAGE_KEY);
+    const raw = appStorage.getItem(KAKAO_TEMPLATE_STORAGE_KEY);
     if (!raw) return {};
     const parsed = JSON.parse(raw);
     return (parsed && typeof parsed === 'object') ? parsed : {};
@@ -2948,7 +2963,7 @@ function loadKakaoTemplates() {
 
 function saveKakaoTemplates(templates) {
   try {
-    localStorage.setItem(KAKAO_TEMPLATE_STORAGE_KEY, JSON.stringify(templates));
+    appStorage.setItem(KAKAO_TEMPLATE_STORAGE_KEY, JSON.stringify(templates));
   } catch (e) {
     console.error('Failed to save kakao template:', e);
   }
@@ -3519,6 +3534,15 @@ async function checkBackgroundCloudSync() {
     const localData = RentalCore.validateData(currentData());
     const isIdentical = JSON.stringify(remoteData) === JSON.stringify(localData);
 
+    if (hostedInGas && !cloudBaseRevision && !appStorage.getItem(RentalCore.STATE_KEY)) {
+      await withStorageLock(() => {
+        expectedStorageToken = RentalCore.persistChecked(appStorage, remoteData, expectedStorageToken,
+          {cloudPending:false,cloudBaseRevision:remote.revision});
+        assignData(remoteData);lastCommitted=structuredClone(remoteData);
+      });
+      cloudBaseRevision=remote.revision;refreshDataViews();syncUI('saved');return;
+    }
+
     if (!cloudBaseRevision) {
       if (isIdentical) {
         cloudBaseRevision = remote.revision;
@@ -3555,11 +3579,11 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('pageshow', () => checkBackgroundCloudSync());
 // PWA metadata and worker are optional; local files need neither URL.
-if(location.protocol==='http:' || location.protocol==='https:') {
+if(!hostedInGas && (location.protocol==='http:' || location.protocol==='https:')) {
   const manifest=document.createElement('link');
   manifest.rel='manifest';manifest.href='./manifest.json';document.head.appendChild(manifest);
 }
-if('serviceWorker'in navigator && (location.protocol==='https:'||(location.protocol==='http:'&&['localhost','127.0.0.1'].includes(location.hostname)))) {
+if(!hostedInGas && 'serviceWorker'in navigator && (location.protocol==='https:'||(location.protocol==='http:'&&['localhost','127.0.0.1'].includes(location.hostname)))) {
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{
       const notice=()=>{const el=document.getElementById('app-update-notice');if(el){el.hidden=false;el.textContent='새 버전이 준비됐습니다. 작업을 저장하고 이 앱의 모든 창을 닫은 뒤 다시 열면 적용됩니다.';}};

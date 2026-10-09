@@ -6,7 +6,7 @@ const {createHash}=require('node:crypto');
 const root=path.resolve(__dirname,'..');
 const rootId=createHash('sha256').update(root.toLowerCase().replaceAll('\\','/')).digest('hex').slice(0,16);
 const version=require('../package.json').version;
-const port=Number(process.env.RENTAL_PORT||4173);
+const port=Number(process.env.RENTAL_PORT||4274);
 const url=`http://127.0.0.1:${port}/`;
 async function probe(){
   try {

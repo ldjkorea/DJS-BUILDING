@@ -1,10 +1,16 @@
 /* One-way contract calendar sync. Event IDs stay in Script Properties, never in rental DB data. */
-var CONTRACT_CALENDAR_MAP_PROPERTY = 'RENTAL_CONTRACT_CALENDAR_EVENTS_V1';
+var CONTRACT_CALENDAR_MAP_PROPERTY = 'INDEPENDENT_CONTRACT_CALENDAR_EVENTS_V1';
 
 function contractCalendarTarget_() {
   var props = PropertiesService.getScriptProperties();
-  var calendarId = String(props.getProperty('RENTAL_CALENDAR_ID') || '').trim();
-  var calendar = calendarId ? CalendarApp.getCalendarById(calendarId) : CalendarApp.getDefaultCalendar();
+  var calendarId = String(props.getProperty('INDEPENDENT_CALENDAR_ID') || '').trim();
+  var calendar;
+  if(calendarId) {
+    calendar = CalendarApp.getCalendarById(calendarId);
+  } else {
+    calendar = CalendarApp.createCalendar('임대관리 독립앱 - 계약 일정', {timeZone:'Asia/Seoul'});
+    props.setProperty('INDEPENDENT_CALENDAR_ID',calendar.getId());
+  }
   if (!calendar) throw new Error('연동할 Google Calendar를 찾을 수 없습니다.');
   return calendar;
 }
@@ -39,7 +45,7 @@ function contractCalendarLabel_(row) {
 }
 
 function contractCalendarTitle_(row) {
-  return '[건물 관리] ' + (row.floor ? row.floor + '층 ' : '') + contractCalendarLabel_(row) + ' 계약 만료';
+  return '[임대관리 독립앱] ' + (row.floor ? row.floor + '층 ' : '') + contractCalendarLabel_(row) + ' 계약 만료';
 }
 
 function contractCalendarDescription_(row) {

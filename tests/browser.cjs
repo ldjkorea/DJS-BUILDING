@@ -22,7 +22,7 @@ async function pageFor(data = sample(), options = {}) {
   });
   await context.addInitScript(({data, stateKey}) => {
     if (!sessionStorage.getItem('test-seeded')) {
-      localStorage.setItem(stateKey, JSON.stringify(data)); sessionStorage.setItem('test-seeded', 'true');
+      localStorage.setItem('rentalIndependent20261009.'+stateKey, JSON.stringify(data)); sessionStorage.setItem('test-seeded', 'true');
     }
   }, {data, stateKey: core.STATE_KEY});
   const page = await context.newPage();
@@ -149,9 +149,9 @@ async function state(page) { return page.evaluate(() => currentData()); }
   });
   await run('reset affects only app data and recovery restores it', async () => {
     const {page, context} = await pageFor();
-    await page.evaluate(async () => { localStorage.setItem('otherApp', 'keep'); await resetAllData(); });
+    await page.evaluate(async () => { localStorage.setItem('rentalIndependent20261009.'+'otherApp', 'keep'); await resetAllData(); });
     assert.equal((await state(page)).tenants.length, 0);
-    assert.equal(await page.evaluate(() => localStorage.getItem('otherApp')), 'keep');
+    assert.equal(await page.evaluate(() => localStorage.getItem('rentalIndependent20261009.'+'otherApp')), 'keep');
     await page.evaluate(() => restoreRecovery()); assert.equal((await state(page)).tenants.length, 2); await context.close();
   });
   await run('legacy import replaces optional collections and malformed import preserves data', async () => {
@@ -218,7 +218,7 @@ async function state(page) { return page.evaluate(() => currentData()); }
     const {page, context, errors} = await pageFor({tenants: {}, bills: []});
     assert.ok(await page.locator('#data-notice').isVisible());
     await page.evaluate(() => save());
-    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem(RentalCore.STATE_KEY)).tenants instanceof Array), false);
+    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY)).tenants instanceof Array), false);
     assert.deepEqual(errors, []); await context.close();
   });
   await run('keyboard modal and zero-interest loan input', async () => {
@@ -265,7 +265,7 @@ async function state(page) { return page.evaluate(() => currentData()); }
     const other = await context.newPage(); await other.goto(TEST_URL);
     await other.evaluate(() => { tenants[0].name = 'newer tab'; return save(); });
     await page.waitForTimeout(50); await page.evaluate(() => { tenants[0].name = 'stale tab'; return save(); });
-    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem(RentalCore.STATE_KEY)).tenants[0].name), 'newer tab');
+    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY)).tenants[0].name), 'newer tab');
     assert.ok(await page.locator('#data-notice').isVisible()); await context.close();
   });
   await run('storage quota failure leaves prior data and a persistent notice', async () => {
@@ -273,12 +273,12 @@ async function state(page) { return page.evaluate(() => currentData()); }
     await page.evaluate(() => {
       const original = Storage.prototype.setItem;
       Storage.prototype.setItem = function(key, value) {
-        if (key === RentalCore.STATE_KEY) throw new DOMException('quota', 'QuotaExceededError');
+        if (key === 'rentalIndependent20261009.'+RentalCore.STATE_KEY) throw new DOMException('quota', 'QuotaExceededError');
         return original.call(this, key, value);
       };
       tenants[0].name = 'unsaved'; return save();
     });
-    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem(RentalCore.STATE_KEY)).tenants[0].name), '김테스트');
+    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY)).tenants[0].name), '김테스트');
     assert.ok(await page.locator('#data-notice').isVisible()); await context.close();
   });
   await run('tenant add, edit, delete and recovery preserve the full record', async () => {
@@ -318,7 +318,7 @@ async function state(page) { return page.evaluate(() => currentData()); }
     data.renewalDone={t1:'agreed_2026/10/19'};
     const {page,context}=await pageFor(data);await page.evaluate(()=>completeRenewal('t1'));
     await page.locator('#inp-contract').fill('2026/10/20 ~ 2027/10/19');await page.locator('#inp-rent').fill('1100000');
-    await page.evaluate(()=>{const original=Storage.prototype.setItem;window.restoreStorage=()=>Storage.prototype.setItem=original;Storage.prototype.setItem=function(key,value){if(key===RentalCore.STATE_KEY)throw new DOMException('quota','QuotaExceededError');return original.call(this,key,value);};return saveTenant();});
+    await page.evaluate(()=>{const original=Storage.prototype.setItem;window.restoreStorage=()=>Storage.prototype.setItem=original;Storage.prototype.setItem=function(key,value){if(key===STORAGE_PREFIX+RentalCore.STATE_KEY)throw new DOMException('quota','QuotaExceededError');return original.call(this,key,value);};return saveTenant();});
     const state=await page.evaluate(()=>currentData()),current=state.tenants.find(t=>t.id==='t1');
     assert.equal(current.contract,'2025/10/20 ~ 2026/10/19');assert.equal(Number(current.rent),1000000);
     assert.equal(state.renewalDone.t1,'agreed_2026/10/19');assert.equal(current.audit,undefined);

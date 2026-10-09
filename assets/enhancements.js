@@ -127,7 +127,7 @@ for(const type of ['input','change'])document.addEventListener(type,event=>{if(e
 function initTheme() {
   let theme = 'light';
   try {
-    const saved = localStorage.getItem('rental_app_theme');
+    const saved = appStorage.getItem('rental_app_theme');
     const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     theme = saved || (prefersDark ? 'dark' : 'light');
   } catch (e) {}
@@ -149,7 +149,7 @@ function applyTheme(theme, notify = true) {
   }
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if (metaTheme) metaTheme.setAttribute('content', theme === 'dark' ? '#111317' : '#f5f5f0');
-  try { localStorage.setItem('rental_app_theme', theme); } catch (e) {}
+  try { appStorage.setItem('rental_app_theme', theme); } catch (e) {}
   if (notify && typeof showToast === 'function') {
     showToast(theme === 'dark' ? '🌙 다크모드로 변경되었습니다.' : '☀️ 라이트모드로 변경되었습니다.');
   }
@@ -170,7 +170,7 @@ if (typeof document !== 'undefined') {
   if (typeof window !== 'undefined' && window.matchMedia) {
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
       try {
-        if (!localStorage.getItem('rental_app_theme')) {
+        if (!appStorage.getItem('rental_app_theme')) {
           applyTheme(e.matches ? 'dark' : 'light', false);
         }
       } catch (err) {}

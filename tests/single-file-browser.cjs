@@ -122,7 +122,7 @@ async function workflow(page, label) {
   await page.reload();
   assert.ok(await page.evaluate(()=>tenants.some(t=>t.name==='휴대성 검증')));
   const expected=await page.evaluate(()=>currentData());
-  assert.ok(await page.evaluate(()=>!!localStorage.getItem(RentalCore.STATE_KEY)));
+  assert.ok(await page.evaluate(()=>!!localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY)));
   await page.locator('#nav-settings').click();
   const downloadEvent=page.waitForEvent('download');
   await page.getByRole('button',{name:'📤 파일로 내보내기'}).click();
@@ -138,10 +138,10 @@ async function workflow(page, label) {
   await page.waitForFunction(()=>!persistenceBusy&&document.querySelector('#toast').textContent.includes('가져오기 완료'));
   await page.reload();
   assert.deepEqual(await page.evaluate(()=>currentData()),expected);
-  const beforeBad=await page.evaluate(()=>localStorage.getItem(RentalCore.STATE_KEY));
+  const beforeBad=await page.evaluate(()=>localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY));
   await page.locator('#import-file').setInputFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from('{"tenants":{},"bills":[]}')});
   await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('가져오기 실패'));
-  assert.equal(await page.evaluate(()=>localStorage.getItem(RentalCore.STATE_KEY)),beforeBad);
+  assert.equal(await page.evaluate(()=>localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY)),beforeBad);
 }
 
 (async()=>{
@@ -176,7 +176,7 @@ async function workflow(page, label) {
       // Export demo state into an isolated normal storage namespace so canonical
       // writes and imports are exercised, not merely demo persistence.
       const seed=await page.evaluate(()=>currentData());
-      await page.evaluate(data=>localStorage.setItem(RentalCore.STATE_KEY,JSON.stringify(data)),seed);
+      await page.evaluate(data=>localStorage.setItem('rentalIndependent20261009.'+RentalCore.STATE_KEY,JSON.stringify(data)),seed);
       await page.goto(url);await page.locator('#section-home.active').waitFor();
       await check(protocol+' '+width+'x'+height+' six tabs and layout',()=>navigate(page,width,height,protocol));
       if(width===360||width===1920)

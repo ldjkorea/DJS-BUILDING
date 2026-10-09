@@ -6,7 +6,7 @@ function worker() {
   const events = {}; const deleted = []; const stored = {body: 'offline'};
   const context = {URL, Set, Promise, encodeURIComponent,
     self: {registration: {scope: 'https://example.test/rental-app/'}, addEventListener: (name, handler) => events[name] = handler},
-    caches: {keys: async () => ['rental-v3', 'other-app', 'rental-foundation-v2', 'rental-foundation-v3'], delete: async key => deleted.push(key),
+    caches: {keys: async () => ['rental-v3', 'other-app', 'rental-foundation-v2', 'rental-foundation-v3', 'rental-independent-20261009-%2Frental-app%2F-old'], delete: async key => deleted.push(key),
       open: async () => ({match: async () => stored, addAll: async () => {}})},
     fetch: () => { throw new Error('should use cache'); }};
   vm.runInNewContext(fs.readFileSync(require.resolve('../sw.js'), 'utf8'), context);
@@ -29,8 +29,8 @@ test('service worker serves the cached app for query-string routes', async () =>
   events.fetch({request: {method: 'GET', url: 'https://example.test/rental-app/?demo=1'}, respondWith: p => result = p});
   assert.equal(await result, stored);
 });
-test('service worker removes only older rental app caches', async () => {
+test('service worker removes only independent app caches and preserves original app caches', async () => {
   const {events, deleted} = worker(); let done;
   events.activate({waitUntil: p => done = p}); await done;
-  assert.deepEqual(deleted, ['rental-v3', 'rental-foundation-v2', 'rental-foundation-v3']);
+  assert.deepEqual(deleted, ['rental-independent-20261009-%2Frental-app%2F-old']);
 });

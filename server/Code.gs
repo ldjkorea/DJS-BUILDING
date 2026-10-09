@@ -1,4 +1,6 @@
-/* rental-sync-v2: keep the existing deployment and its access settings. */
+/* Independent copy: only the copied spreadsheet may be read or written. */
+var INDEPENDENT_SPREADSHEET_ID = '1E9YcSQSNTLTC41fqWBYHMNpSRKQrDlvAXeF9AxdDFb8';
+var INDEPENDENT_SHEET_ID = 0;
 var SYNC_FORMAT = 'rental-sync-storage-v2';
 var LEASE_STATUSES = ['임대중','재계약예정','계약종료예정','명도소송중','강제집행중','공실(정리중)','임대모집중'];
 function capabilities_() { return {conditionalWrite:true, currentStatus:true, contractCalendar:true}; }
@@ -54,10 +56,11 @@ function locked_(operation) {
   finally { if (acquired) lock.releaseLock(); }
 }
 function source_() {
-  var book = SpreadsheetApp.getActiveSpreadsheet();
+  var book = SpreadsheetApp.openById(INDEPENDENT_SPREADSHEET_ID);
   if (!book) throw new Error('연결된 스프레드시트를 찾을 수 없습니다.');
   var props = PropertiesService.getScriptProperties(), saved = props.getProperty('RENTAL_SYNC_SHEET_ID');
-  var sheet = saved === null ? book.getActiveSheet() : book.getSheetById(Number(saved));
+  if (saved !== null && Number(saved) !== INDEPENDENT_SHEET_ID) throw new Error('독립앱 저장 시트 설정이 일치하지 않습니다.');
+  var sheet = book.getSheetById(INDEPENDENT_SHEET_ID);
   if (!sheet) throw new Error('기존 저장 시트를 찾을 수 없습니다. 자동 생성하지 않습니다.');
   if (saved === null) props.setProperty('RENTAL_SYNC_SHEET_ID', String(sheet.getSheetId()));
   return {book:book, sheet:sheet};
@@ -82,6 +85,9 @@ function read_(sheet) {
   return {raw:raw, data:data, revision:'sha256-' + hash_(raw), receipts:envelope ? stored.receipts : []};
 }
 function doGet(e) {
+  if (!e || !e.parameter || e.parameter.api !== '1') {
+    return HtmlService.createHtmlOutputFromFile('App').setTitle('임대관리 독립앱');
+  }
   return locked_(function() {
     var state = read_(source_().sheet);
     return {status:'ok', data:state.data, revision:state.revision, capabilities:capabilities_(), protocol:'rental-sync-v2'};

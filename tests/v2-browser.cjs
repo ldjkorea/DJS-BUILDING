@@ -7,7 +7,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
  page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
  await context.route('**/*',r=>r.request().url().startsWith(TEST_URL)?r.continue():(cloud.push(r.request().url()),r.abort()));
  await page.goto(TEST_URL+'?demo=1');await page.locator('#section-home.active').waitFor();
- assert.equal(await page.locator('#home-bill-list .t-item').count(),4);assert.equal(await page.evaluate(()=>localStorage.getItem(RentalCore.STATE_KEY)),null);
+ assert.equal(await page.locator('#home-bill-list .t-item').count(),4);assert.equal(await page.evaluate(()=>localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY)),null);
  await page.screenshot({path:'test-results/v2-desktop.png',fullPage:true});
  await page.locator('#nav-settlement').click();await page.locator('#sett-elec').fill('115000');await page.locator('#sett-elev').fill('150001');await page.locator('#sett-waste').fill('100003');
  await page.evaluate(()=>calcSettlement());assert.ok(await page.locator('#sett-note').innerText().then(t=>t.includes('일치')));

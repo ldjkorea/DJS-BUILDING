@@ -53,7 +53,7 @@ async function test(name,action){
     await page.waitForFunction(()=>!document.getElementById('toast').classList.contains('show'));
     await page.screenshot({path:path.join(out,'verified-bill.png'),fullPage:true});
     await page.reload();assert.equal(await page.evaluate(()=>bills[mk()].demo2.electricity),43210);
-    assert.equal(await page.evaluate(()=>localStorage.getItem(RentalCore.STATE_KEY)),null);
+    assert.equal(await page.evaluate(()=>localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY)),null);
     await page.screenshot({path:path.join(out,'pwa-offline.png'),fullPage:true});
     await context.setOffline(false);
   });

@@ -1,7 +1,7 @@
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg', './assets/styles.css', './assets/core.js', './assets/app.js', './assets/billing.js', './assets/enhancements.js', './assets/workspace.css', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png'];
 const scope = new URL(self.registration.scope);
-const CACHE_PREFIX = 'rental-app-'+encodeURIComponent(scope.pathname)+'-';
-const CACHE_NAME = CACHE_PREFIX+'1.5.9-auto-heal-mgmt-keys';
+const CACHE_PREFIX = 'rental-independent-20261009-'+encodeURIComponent(scope.pathname)+'-';
+const CACHE_NAME = CACHE_PREFIX+'1.0.0';
 const allowedPaths = new Set(ASSETS.map(path => new URL(path, scope).pathname));
 
 self.addEventListener('install', e => {
@@ -12,7 +12,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME && (k.startsWith(CACHE_PREFIX) || (scope.pathname==='/rental-app/' && /^rental-(?:v\d+|foundation-)/.test(k)))).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k !== CACHE_NAME && k.startsWith(CACHE_PREFIX)).map(k => caches.delete(k)))
     ).then(() => { if (self.clients && typeof self.clients.claim === 'function') return self.clients.claim(); })
   );
 });

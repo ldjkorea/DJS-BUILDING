@@ -4,7 +4,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const rootId = require('node:crypto').createHash('sha256').update(root.toLowerCase().replaceAll('\\','/')).digest('hex').slice(0,16);
 const version=require('../package.json').version;
-const port = Number(process.env.RENTAL_PORT || 4173);
+const port = Number(process.env.RENTAL_PORT || 4274);
 const types = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png':'image/png'};
 const publicFiles = new Set(['index.html', 'manifest.json', 'icon.svg', 'sw.js',

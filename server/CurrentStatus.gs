@@ -1,6 +1,6 @@
 /* Human-readable projection of the verified DB; never writes rental data. */
-var STATUS_TITLE = '임대관리_현재현황'; // Display heading only; never used to locate the document.
-var STATUS_DOCUMENT_ID = '1-HZYrBDD8HPZYO8sNCy33Q298DJ91LJIJAWRuWdQgFI';
+var STATUS_TITLE = '임대관리 독립앱 - 현재현황';
+var STATUS_DOCUMENT_ID = '1YjTZPiRA2vnfAuWp1UTBci8F4yUNozQjYhE9QwMdtuQ';
 var STATUS_BEGIN = '[RENTAL_CURRENT_STATUS_BEGIN]';
 var STATUS_END = '[RENTAL_CURRENT_STATUS_END]';
 
@@ -48,6 +48,7 @@ function statusLines_(data, revision, now) {
 }
 function statusDocument_(props) {
   var id = (props.getProperty('RENTAL_STATUS_DOCUMENT_ID') || '').trim();
+  if (id && id !== STATUS_DOCUMENT_ID) throw new Error('독립앱 현황 문서 설정이 일치하지 않습니다.');
   if (!id) {
     id = STATUS_DOCUMENT_ID;
     props.setProperty('RENTAL_STATUS_DOCUMENT_ID', id);
