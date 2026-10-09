@@ -1,0 +1,196 @@
+{
+  "version": "2.1.1",
+  "phase": "saved-invoice-quarterly-statement",
+  "sourceCommit": "c595d30c1f95b74f2e1a7545937306c3cc4d3b6d",
+  "checkedAt": "2026-10-09T21:55:59.531Z",
+  "releaseCandidate": false,
+  "behavior": {
+    "savedInvoicesOnly": true,
+    "missingMonthsExcluded": true,
+    "archivedAndOrphanInvoicesIncluded": true,
+    "historicalOccupantsPreserved": true,
+    "currentRegistrationMetadataExplicit": true,
+    "vatSumPerInvoiceItem": true,
+    "waterElevatorWasteIncluded": true,
+    "partialReceiptAndCorrectionShared": true,
+    "overdueNotDueUnknownDistinguished": true,
+    "csvColumns": 22,
+    "csvFirst13PositionsPreserved": true,
+    "jsonSchemaUnchanged": true,
+    "printStylesVerified": true
+  },
+  "tests": {
+    "unit": {
+      "passed": 147,
+      "total": 147,
+      "newCases": 8
+    },
+    "browser": {
+      "passed": 9,
+      "total": 9,
+      "startedAt": "2026-10-09T21:47:30.452Z",
+      "finishedAt": "2026-10-09T21:51:47.592Z",
+      "node": "v24.18.0",
+      "results": [
+        {
+          "suite": "browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "audit-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "quarter-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "pwa-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "single-file-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "integrity-v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "independent-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        }
+      ]
+    },
+    "audit": {
+      "passed": 69,
+      "total": 69
+    },
+    "receiptUi": {
+      "passed": 11,
+      "total": 11
+    },
+    "quarterUi": {
+      "passed": 8,
+      "total": 8,
+      "results": [
+        {
+          "name": "quarter saved one month never turns into three months or three required invoice marks",
+          "status": "pass"
+        },
+        {
+          "name": "quarter empty invoices have no revenue rows or false fully paid state",
+          "status": "pass"
+        },
+        {
+          "name": "quarter archived orphan and changed occupants retain historical bills and safe metadata",
+          "status": "pass"
+        },
+        {
+          "name": "quarter sums invoice VAT all waste and NA costs with identical table CSV amounts",
+          "status": "pass"
+        },
+        {
+          "name": "quarter future and undetermined due balances never appear fully paid",
+          "status": "pass"
+        },
+        {
+          "name": "quarter partial receipt and reasoned correction update table CSV without deleting the original event",
+          "status": "pass"
+        },
+        {
+          "name": "quarter six viewports large text scrolling and CSV remain usable without storage changes",
+          "status": "pass"
+        },
+        {
+          "name": "quarter print layout exposes all columns within the page and restores normal view without writes",
+          "status": "pass"
+        }
+      ]
+    },
+    "build": true,
+    "syntax": true,
+    "generatedFilesMatch": true,
+    "externalRequestsBlocked": true
+  },
+  "reproduction": {
+    "actualLocalBrowser": true,
+    "exampleSavedJulyGross": 131000,
+    "previousQuarterCsvGross": 373000,
+    "previousMarks": "1/3건",
+    "correctedMarks": "1/1건"
+  },
+  "operating": {
+    "unchangedGetOnlyProof": {
+      "checkedAt": "2026-10-09T21:43:30.585Z",
+      "sourceUnchanged": true,
+      "deploymentsUnchanged": true,
+      "fileCount": 8,
+      "versions": [
+        null,
+        4
+      ],
+      "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e"
+    },
+    "liveAppVersion": "1.0.0",
+    "liveDeploymentVersion": 4,
+    "liveDataWrite": false,
+    "documentRegeneration": false,
+    "calendarSync": false,
+    "deployed": false,
+    "remotePush": false,
+    "androidRebuild": false
+  },
+  "preservedCandidate": {
+    "version": "2.0.6",
+    "path": "releases/rental-independent-gas-2.0.6.zip",
+    "sha256": "fc03fdf04b43da7e9870e6c0e37ccf3ef5fd5cfadb82d318d8ebefecf1aeadd7"
+  },
+  "previousReceiptEvidence": "releases/development-receipts-2.1.0-step3.json",
+  "files": {
+    "assets/app.js": "8b609abf33a8be289ff568ba49797182f4e62edd8681e9da1f5d8255fa124a39",
+    "assets/billing.js": "1072633df245402bbde1ccfb7757fc0772266a3e39bdba4c291bb5afb90077b7",
+    "assets/enhancements.js": "4d6d2f2364251031e2e63d7f7cd06b765970d08436a2061529f343cab46baf16",
+    "assets/workspace.css": "a12acba0aea576ac4b1a536ba7f7ce723e74c9949056ee778d37f0f4dad03ff9",
+    "src/index.template.html": "e98c86497f5b40d17bc29ca6d965054c0f35031ea759d55db1cfa6150d461f3d",
+    "index.html": "224a7e16322b0f8bc947878bbf0f26222ec42f268f8137d2f13d028210ca4362",
+    "server/Billing.gs": "d68bf373047804fc82bafd0efad7ce6b4e2040e7c47e711a204f5c2b894f523a",
+    "server/Code.gs": "c7566ad5eeaae72165d0fab4974949488e5087c398f03b5481ffb52de4e72354",
+    "sw.js": "a3a00637e307650cde84a99b8258d14b71baae06f8c712b3723f531429427d00",
+    "tests/quarter-statement.test.cjs": "cf4a2ab21c12b845aa34c0f488d9aaebfd6af95f7d713ef36cf04ae3978ce23e",
+    "tests/quarter-browser.cjs": "fa3800b7c11a65f0130415e51eeceac6d89a89505822524dbb117ff94fa6cf46",
+    "tests/pwa-browser.cjs": "9d86b32633061f818e68b2b502b7b9cf12d50187c03221674c1310ca0d819996",
+    "tests/receipt-browser.cjs": "9a7f5d59669c2a315c4ff314176d4f91a00784f3bb6ed96a31fa3d4f4b21f5cb",
+    "scripts/test-browser.cjs": "8d2047717d9e344e0aacb49ad56c1188cc164f001c3e3f464a6e0fb3defcde26"
+  },
+  "screenshots": {
+    "docs/screenshots/quarter-statement-1366.png": "cf788f1bfae6a3e79a0a368667d328bc3785611cd9aa25a20affb976579d70bd",
+    "docs/screenshots/quarter-statement-390.png": "f81a4631883cb9cb44fdfdb59e47612ca581c8ba77eb23b8623fdf3985fd89b0",
+    "docs/screenshots/quarter-balances-1366.png": "3b24678276a35a043bf574c78d8eaef482740390c63b67b7cc42979806c4b94b",
+    "docs/screenshots/quarter-balances-390.png": "00f23b29b722adfcdacfe013fd8c7d47599cfdf44da364fdd145d89b9ab1508d"
+  },
+  "remaining": [
+    "Original operating dataset quarter-by-quarter reconciliation",
+    "Legacy bill basis comparison and receipt-journal opening guidance",
+    "Policy and workflow for changing an established invoice basis",
+    "Release candidate packaging and explicitly authorized independent Google end-to-end write verification",
+    "Physical phone, screen reader, and actual printer verification"
+  ]
+}
