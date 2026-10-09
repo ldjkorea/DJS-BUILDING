@@ -13,15 +13,17 @@ const run=(file,env,unit=false)=>new Promise(resolve=>{
   if(!['GET','HEAD'].includes(req.method)||!['/','/index.html'].includes(new URL(req.url,'http://localhost').pathname)){res.writeHead(404).end();return;}
   res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});res.end(req.method==='HEAD'?undefined:html);
  });
- await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const url='http://127.0.0.1:'+server.address().port+'/',env={...process.env,RENTAL_TEST_URL:url,RENTAL_GAS_TEST_ROOT:stage};delete env.RENTAL_CASE;
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const url='http://127.0.0.1:'+server.address().port+'/',env={...process.env,RENTAL_TEST_URL:url,RENTAL_GAS_TEST_ROOT:stage};delete env.RENTAL_CASE;delete env.RENTAL_RESTORE_INPUT;
  const startedAt=new Date().toISOString(),results=[];
  try{
   results.push(await run('server.test.cjs',env,true));
-  for(const file of ['receipt-browser.cjs','receipt-basis-browser.cjs','bill-basis-browser.cjs','quarter-browser.cjs'])results.push(await run(file,env));
+  for(const file of ['receipt-browser.cjs','receipt-basis-browser.cjs','bill-basis-browser.cjs','quarter-browser.cjs','restored-data-browser.cjs'])results.push(await run(file,env));
  }finally{await new Promise(resolve=>server.close(resolve));}
  const out=path.join(root,'test-results');fs.mkdirSync(out,{recursive:true});for(const result of results)fs.writeFileSync(path.join(out,'gas-candidate-'+result.file+'.log'),result.log);
+ assert.ok(results.every(row=>row.status==='pass'),'Candidate suite failed; inspect the saved suite logs');
  const unit=results[0].log.match(/(?:ℹ tests |# tests )(\d+)/),counts={};
  for(const [name,count] of [['receipt',11],['receipt-basis',8],['bill-basis',11],['quarter',8]]){const rows=JSON.parse(fs.readFileSync(path.join(out,name+'-browser-results.json')));assert.equal(rows.length,count);assert.ok(rows.every(row=>row.status==='pass'));counts[name]=rows.length;}
- const report={version,sourceCommit:manifest.sourceCommit,productValidationCommit:manifest.productValidationCommit,archiveSha256:hash(fs.readFileSync(zip)),startedAt,finishedAt:new Date().toISOString(),serverMockTests:Number(unit?.[1]),browserCases:counts,extractedAppHtmlSha256:hash(html),readFromZip:true,realGoogleWrites:false,productionDeployed:false,results:results.map(({log,...result})=>result)};
+ const restored=JSON.parse(fs.readFileSync(path.join(out,'restored-data-results.json')));assert.equal(restored.appVersion,version);assert.equal(restored.privateInput,false);assert.equal(restored.results.length,6);assert.ok(restored.results.every(row=>row.status==='pass'));assert.ok(restored.startedAt>=startedAt);assert.equal(restored.sourceFilePreserved,true);assert.equal(restored.googleRequestsPerformed,false);assert.equal(restored.screenshotsTaken,false);counts['restored-data']=restored.results.length;
+ const report={version,sourceCommit:manifest.sourceCommit,productValidationCommit:manifest.productValidationCommit,archiveSha256:hash(fs.readFileSync(zip)),startedAt,finishedAt:new Date().toISOString(),serverMockTests:Number(unit?.[1]),browserCases:counts,restoredData:restored,extractedAppHtmlSha256:hash(html),readFromZip:true,realGoogleWrites:false,productionDeployed:false,results:results.map(({log,...result})=>result)};
  fs.writeFileSync(path.join(out,'gas-candidate-validation.json'),JSON.stringify(report,null,2)+'\n');if(results.some(row=>row.status!=='pass'))process.exitCode=1;console.log('Archive verification: '+JSON.stringify(report));
 })().catch(error=>{console.error(error);process.exitCode=1;});
