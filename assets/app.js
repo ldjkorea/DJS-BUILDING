@@ -3682,6 +3682,7 @@ function openModal(id) {
   updateModalIsolation();focusModalStart(modal);
 }
 function closeModal(id) {
+  if(id==='modal-backup-check')endBackupCheck();
   if (id === 'modal-data-replacement' && replacementReview) { finishReplacementReview(false); return; }
   const modal=document.getElementById(id);if(!modal)return;
   const context=modalContexts.get(id),wasTop=activeModal()===modal;

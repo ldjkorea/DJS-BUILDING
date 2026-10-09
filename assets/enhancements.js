@@ -145,6 +145,95 @@ function preserveIncomingDrafts(backup){
 function incomingDraftWarning(backup){
   return [['localDrafts','bill'],['localSettlementDrafts','settlement']].some(([key,source])=>backup[key]!==undefined&&inspectDraftText(JSON.stringify(backup[key]),source).problem)||backup.localMeta?.draftRecovery!==undefined;
 }
+let backupCheckSequence=0,backupCheckReader=null,backupCheckData=null;
+function endBackupCheck(){
+  backupCheckSequence++;backupCheckData=null;
+  if(backupCheckReader?.readyState===FileReader.LOADING)backupCheckReader.abort();
+  backupCheckReader=null;document.getElementById('backup-check-result')?.replaceChildren();
+}
+function openBackupCheck(){
+  if(document.querySelector('.modal-overlay.open'))return;
+  endBackupCheck();document.getElementById('backup-check-status').textContent='확인할 JSON 파일을 선택해주세요.';
+  openModal('modal-backup-check');
+}
+function backupCheckLine(label,value){
+  const row=document.createElement('div'),term=document.createElement('dt'),definition=document.createElement('dd');
+  term.textContent=label;definition.textContent=value;row.append(term,definition);return row;
+}
+function refreshBackupComparison(){
+  const target=document.getElementById('backup-check-comparison');if(!target||!backupCheckData)return;
+  if(loadedState.error||conflictingTab){target.textContent='이 창 자료의 비교는 저장 상태 확인이 필요합니다. 파일의 형식 검사 결과는 유지됩니다.';return;}
+  try{
+    const count=cloudDifferences(RentalCore.validateData(currentData()),backupCheckData).length;
+    target.textContent='비교 시각 '+new Date().toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})+' · 이 창의 임대 자료와 '+(count?'차이 '+count+'개가 있습니다.':'일치합니다.')+' 미저장 입력, 초안과 복구 원문은 이 비교에 포함하지 않습니다.';
+  }catch{target.textContent='이 창 자료를 비교하지 못했습니다. 파일의 형식 검사 결과는 유지됩니다.';}
+}
+function renderBackupFileReport(parsed){
+  const list=document.createElement('dl');list.className='backup-check-facts';
+  const result=document.getElementById('backup-check-result');result.append(list);
+  const isObject=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+  if(isObject(parsed)&&!Object.hasOwn(parsed,'tenants')&&!Object.hasOwn(parsed,'bills')){
+    if(parsed.format===DRAFT_RECOVERY_FORMAT&&Array.isArray(parsed.entries)){
+      document.getElementById('backup-check-status').textContent='초안 복구 원문 파일입니다. 전체 임대 자료 백업이 아닙니다.';
+      list.append(backupCheckLine('원문 항목',parsed.entries.length+'개'));
+      const valid=parsed.entries.filter(entry=>entry&&['bill','settlement','recovery'].includes(entry.source)&&typeof entry.raw==='string').length;
+      list.append(backupCheckLine('원문 형식',valid===parsed.entries.length?'문자열 원문을 포함합니다.':'확인이 필요한 원문 항목이 있습니다.'));
+      return;
+    }
+    if(Object.hasOwn(parsed,'recoveryRaw')){
+      document.getElementById('backup-check-status').textContent='손상 원본 보관 파일입니다. 전체 자료 복원에 바로 사용할 수 없습니다.';return;
+    }
+  }
+  const data=RentalCore.validateData(parsed);backupCheckData=data;
+  document.getElementById('backup-check-status').textContent='임대 자료의 형식 검사를 통과했습니다. 이 기기의 자료는 변경하지 않았습니다.';
+  const countRows=value=>Object.values(value).reduce((sum,rows)=>sum+Object.keys(rows).length,0);
+  list.append(backupCheckLine('백업 버전',parsed.schemaVersion===undefined?'이전 형식 (버전 표기 없음)':String(parsed.schemaVersion)),
+    backupCheckLine('파일 안의 백업 시각',typeof parsed.exportedAt==='string'&&!Number.isNaN(Date.parse(parsed.exportedAt))?new Date(parsed.exportedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}):'확인되지 않음'),
+    backupCheckLine('임차인 (보관 포함)',data.tenants.length+'명'),backupCheckLine('고지서',countRows(data.bills)+'건 · '+Object.keys(data.bills).length+'개월'),
+    backupCheckLine('대출',data.loans.length+'건'),backupCheckLine('지출',countRows(data.expenses)+'건'),backupCheckLine('정산',Object.keys(data.settInputs).length+'개월'));
+  const warnings=[];
+  const metadata=new Set(['schemaVersion','exportedAt','localMeta','localDrafts','localSettlementDrafts','reason']);
+  const original=Object.fromEntries(Object.entries(parsed).filter(([key])=>!metadata.has(key)));
+  if(cloudDifferences(original,data).length)warnings.push('기존 복원 규칙에 따라 기본값이 추가되거나 일부 값이 정규화됩니다. 적용 전 파일 가져오기의 비교 화면을 확인해주세요.');
+  for(const [field,source,title] of [['localDrafts','bill','고지서 초안'],['localSettlementDrafts','settlement','정산 초안']]){
+    if(parsed[field]===undefined){list.append(backupCheckLine(title,'파일에 포함되지 않음'));continue;}
+    const inspected=inspectDraftText(JSON.stringify(parsed[field]),source);
+    list.append(backupCheckLine(title,'지원 형식 '+Object.keys(inspected.clean).length+'개'+(inspected.problem?' · 원문 확인 필요':'')));
+    if(inspected.problem)warnings.push(title+'에 자동 적용하지 않는 내용이 있습니다. 기존 복원은 해당 원문을 별도 보관하며, 보관 실패 시 중단합니다.');
+  }
+  const recovery=parsed.localMeta?.draftRecovery;
+  list.append(backupCheckLine('복구 원문',recovery===undefined?'파일에 포함되지 않음':recovery?.format===DRAFT_RECOVERY_FORMAT&&Array.isArray(recovery.entries)?recovery.entries.length+'개':'원문 형식 확인 필요'));
+  if(recovery!==undefined)warnings.push('복구 원문은 확인·별도 보관용이며 고지서·정산에 자동 적용하지 않습니다.');
+  if(parsed.localMeta!==undefined&&!isObject(parsed.localMeta))warnings.push('기기 메타데이터의 형식을 확인해주세요.');
+  const extra=isObject(parsed.localMeta)?Object.keys(parsed.localMeta).filter(key=>key!=='draftRecovery'):[];
+  if(extra.length)warnings.push('복원 대상이 아닌 기기 메타데이터가 있습니다. 원본 파일을 보관해주세요.');
+  for(const text of warnings){const warning=document.createElement('p');warning.className='hint-box';warning.textContent=text;result.append(warning);}
+  const comparison=document.createElement('p');comparison.id='backup-check-comparison';comparison.setAttribute('role','status');result.append(comparison);
+  const compare=document.createElement('button');compare.type='button';compare.className='btn btn-secondary';compare.textContent='이 창 자료와 다시 비교';compare.onclick=refreshBackupComparison;result.append(compare);refreshBackupComparison();
+}
+function checkBackupFile(event){
+  const file=event.target.files[0];event.target.value='';if(!file)return;
+  endBackupCheck();const sequence=backupCheckSequence,result=document.getElementById('backup-check-result'),status=document.getElementById('backup-check-status');
+  const facts=document.createElement('dl');facts.className='backup-check-facts';facts.append(backupCheckLine('선택한 파일',file.name),backupCheckLine('파일 크기',file.size.toLocaleString()+'B'));result.append(facts);
+  if(file.size>10*1024*1024){status.textContent='10MB 이하의 JSON 파일을 선택해주세요.';return;}
+  status.textContent='파일을 읽고 형식을 확인하는 중입니다…';
+  const reader=new FileReader();backupCheckReader=reader;
+  const current=()=>sequence===backupCheckSequence&&document.getElementById('modal-backup-check').classList.contains('open');
+  reader.onerror=()=>{if(current())status.textContent='파일을 읽지 못했습니다. 원본 파일을 유지하고 다시 선택해주세요.';};
+  reader.onload=async()=>{
+    if(!current())return;
+    try{
+      const bytes=reader.result;if(bytes.byteLength!==file.size)throw new Error('파일 크기와 읽은 내용이 일치하지 않습니다.');
+      let parsed;try{parsed=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}catch{throw new Error('UTF-8 JSON 형식으로 읽지 못했습니다. 원본 파일을 유지해주세요.');}
+      renderBackupFileReport(parsed);
+      const fingerprint=document.createElement('details'),summary=document.createElement('summary'),hash=document.createElement('p');summary.textContent='파일 지문 확인';hash.className='backup-check-hash';fingerprint.append(summary,hash);result.append(fingerprint);
+      try{const digest=await crypto.subtle.digest('SHA-256',bytes);if(!current())return;hash.textContent='SHA-256 '+[...new Uint8Array(digest)].map(value=>value.toString(16).padStart(2,'0')).join('');}
+      catch{if(!current())return;hash.textContent='이 환경에서는 파일 지문을 계산하지 못했습니다. 위의 형식 검사 결과는 유지됩니다.';}
+      const note=document.createElement('p');note.className='card-sub';note.textContent='파일 지문은 같은 파일인지 구분하는 값입니다. 파일 내용이 최신인지, 모든 자료가 빠짐없이 포함됐는지를 보장하지 않습니다.';fingerprint.append(note);
+    }catch(error){if(current()){backupCheckData=null;result.replaceChildren(facts);status.textContent='형식 확인 실패: '+error.message;}}
+  };
+  try{reader.readAsArrayBuffer(file);}catch{reader.onerror();}
+}
 function exportDraftRecovery(){
   try {downloadJson(collectDraftRecovery(),'초안원문');showToast('초안 원문 파일 다운로드를 시작했습니다.');}
   catch {showToast('초안 원문을 내보내지 못했습니다. 이 창을 유지하고 저장소 접근 상태를 확인해주세요.');}
@@ -432,7 +521,7 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.0.5';
+const APPLICATION_VERSION='2.0.6';
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
   const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';
