@@ -1,0 +1,107 @@
+{
+  "sourceCommit": "86c87685d2893b12685c60f72950456f7d0ea838",
+  "screenReader": "NOT TESTED",
+  "physicalDeviceKeyboard": "NOT TESTED",
+  "version": "2.0.4",
+  "baseline": "aba6467",
+  "validatedAt": "2026-10-09T19:43:09.213Z",
+  "unit": {
+    "tests": 103,
+    "passed": 103,
+    "failed": 0
+  },
+  "browserSuites": [
+    {
+      "suite": "browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "audit-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "pwa-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "single-file-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "integrity-v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "independent-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ],
+  "addedKeyboardScenarios": [
+    {
+      "name": "keyboard workflow selection keeps focus visible after closing mobile more navigation",
+      "status": "pass"
+    },
+    {
+      "name": "keyboard workflow covers seven destinations and skips directly to main content without startup focus theft",
+      "status": "pass"
+    },
+    {
+      "name": "keyboard workflow seven dialog types contain Tab focus and isolate the background",
+      "status": "pass"
+    },
+    {
+      "name": "keyboard workflow includes dialog links summaries and excludes hidden disabled controls",
+      "status": "pass"
+    },
+    {
+      "name": "keyboard workflow restores edited tenant loan expense and receipt callers after rerender",
+      "status": "pass"
+    },
+    {
+      "name": "keyboard workflow fallback and nested dialogs restore focus and preexisting inert state",
+      "status": "pass"
+    },
+    {
+      "name": "keyboard workflow save failures remain readable inside the dialog with editable input retained",
+      "status": "pass"
+    },
+    {
+      "name": "keyboard workflow busy replacement and mobile Escape shortcuts keep modal focus boundaries",
+      "status": "pass"
+    }
+  ],
+  "liveReadOnlyProof": {
+    "checkedAt": "2026-10-09T19:34:23.440Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e"
+  },
+  "archive": {
+    "file": "rental-independent-gas-2.0.4.zip",
+    "sha256": "26e19c2be10223451b38175868335321ed557141e59936d2de1258d61947ed5a",
+    "verifiedFiles": 8,
+    "archiveContentsMatchManifest": true,
+    "checkedAt": "2026-10-09T19:40:24.6988273Z"
+  },
+  "previousCandidatePreserved": true,
+  "deploymentPerformed": false,
+  "androidNativeChanged": false,
+  "androidOwnerLogin": "NOT TESTED",
+  "remotePushPerformed": false
+}
