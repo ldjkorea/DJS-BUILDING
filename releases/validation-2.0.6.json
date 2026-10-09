@@ -1,0 +1,127 @@
+{
+  "version": "2.0.6",
+  "baseline": "f00127e",
+  "sourceCommit": "f2cafe2f6c45951b53e4bb478cd3636c56beb3f8",
+  "validatedAt": "2026-10-09T20:22:03.239Z",
+  "unit": {
+    "tests": 103,
+    "passed": 103,
+    "failed": 0
+  },
+  "audit": {
+    "tests": 65,
+    "passed": 65
+  },
+  "browserSuites": [
+    {
+      "suite": "browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "audit-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "pwa-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "single-file-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "integrity-v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "independent-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ],
+  "addedBackupCheckScenarios": [
+    {
+      "name": "backup check verifies an actual downloaded file and its byte fingerprint without writes or upload",
+      "status": "pass"
+    },
+    {
+      "name": "backup check explains legacy defaults normalization and real domain differences without changing source",
+      "status": "pass"
+    },
+    {
+      "name": "backup check distinguishes raw recovery damaged data malformed JSON and unsupported unsafe domain",
+      "status": "pass"
+    },
+    {
+      "name": "backup check reports draft loss risks and unsupported metadata while preserving every local record",
+      "status": "pass"
+    },
+    {
+      "name": "backup check cancels stale reads on reselection and close and handles read failure without data changes",
+      "status": "pass"
+    },
+    {
+      "name": "backup check rejects invalid encoding and oversized files and preserves format result when hashing unavailable",
+      "status": "pass"
+    },
+    {
+      "name": "backup check PC mobile large text and keyboard keep file facts and actions usable",
+      "status": "pass"
+    },
+    {
+      "name": "backup check works offline and in demo without touching original or independent storage",
+      "status": "pass"
+    }
+  ],
+  "visualCaptures": [
+    {
+      "width": 390,
+      "height": 844,
+      "workerController": true,
+      "sourceDataAndStorageUnchanged": true,
+      "physicalDevice": false
+    },
+    {
+      "width": 1366,
+      "height": 1000,
+      "workerController": true,
+      "sourceDataAndStorageUnchanged": true,
+      "physicalDevice": false
+    }
+  ],
+  "liveReadOnlyProof": {
+    "checkedAt": "2026-10-09T20:18:38.048Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e"
+  },
+  "archive": {
+    "file": "rental-independent-gas-2.0.6.zip",
+    "sha256": "fc03fdf04b43da7e9870e6c0e37ccf3ef5fd5cfadb82d318d8ebefecf1aeadd7",
+    "verifiedFiles": 8,
+    "archiveContentsMatchManifest": true,
+    "checkedAt": "2026-10-09T20:19:42.5994567Z"
+  },
+  "previousCandidatePreserved": true,
+  "remotePushPerformed": false,
+  "deploymentPerformed": false,
+  "androidNativeChanged": false,
+  "physicalDevice": "NOT TESTED",
+  "screenReader": "NOT TESTED",
+  "ownerLoginForWeb2x": "NOT TESTED"
+}
