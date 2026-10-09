@@ -2039,7 +2039,7 @@ function renderHistChips(){
   el.innerHTML=`<div class="chip-row-modern">`+list.map(t=>{
     const bill=bills[month]?.[t.id];
     let badge='';
-    if(!bill){
+    if(!bill||!Object.keys(bill).length){
       badge='<span class="chip-badge empty">미작성</span>';
     }else{
       const st=RentalBilling.payment(t,bill);

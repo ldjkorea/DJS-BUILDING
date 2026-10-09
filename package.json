@@ -14,6 +14,7 @@
     "prestart": "npm run build",
     "test:single-file": "npm run build && node tests/single-file-browser.cjs",
     "test:independent": "npm run build && node tests/independent-browser.cjs",
+    "test:restored": "npm run build && node tests/restored-data-browser.cjs",
     "package:gas": "npm run check:build && node scripts/package-gas.cjs",
     "test:gas-candidate": "node scripts/test-gas-candidate.cjs",
     "reconcile:data": "npm run check:build && node scripts/reconcile-data.cjs"
