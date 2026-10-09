@@ -18,9 +18,14 @@ function renderDashboardMetrics(context={}) {
   if(cloudDirty)work+='<div class="priority-item"><div><strong>Google에 아직 반영되지 않은 수정</strong><p>이 기기 저장과 Google 저장을 확인하세요.</p></div><button class="btn btn-secondary" onclick="openSyncCenter()">저장 상태</button></div>';
   document.getElementById('priority-work').innerHTML=work||'<p class="priority-empty">현재 확인된 연체나 임박한 계약 일정이 없습니다.</p>';
   const receipts=[];
-  for(const [month,bs] of Object.entries(bills))for(const [id,b] of Object.entries(bs))for(const kind of ['Rent','Mgmt'])if(b['stamped'+kind]&&b['stamped'+kind+'Date'])receipts.push({month,id,date:b['stamped'+kind+'Date'],kind});
+  for(const [month,bs] of Object.entries(bills))for(const [id,b] of Object.entries(bs)){
+    if(b.receiptLedger){
+      const voided=new Set(b.receiptLedger.events.filter(event=>event.kind==='void').map(event=>event.reference));
+      for(const event of b.receiptLedger.events)if(event.kind==='receipt'&&!voided.has(event.id)&&event.receivedOn<=localToday())receipts.push({month,id,date:event.receivedOn,label:PAY_ITEMS.find(item=>item.key===event.item)?.label||event.item,amount:event.amount});
+    }else for(const kind of ['Rent','Mgmt'])if(b['stamped'+kind]&&b['stamped'+kind+'Date'])receipts.push({month,id,date:b['stamped'+kind+'Date'],kind});
+  }
   receipts.sort((a,b)=>b.date.localeCompare(a.date));
-  document.getElementById('recent-receipts').innerHTML=receipts.slice(0,5).map(r=>{const t=findTenant(r.id,r.month);return '<div class="recent-entry"><strong>'+esc(t.biz||t.name)+' · '+(r.kind==='Rent'?'월세':'관리·공과금')+'</strong><span>'+esc(r.date)+' · '+esc(r.month)+' 고지서</span><button class="text-button" data-id="'+esc(r.id)+'" data-month="'+esc(r.month)+'" onclick="goToBill(this.dataset.id,this.dataset.month)">입금 내역 →</button></div>';}).join('')||'<p class="priority-empty">완납 날짜를 기록하면 최근 입금이 표시됩니다.</p>';
+  document.getElementById('recent-receipts').innerHTML=receipts.slice(0,5).map(r=>{const t=findTenant(r.id,r.month);return '<div class="recent-entry"><strong>'+esc(t.biz||t.name)+' · '+esc(r.label||(r.kind==='Rent'?'월세':'관리·공과금'))+'</strong><span>'+esc(r.date)+' · '+(r.amount?fmt(r.amount)+' · ':'')+esc(r.month)+' 고지서</span><button class="text-button" data-id="'+esc(r.id)+'" data-month="'+esc(r.month)+'" onclick="goToBill(this.dataset.id,this.dataset.month)">입금 내역 →</button></div>';}).join('')||'<p class="priority-empty">입금 기록이나 완납 날짜를 저장하면 최근 입금이 표시됩니다.</p>';
   document.getElementById('onboarding').innerHTML=tenants.length?'':'<div class="onboarding"><div><strong>건물의 첫 기록을 시작하세요.</strong><p>JSON 백업을 가져오거나 임차인을 등록하세요.</p></div><div><button class="btn btn-primary" onclick="document.getElementById(\'import-file\').click()">기존 백업 가져오기</button><button class="btn btn-secondary" onclick="switchTab(\'tenants\')">임차인 등록</button><a class="btn btn-secondary" href="?demo=1">예시로 둘러보기</a></div></div>';
 }
 
@@ -29,7 +34,8 @@ function exportMonthCsv() {
   tenantsForMonth().forEach(t=>{
     const bill=bills[mk()]?.[t.id]||{},s=RentalBilling.payment(t,bill),c=RentalBilling.charges(t,bill);
     const identity=billTenant(t,bill);
-    rows.push([mk(),identity.unit,identity.biz||'',identity.name,...['pay_rent','pay_mgmt','pay_elec','pay_water','pay_elev','pay_waste'].map(k=>c[k]),s.exempt,s.total,s.received,s.unpaid,bill.stampedRent?bill.stampedRentDate||'':'',bill.stampedMgmt?bill.stampedMgmtDate||'':'']);
+    const groupDate=group=>s.groups[group].complete?s.groups[group].dates.join(' · '):'';
+    rows.push([mk(),identity.unit,identity.biz||'',identity.name,...['pay_rent','pay_mgmt','pay_elec','pay_water','pay_elev','pay_waste'].map(k=>c[k]),s.exempt,s.total,s.received,s.unpaid,bill.receiptLedger?groupDate('rent'):bill.stampedRent?bill.stampedRentDate||'':'',bill.receiptLedger?groupDate('mgmt'):bill.stampedMgmt?bill.stampedMgmtDate||'':'']);
   });
   const cell=value=>{
     let text=String(value??'');
@@ -192,7 +198,7 @@ function renderBackupFileReport(parsed){
     backupCheckLine('임차인 (보관 포함)',data.tenants.length+'명'),backupCheckLine('고지서',countRows(data.bills)+'건 · '+Object.keys(data.bills).length+'개월'),
     backupCheckLine('대출',data.loans.length+'건'),backupCheckLine('지출',countRows(data.expenses)+'건'),backupCheckLine('정산',Object.keys(data.settInputs).length+'개월'));
   const warnings=[];
-  if(RentalCore.hasReceiptLedgers(data))warnings.push('입금 원장 형식은 확인했지만 이 버전에서는 자료 적용과 수납 표시를 지원하지 않습니다. 원본 파일을 보관해주세요.');
+  if(RentalCore.hasReceiptLedgers(data))warnings.push('입금 원장을 포함한 자료입니다. 복원할 때 현재 기기의 기존 입금 이력을 삭제·변경하는 자료는 적용할 수 없습니다.');
   const metadata=new Set(['schemaVersion','exportedAt','localMeta','localDrafts','localSettlementDrafts','reason']);
   const original=Object.fromEntries(Object.entries(parsed).filter(([key])=>!metadata.has(key)));
   if(cloudDifferences(original,data).length)warnings.push('기존 복원 규칙에 따라 기본값이 추가되거나 일부 값이 정규화됩니다. 적용 전 파일 가져오기의 비교 화면을 확인해주세요.');

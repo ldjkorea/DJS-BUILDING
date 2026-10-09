@@ -26,6 +26,7 @@ function statusLines_(data, revision, now) {
   var tenants = data.tenants.filter(function(tenant) { return tenant.archived !== true; }).sort(function(a, b) {
     return RentalBilling.floorOf(a.unit) - RentalBilling.floorOf(b.unit) || String(a.unit || '').localeCompare(String(b.unit || ''));
   });
+  if(RentalBilling.hasReceiptLedgers(data))lines.push({text:'입금 원장: 부분입금의 잔액과 정정을 반영합니다. 날짜 미지정 과거 확인은 실제 입금일을 새로 만들지 않습니다.'});
   if (!tenants.length) lines.push({text:'등록된 임차인이 없습니다.'});
   tenants.forEach(function(tenant) {
     var collection = RentalBilling.collectionStatus(tenant, data.bills, asOf);

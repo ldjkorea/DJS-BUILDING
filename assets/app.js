@@ -24,6 +24,7 @@ if(isDemo) {
       data.bills[month]=Object.fromEntries(data.tenants.map((t,i)=>[t.id,{rent:t.rent,mgmt:t.mgmt,electricity:i===0?0:i===3?45000:35000,water:15000+i*3000,elevatorTotal:i===0?0:50000,waste:12500,stampedRent:i<3,stampedRentDate:month.replace('-','.')+'.05',stampedMgmt:i===0,stampedMgmtDate:month.replace('-','.')+'.07'}]));
       data.loans=[{id:'demoLoan',name:'건물 담보대출',principal:180000000,rate:3.8}];
       data.expenses[month]=[{id:'demoExpense',name:'공용부 조명 교체',date:month+'/03',amount:80000,memo:'LED 조명 교체'}];
+      for(const tenant of data.tenants)RentalBilling.freezeBill(tenant,data.bills[month][tenant.id],month);
       RentalCore.persist(appStorage,data);
     }
   }catch{}
@@ -32,11 +33,6 @@ if(isDemo) {
 let loadedState;
 try { loadedState = RentalCore.load(appStorage); }
 catch (error) { loadedState = {data: RentalCore.empty(), error}; }
-// Stage guard: do not render legacy payment amounts for a recognized receipt journal.
-if(!loadedState.error&&RentalCore.hasReceiptLedgers(loadedState.data)){
-  const error=new Error('입금 원장 자료가 있어 이 버전에서는 편집을 중단했습니다. 원본을 파일로 보관하고 지원되는 앱에서 열어주세요.');
-  error.code='RECEIPT_INTERFACE_PENDING';loadedState={data:RentalCore.empty(),error,meta:loadedState.meta};
-}
 let {tenants, bills, loans, expenses, renewalDone, settInputs, waterRatio, floorOperations} = loadedState.data;
 const domainExtras=data=>Object.fromEntries(Object.entries(data).filter(([key])=>!RentalCore.KEYS.includes(key)));
 let extraDomainData=domainExtras(loadedState.data);
@@ -279,12 +275,7 @@ function historyTenants() {
 let saveTimer=null;
 
 function currentData() { return {...extraDomainData,tenants, bills, loans, expenses, renewalDone, settInputs, waterRatio, floorOperations}; }
-function assertReceiptInterface(data) {
-  if(RentalCore.hasReceiptLedgers(data))throw new Error('입금 원장을 사용하는 자료입니다. 입금 화면 연결이 완료된 버전에서 열어주세요. 현재 기기 자료는 유지됩니다.');
-  return data;
-}
 function assignData(data) {
-  assertReceiptInterface(data);
   extraDomainData=domainExtras(data);
   ({tenants, bills, loans, expenses, renewalDone, settInputs, waterRatio, floorOperations} = data);
   selTenantId = null;
@@ -339,7 +330,6 @@ async function writeLocal(data, dirty, baseRevision, beforeWrite) {
   return withStorageLock(() => {
     assertCurrentStorage();
     const validated=RentalCore.validateData(data);
-    assertReceiptInterface(validated);
     RentalCore.assertReceiptStorage(appStorage,validated);
     if(beforeWrite)beforeWrite();
     expectedStorageToken=RentalCore.persistChecked(appStorage,validated,expectedStorageToken,
@@ -383,7 +373,7 @@ async function cloudRequest(options = {}) {
   let timedOut=false;
   const timeout=setTimeout(()=>{timedOut=true;controller.abort();}, timeoutMs);
   try {
-    const fetchUrl = isPost ? SHEET_URL : `${SHEET_URL}${SHEET_URL.includes('?') ? '&' : '?'}_t=${Date.now()}`;
+    const fetchUrl = isPost ? SHEET_URL : `${SHEET_URL}${SHEET_URL.includes('?') ? '&' : '?'}receiptLedgerProtocol=${RentalBilling.RECEIPT_FORMAT}&_t=${Date.now()}`;
     const fetchOptions = {
       ...options,
       redirect: 'follow',
@@ -401,7 +391,7 @@ async function cloudRequest(options = {}) {
           controller.signal.addEventListener('abort',abort,{once:true});
           google.script.run.withSuccessHandler(result=>finish(resolve,{ok:true,json:async()=>JSON.parse(result)}))
             .withFailureHandler(error=>finish(reject,new Error(error.message||'구글 서버 연결 실패')))
-            .independentRequest({method:isPost?'POST':'GET',body:isPost?options.body:null});
+            .independentRequest({method:isPost?'POST':'GET',body:isPost?options.body:null,receiptLedgerProtocol:RentalBilling.RECEIPT_FORMAT});
         });
       } else {
         if(!SHEET_URL)throw new Error('새 GAS 앱 주소에서 열어주세요. 이 화면은 기기 저장만 사용할 수 있습니다.');
@@ -516,6 +506,7 @@ async function regenerateCurrentStatus() {
 }
 
 async function doSync(options = {}) {
+  if(document.getElementById('modal-receipt-entry')?.classList.contains('open'))return;
   if(!cloudEnabled || storageFault || conflictingTab || persistenceBusy || syncBusy || replacementReview)return;
   if(!navigator.onLine){syncUI('offline');return;}
   syncBusy=true;
@@ -524,7 +515,7 @@ async function doSync(options = {}) {
     assertCurrentStorage();syncUI('saving');
     const remote=await cloudRequest();
     const remoteData=RentalCore.validateData(remote.data);
-    assertReceiptInterface(remoteData);
+    if((RentalCore.hasReceiptLedgers(remoteData)||RentalCore.hasReceiptLedgers(currentData()))&&remote.capabilities?.receiptLedgerStorage!==RentalBilling.RECEIPT_FORMAT)throw new Error('Google 서버가 입금 원장 저장을 지원하지 않습니다. 기기 자료를 보관하고 독립 서버 업데이트 후 다시 저장해주세요.');
     if(!supportsSafeSync(remote))throw new Error('기존 서버가 버전 비교 저장을 지원하지 않아 업로드를 차단했습니다. 불러오기는 가능합니다.');
     const localData=RentalCore.validateData(currentData());
     if(!cloudBaseRevision) {
@@ -553,8 +544,8 @@ async function doSync(options = {}) {
     const pendingKey='rentalApp.pendingCloudRequest.v2';
     let pending=null;
     try { pending=JSON.parse(appStorage.getItem(pendingKey)||'null'); } catch { throw new Error('저장 요청 기록을 확인할 수 없습니다. 백업 후 동기화 상태를 확인해주세요.'); }
-    const reusable=pending && pending.protocol==='rental-sync-v2' && JSON.stringify(pending.data)===JSON.stringify(data);
-    const request=reusable?pending:{protocol:'rental-sync-v2',expectedRevision:cloudBaseRevision,requestId:crypto.randomUUID(),data};
+    const reusable=pending && pending.protocol==='rental-sync-v2' && JSON.stringify(pending.data)===JSON.stringify(data)&&(!RentalCore.hasReceiptLedgers(data)||pending.receiptLedgerProtocol===RentalBilling.RECEIPT_FORMAT);
+    const request=reusable?pending:{protocol:'rental-sync-v2',expectedRevision:cloudBaseRevision,requestId:crypto.randomUUID(),data,receiptLedgerProtocol:RentalBilling.RECEIPT_FORMAT};
     const requestId=request.requestId;
     appStorage.setItem(pendingKey,JSON.stringify(request));
     const result=await cloudRequest({method:'POST',body:JSON.stringify(request)});
@@ -1609,6 +1600,7 @@ async function confirmSettlement() {
   }
   if (!RentalBilling.reconcile(settlementReview).balanced) { showToast('입력 실비와 배분 합계를 맞춰주세요.'); return; }
   const key=mk();
+  if(settlementReview.rows.some(row=>bills[key]?.[row.id]?.receiptLedger)){showToast('입금 원장이 있는 고지서의 청구액은 재정산할 수 없습니다. 원장과 기존 정산을 유지했습니다.');return;}
   if(settInputs[key]?.confirmed && !confirm('확정된 정산을 새 배분액으로 바꿀까요? 기존 자료는 복원 지점에 보관합니다.'))return;
   if(!makeRecovery('정산 확정 전'))return;
   bills[key] ??= {};
@@ -2083,7 +2075,7 @@ function renderHistContent() {
   const stamp=(type,label)=>{
     const group=state.groups[type],amount=group.total;
       const flag=type==='rent'?'stampedRent':'stampedMgmt';
-      return `<div class="payment-card ${group.complete?'is-paid':''}"><div class="payment-heading"><span>${label}</span><span class="status-tag">${group.exempt?'미부과':group.complete?'완납':group.received>0?'일부 확인':'미확인'}</span></div><strong>${fmt(amount)}</strong><div class="payment-date">${group.dates.length?esc(group.dates.join(' · ')):'입금 날짜를 지정해주세요'}</div><button data-focus-key="stamp-${type}" class="btn btn-secondary" onclick="stampBill('${type}')">${bill[flag]?'완납 날짜 변경':'날짜 지정 · 완납 처리'}</button></div>`;
+      return `<div class="payment-card ${group.complete?'is-paid':''}"><div class="payment-heading"><span>${label}</span><span class="status-tag">${group.exempt?'미부과':group.complete?'완납':group.received>0?'일부 확인':'미확인'}</span></div><strong>${fmt(amount)}</strong><div class="payment-date">${group.dates.length?esc(group.dates.join(' · ')):bill.receiptLedger?'입금 기록 없음':'입금 날짜를 지정해주세요'}</div>${bill.receiptLedger?`<p class="card-sub">확인 ${fmt(group.received)} · 잔액 ${fmt(group.unpaid)}</p>`:`<button data-focus-key="stamp-${type}" class="btn btn-secondary" onclick="stampBill('${type}')">${bill[flag]?'완납 날짜 변경':'날짜 지정 · 완납 처리'}</button>`}</div>`;
     };
     const subStamp=(itemKey,label)=>{
       const info=state.items[itemKey];
@@ -2103,7 +2095,7 @@ function renderHistContent() {
     };
     const rows=PAY_ITEMS.map(item=>{
       const info=state.items[item.key];
-      return `<div class="charge-row"><span>${item.label}</span><small class="${info.paid?'paid-text':''}">${info.na?'미부과':info.paid?esc(info.date)+' 확인':'입금 미확인'}</small><strong>${fmt(info.na?0:info.amount)}</strong></div>`;
+      return `<div class="charge-row"><span>${item.label}</span><small class="${info.paid?'paid-text':''}">${info.na?'미부과':info.partial?'확인 '+fmt(info.received)+' · 잔액 '+fmt(info.unpaid):info.paid?esc(info.date)+' 확인':'입금 미확인'}</small><strong>${fmt(info.na?0:info.amount)}</strong></div>`;
     }).join('');
     const bt=billTenant(tenant,bill);
     const taxInfo=bt.bizNo?`<span style="font-size:11px;color:var(--text3);margin-left:6px;">사업자번호: ${esc(bt.bizNo)}</span>`:'';
@@ -2116,9 +2108,9 @@ function renderHistContent() {
       </div>
       <div class="charge-list">${rows}</div>
       <details class="mgmt-detail"><summary>고정 관리비 세부 항목</summary>${buildMgmtBreakdownHtml(billTenant(tenant,bill))}</details>
-      <div class="payment-grid">${stamp('rent','월세')}${stamp('mgmt','관리비 전체 (일괄 완납)')}</div>
+      <div class="payment-grid">${stamp('rent','월세')}${stamp('mgmt',bill.receiptLedger?'관리비·공과금':'관리비 전체 (일괄 완납)')}</div>
 
-      <div style="margin-top:14px;padding:12px 14px;background:var(--surface);border-radius:10px;border:1px solid var(--border2);">
+      ${bill.receiptLedger?renderReceiptPanel(tenant,bill):`<div style="margin-top:14px;padding:12px 14px;background:var(--surface);border-radius:10px;border:1px solid var(--border2);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;flex-wrap:wrap;gap:4px;">
           <strong style="font-size:12.5px;color:var(--gold);display:flex;align-items:center;gap:5px;">
             <span>⚡</span> 관리비 항목별 분할·부분 완납
@@ -2133,13 +2125,80 @@ function renderHistContent() {
         </div>
       </div>
 
-      <p class="card-sub" style="margin-top:10px;">관리비 전체 도장은 관리비·전기·수도·엘리베이터 전체를 완납 처리합니다. 세입자가 일부 항목만 입금한 경우 위의 항목별 분할 완납을 이용해 주세요.</p>
+      <p class="card-sub" style="margin-top:10px;">관리비 전체 도장은 관리비·전기·수도·엘리베이터 전체를 완납 처리합니다. 세입자가 일부 항목만 입금한 경우 위의 항목별 분할 완납을 이용해 주세요.</p><button class="btn btn-secondary" data-focus-key="receipt-add" onclick="openReceiptDialog()">금액별 입금 기록 시작</button><p class="card-sub">여러 번 나누어 입금한 금액을 기록할 수 있습니다. 시작 후 이 고지서의 청구 기준과 기존 납부 근거는 고정됩니다.</p>`}
       <label class="invoice-check"><input type="checkbox" ${bill.invoiceIssued?'checked':''} onchange="setInvoiceIssued(this.checked)"> 세금계산서 발급 완료 · 안내 메시지에 반영</label>
       <div class="bill-actions bill-actions-modern"><button class="btn-kakao-primary" onclick="previewKakao()">💬 카카오톡 / 문자 청구서 발송</button><button class="btn btn-secondary" onclick="editThisMonth()">✏️ 고지서 수정</button><button class="btn btn-secondary" onclick="printCurrentBill()">🖨️ 인쇄 / PDF</button></div>
       ${(bill.audit||[]).length?`<details class="audit-details"><summary>변경 이력 ${(bill.audit||[]).length}건</summary>${[...bill.audit].reverse().map(entry=>`<p><time>${esc(new Date(entry.at).toLocaleString('ko-KR'))}</time> ${esc(entry.action)} · ${esc(entry.detail)}</p>`).join('')}</details>`:''}
       </article>`;
   }
-  function editThisMonth(){const t=findTenant(selTenantId);if(!t)return;document.getElementById('hist-content').innerHTML=buildBillFormHtml(t,histY,histM);applyBillDraft();}
+  function editThisMonth(){const t=findTenant(selTenantId);if(!t)return;if(bills[activeMk()]?.[selTenantId]?.receiptLedger){showToast('입금 원장 고지서의 청구 기준은 고정되어 있습니다. 입금 기록에서 추가·정정해주세요.');return;}document.getElementById('hist-content').innerHTML=buildBillFormHtml(t,histY,histM);applyBillDraft();}
+
+let receiptTarget=null;
+function renderReceiptPanel(tenant,bill){
+  const ledger=bill.receiptLedger,state=RentalBilling.payment(tenant,bill),cancelled=new Set(ledger.events.filter(event=>event.kind==='void').map(event=>event.reference));
+  const label=key=>PAY_ITEMS.find(item=>item.key===key)?.label||key;
+  // Opening and the first receipt may share an exact timestamp. Past evidence
+  // comes from the preserved header, never from new cash at that timestamp.
+  const legacy=RentalBilling.receiptLedgerState({...ledger,events:[]},localToday(),ledger.openedAt);
+  const previous=Object.entries(legacy.items).filter(([,item])=>item.received>0).map(([key,item])=>`<li><strong>${esc(label(key))} ${fmt(item.received)}</strong> · ${item.undated?'날짜 미지정':esc(item.dates.join(' · '))} ${cancelled.has('legacy:'+key)?'<span>정정됨</span>':`<button class="btn btn-secondary" data-focus-key="receipt-legacy-${key}" onclick="openReceiptDialog('void','legacy:${key}')">과거 확인 정정</button>`}</li>`).join('');
+  const rows=ledger.events.map(event=>`<li class="receipt-entry"><div><strong>${event.kind==='receipt'?esc(label(event.item))+' '+fmt(event.amount):'기록 정정'}</strong><span>${event.kind==='receipt'?'실제 입금일 '+esc(event.receivedOn):'대상 '+esc(event.reference)}</span><small>기록 ${esc(new Date(event.recordedAt).toLocaleString('ko-KR'))}</small><p>${esc(event.kind==='receipt'?event.note:event.reason)}</p></div>${event.kind==='receipt'?(cancelled.has(event.id)?'<span class="status-tag">정정됨</span>':`<button class="btn btn-secondary" data-focus-key="receipt-void-${event.id}" onclick="openReceiptDialog('void','${event.id}')">기록 정정</button>`):''}</li>`).reverse().join('');
+  return `<section class="receipt-panel" aria-label="입금 원장"><h3>입금 기록</h3><p class="card-sub">과거 확인 ${fmt(state.legacyConfirmed)} · 새 입금 ${fmt(state.newReceived)} · 잔액 ${fmt(state.unpaid)}</p><button class="btn btn-primary" data-focus-key="receipt-add" onclick="openReceiptDialog()">입금 추가</button><p class="card-sub">청구 기준과 기존 기록을 보존합니다. 정정은 원래 기록을 삭제하지 않으며 실제 환급을 뜻하지 않습니다.</p>${ledger.estimatedFields.length?`<p class="data-warning">검토한 과거 보완 정보: ${esc(ledger.estimatedFields.join(', '))}</p>`:''}${previous?`<details><summary>원장 개시 전 납부 확인 근거</summary><ul class="receipt-list">${previous}</ul></details>`:''}<ol class="receipt-list">${rows||'<li>새 입금 기록이 없습니다.</li>'}</ol></section>`;
+}
+function openReceiptDialog(mode='receipt',reference='',preferred='pay_rent'){
+  if(persistenceBusy||syncBusy||replacementReview||loadedState.error||conflictingTab)return;
+  const month=activeMk(),id=selTenantId,bill=bills[month]?.[id],tenant=findTenant(id,month);
+  if(!bill||!tenant){showToast('고지서를 먼저 저장해주세요.');return;}
+  try{
+    assertCurrentStorage();
+    const ledger=bill.receiptLedger||RentalBilling.openReceiptLedger(tenant,bill,month+':'+id,new Date().toISOString(),{reviewEstimated:true});
+    const state=RentalBilling.receiptLedgerState(ledger,'2200-12-31'),available=PAY_ITEMS.filter(item=>state.items[item.key].unpaid>0);
+    if(mode==='receipt'&&!available.length){if(bill.receiptLedger){showToast('추가할 잔액이 없습니다. 오입력은 기록 정정을 이용해주세요.');return;}mode='open';}
+    receiptTarget={month,id,mode,reference,billRaw:JSON.stringify(bill),ledger,prepared:null};
+    const select=document.getElementById('receipt-item');select.innerHTML=available.map(item=>`<option value="${item.key}">${esc(item.label)} · 잔액 ${fmt(state.items[item.key].unpaid)}</option>`).join('');if(available.some(item=>item.key===preferred))select.value=preferred;
+    document.getElementById('receipt-title').textContent=mode==='void'?'입금 기록 정정':mode==='open'?'입금 원장 시작':'입금 추가';
+    document.getElementById('receipt-context').textContent=month+' · '+(bill.tenantSnapshot?.biz||bill.tenantSnapshot?.name||tenant.name)+' · 청구 기준과 기존 확인 근거를 보존합니다.';
+    document.getElementById('receipt-inputs').hidden=mode!=='receipt';document.getElementById('receipt-reason-wrap').hidden=mode!=='void';
+    document.getElementById('receipt-amount').value='';document.getElementById('receipt-date').value=localToday();document.getElementById('receipt-date').max=localToday();document.getElementById('receipt-note').value='';document.getElementById('receipt-reason').value='';
+    document.getElementById('receipt-legacy-summary').textContent='원장 개시 전 확인 '+fmt(state.legacyConfirmed)+' · 실제 입금 기록으로 새로 만들지 않습니다.'+(mode==='void'?' 정정 대상: '+reference:'');
+    const estimates=!bill.receiptLedger&&(bill.snapshotEstimated||[]).length>0;document.getElementById('receipt-estimates').hidden=!estimates;document.getElementById('receipt-estimate-list').textContent=(bill.snapshotEstimated||[]).join(', ');document.getElementById('receipt-review-estimated').checked=false;
+    resetReceiptReview();openModal('modal-receipt-entry');
+  }catch(error){showToast(error.message);}
+}
+function resetReceiptReview(){
+  if(receiptTarget)receiptTarget.prepared=null;
+  document.getElementById('receipt-fields').disabled=false;document.getElementById('receipt-review').hidden=true;document.getElementById('receipt-confirm').hidden=true;document.getElementById('receipt-edit').hidden=true;document.getElementById('receipt-prepare').hidden=false;
+}
+function reviewReceiptEntry(){
+  if(!receiptTarget)return;
+  try{
+    const {month,id,mode,reference,billRaw}=receiptTarget,bill=bills[month]?.[id];if(JSON.stringify(bill)!==billRaw)throw new Error('고지서가 변경됐습니다. 입력을 보관하고 창을 다시 열어주세요.');assertCurrentStorage();
+    const at=new Date().toISOString();let ledger=bill.receiptLedger||RentalBilling.openReceiptLedger(findTenant(id,month),bill,month+':'+id,at,{reviewEstimated:document.getElementById('receipt-review-estimated').checked});
+    let event=null;
+    if(mode==='receipt'){
+      const raw=document.getElementById('receipt-amount').value;if(!/^\d+$/.test(raw))throw new Error('입금액은 양의 원 단위 정수로 입력해주세요.');
+      event={kind:'receipt',id:crypto.randomUUID(),billId:month+':'+id,item:document.getElementById('receipt-item').value,amount:Number(raw),receivedOn:document.getElementById('receipt-date').value,recordedAt:at,note:document.getElementById('receipt-note').value.trim()};
+    }else if(mode==='void')event={kind:'void',id:crypto.randomUUID(),billId:month+':'+id,reference,recordedAt:at,reason:document.getElementById('receipt-reason').value.trim()};
+    if(event)ledger=RentalBilling.appendReceiptEvent(ledger,event);
+    const data=structuredClone(currentData());data.bills[month][id].receiptLedger=ledger;
+    RentalCore.validateData(data);RentalCore.assertReceiptStorage(appStorage,data);
+    receiptTarget.prepared={ledger,event};const state=RentalBilling.receiptLedgerState(ledger,localToday());
+    document.getElementById('receipt-review').textContent=(event?.kind==='receipt'?`${STAMP_TYPE_LABELS[event.item]} ${fmt(event.amount)} · 실제 입금일 ${event.receivedOn}`:event?.kind==='void'?`정정 대상 ${reference} · 사유: ${event.reason}`:'기존 납부 근거를 보존하고 빈 입금 원장을 시작합니다.')+' · 저장 후 전체 잔액 '+fmt(state.unpaid)+' · 이 기기에 저장 후 Google 동기화 상태를 별도로 확인해주세요.';
+    document.getElementById('receipt-fields').disabled=true;document.getElementById('receipt-review').hidden=false;document.getElementById('receipt-confirm').hidden=false;document.getElementById('receipt-edit').hidden=false;document.getElementById('receipt-prepare').hidden=true;
+  }catch(error){announceModalNotice(error.message+(/원장 개시/.test(error.message)?' 이 창을 닫고 고지서 수정에서 기존 청구 기준을 대조·저장한 뒤 다시 시작해주세요.':''));}
+}
+async function saveReceiptEntry(){
+  if(!receiptTarget?.prepared||persistenceBusy)return;
+  const target=receiptTarget;persistenceBusy=true;
+  let data;
+  try{
+    if(JSON.stringify(bills[target.month]?.[target.id])!==target.billRaw)throw new Error('고지서가 변경되어 저장을 중단했습니다. 입력을 유지했습니다.');
+    data=structuredClone(currentData());data.bills[target.month][target.id].receiptLedger=structuredClone(target.prepared.ledger);
+    await writeLocal(data,true,cloudBaseRevision,()=>{if(receiptTarget!==target||JSON.stringify(bills[target.month]?.[target.id])!==target.billRaw)throw new Error('고지서가 변경되어 저장을 중단했습니다. 입력을 유지했습니다.');});
+    const selected=selTenantId;assignData(data);selTenantId=selected;cloudDirty=true;storageFault=null;failedSaveData=null;closeModal('modal-receipt-entry');receiptTarget=null;
+    renderAll();renderHistContent();syncUI(cloudEnabled?'pending':'local');showDataNotice('');showToast('입금 기록을 이 기기에 저장했습니다.');if(cloudEnabled)saveTimer=setTimeout(doSync,2000);
+  }catch(error){if(data)failedSaveData=data;showDataNotice('입금 기록을 저장하지 못했습니다. 입력과 기존 자료를 유지했습니다. '+error.message);announceModalNotice(error.message);}
+  finally{persistenceBusy=false;}
+}
 
   /* 완납 도장 (rent=월세, mgmt=관리비 일괄, pay_*=개별 항목 완납) */
   let stampTarget = null;
@@ -2160,6 +2219,7 @@ function renderHistContent() {
     if(!validTypes.includes(type))return;
     const month=`${histY}-${String(histM).padStart(2,'0')}`;
     const bill=bills[month]?.[selTenantId]||{};
+    if(bill.receiptLedger){openReceiptDialog('receipt','',type==='rent'?'pay_rent':RentalBilling.itemKeys.includes(type)?type:'pay_mgmt');return;}
     const tenant=findTenant(selTenantId,month);
     stampTarget={type,month,id:selTenantId};
 
@@ -2192,6 +2252,7 @@ function renderHistContent() {
     const date=RentalBilling.dateISO(document.getElementById('stamp-date').value);
     if(!remove&&(!date||date>localToday())){showToast('올바른 완납 날짜를 지정해주세요.');return;}
     const {type,month,id}=stampTarget;
+    if(bills[month]?.[id]?.receiptLedger){showToast('원장 고지서는 입금 기록에서 추가·정정해주세요.');return;}
     const tenant=findTenant(id,month);if(!tenant)return;
     bills[month]??={}; const bill=bills[month][id]??={};
     snapshotBill(tenant,bill,month);
@@ -2354,6 +2415,7 @@ function updateBillTotal(){
 }
 function snapshotBill(tenant,bill,month=activeMk(),legacy=false) {
   if(!tenant)return;
+  if(bill.receiptLedger){RentalBilling.validateReceiptBill(tenant,bill,month+':'+tenant.id);return;}
   RentalBilling.freezeBill(tenant,bill,month,legacy);
   if(bill.mgmtItems==null && tenant.mgmtItems && calcMgmtTotal(getMgmtItems(tenant))===Number(bill.mgmt))
     bill.mgmtItems=structuredClone(getMgmtItems(tenant));
@@ -2373,6 +2435,7 @@ function localToday() {
 function captureBillDraft() {
   if(!selTenantId||!document.getElementById('bill-total-display'))return false;
   const key=activeMk(),tenant=findTenant(selTenantId),previous=bills[key]?.[selTenantId]||{};
+  if(previous.receiptLedger){showToast('원장 고지서의 청구 기준은 고정되어 있습니다. 입금 기록에서 추가·정정해주세요.');return false;}
   if(!tenant||(tenant.archived&&!bills[key]?.[selTenantId]))return false;
   const next=structuredClone(previous);
   snapshotBill(tenant,next,key,Object.keys(previous).length>0);
@@ -2444,6 +2507,7 @@ function calcWaterPeriod(t,year,month) {
   return {period:value?`${value.start.slice(5).replace('-','/')}~${value.end.slice(5).replace('-','/')}`:'',active};
 }
 async function toggleFieldNA(field) {
+  if(bills[activeMk()]?.[selTenantId]?.receiptLedger){showToast('원장 고지서의 미부과 상태는 변경할 수 없습니다.');return;}
   if (!['electricity', 'water', 'waste'].includes(field) || !validateNumbers('hist-content')) return;
   if(!captureBillDraft())return;
   const key = activeMk();
@@ -2461,6 +2525,7 @@ async function toggleFieldNA(field) {
   renderHome();
 }
 async function toggleNA(itemKey) {
+  if(bills[activeMk()]?.[selTenantId]?.receiptLedger){showToast('원장 고지서의 미부과 상태는 변경할 수 없습니다.');return;}
   if(!RentalBilling.itemKeys.includes(itemKey)||!validateNumbers('hist-content')||!captureBillDraft())return;
   const key=activeMk(),bill=bills[key][selTenantId],tenant=findTenant(selTenantId),before=structuredClone(bill);
   const target=!RentalBilling.payment(tenant,bill).items[itemKey].na;
@@ -2471,6 +2536,7 @@ async function toggleNA(itemKey) {
   clearBillDraft();document.getElementById('hist-content').innerHTML=buildBillFormHtml(tenant,histY,histM);renderHome();
 }
 async function updatePay(itemKey,field,value) {
+  if(bills[activeMk()]?.[selTenantId]?.receiptLedger){showToast('원장 입금 날짜는 기존 기록을 정정한 뒤 새 입금을 추가해주세요.');return;}
   if(field!=='date'||!RentalBilling.itemKeys.includes(itemKey))return;
   const date=RentalBilling.dateISO(value,activeY());
   if(value&&(!date||date>localToday())){
@@ -2562,15 +2628,15 @@ async function previewKakao(){
   const elecPeriod = `${py}/${prevMonthStr}/24 ~ ${uy}/${thisMonthStr}/23`;
 
   // 금액 계산
-  const rentNet = Number(t.rent) || 0;
+  const rentNet = RentalBilling.won(t.rent||0);
   const rentVat = withVat(rentNet) - rentNet;
   const rentTotal = rentNet + rentVat;
 
-  const mgmtNet = Number(t.mgmt) || 0;
+  const mgmtNet = RentalBilling.won(t.mgmt||0);
   const mgmtVat = withVat(mgmtNet) - mgmtNet;
   const mgmtTotal = mgmtNet + mgmtVat;
 
-  const elecNet = b.electricityNA ? 0 : (Number(b.electricity) || 0);
+  const elecNet = b.electricityNA ? 0 : RentalBilling.won(b.electricity||0);
   const elecVat = withVat(elecNet) - elecNet;
   const elecTotal = elecNet + elecVat;
 
@@ -2581,11 +2647,11 @@ async function previewKakao(){
   const elevBreakdown=elevActualTotal?'실제 청구액 기준':`공급가액 ${fmtN(elevNet)}원 + 부가세 ${fmtN(elevVat)}원`;
 
   // 수도 관련 (홀수월 정산)
-  const waterTargetMonth = (um % 2 === 0) ? `${uy}-${String(um - 1).padStart(2, '0')}` : key;
-  const waterTargetM = (um % 2 === 0) ? (um - 1) : um;
+  const waterTargetMonth = b.receiptLedger?key:(um % 2 === 0) ? `${uy}-${String(um - 1).padStart(2, '0')}` : key;
+  const waterTargetM = b.receiptLedger?um:(um % 2 === 0) ? (um - 1) : um;
   const nextWaterM = (um % 2 === 0) ? (um + 1) : (um + 2);
   const wb = (bills[waterTargetMonth] || {})[t.id] || {};
-  const waterAmt = Number(wb.water) || 0;
+  const waterAmt = RentalBilling.won(wb.water||0);
 
   const waterPeriodMap = {
     1: `${uy - 1}/10/21 ~ ${uy - 1}/12/20`,
@@ -2601,17 +2667,18 @@ async function previewKakao(){
   const paymentState=RentalBilling.historicalPayment(t,b,uy,um,asOf);
   const [waterYear,waterMonth]=waterTargetMonth.split('-').map(Number);
   const waterState=RentalBilling.historicalPayment(t,wb,waterYear,waterMonth,asOf);
-  const paymentLabel=item=>item.na?'미부과':item.paid?'✅ 납부완료':item.status==='overdue'?'[연체중]':item.dueDate?'[납기 전]':'[납기 확인 필요]';
+  const paymentLabel=item=>item.na?'미부과':item.paid?'✅ 납부완료':(item.partial?`일부 입금 ${fmtN(item.received)}원 · 잔액 ${fmtN(item.unpaid)}원 `:'')+(item.status==='overdue'?'[연체중]':item.dueDate?'[납기 전]':'[납기 확인 필요]');
   const rentItem=paymentState.items.pay_rent,mgmtItem=paymentState.items.pay_mgmt,elecItem=paymentState.items.pay_elec,elevItem=paymentState.items.pay_elev;
   const waterItem=waterState.items.pay_water;
   const isRentPaid=rentItem.paid,isMgmtPaid=mgmtItem.paid,isElecPaid=elecItem.paid,isElevPaid=elevItem.paid,isWaterPaid=waterItem.paid;
 
   // 입금 확인일 추출 (개별 항목 및 묶음 완납일 고려)
-  const rentPaidDate = b.paid?.pay_rent?.date || (b.stampedRentDate ? b.stampedRentDate : '');
-  const mgmtPaidDate = b.paid?.pay_mgmt?.date || (b.stampedMgmtDate ? b.stampedMgmtDate : '');
-  const elecPaidDate = b.paid?.pay_elec?.date || (b.stampedMgmtDate ? b.stampedMgmtDate : '');
-  const elevPaidDate = b.paid?.pay_elev?.date || (b.stampedMgmtDate ? b.stampedMgmtDate : '');
-  const waterPaidDate = wb.paid?.pay_water?.date || b.paid?.pay_water?.date || (b.stampedMgmtDate ? b.stampedMgmtDate : '');
+  const confirmedDates=item=>[...(item.dates||[]),...(item.undated?['날짜 미지정']:[])].join(' · ');
+  const rentPaidDate = b.receiptLedger?confirmedDates(rentItem):b.paid?.pay_rent?.date || (b.stampedRentDate ? b.stampedRentDate : '');
+  const mgmtPaidDate = b.receiptLedger?confirmedDates(mgmtItem):b.paid?.pay_mgmt?.date || (b.stampedMgmtDate ? b.stampedMgmtDate : '');
+  const elecPaidDate = b.receiptLedger?confirmedDates(elecItem):b.paid?.pay_elec?.date || (b.stampedMgmtDate ? b.stampedMgmtDate : '');
+  const elevPaidDate = b.receiptLedger?confirmedDates(elevItem):b.paid?.pay_elev?.date || (b.stampedMgmtDate ? b.stampedMgmtDate : '');
+  const waterPaidDate = wb.receiptLedger?confirmedDates(waterItem):wb.paid?.pay_water?.date || b.paid?.pay_water?.date || (b.stampedMgmtDate ? b.stampedMgmtDate : '');
 
   // 상태 레이블 및 입금 확인 문구
   const rentStatus = rentItem.paid ? `완납${rentPaidDate ? ` · ${rentPaidDate} 입금 확인` : ''}` : paymentLabel(rentItem);
@@ -2689,6 +2756,13 @@ async function previewKakao(){
     // 전부 미납
     const unpaidSummary = unpaidItems.map(u => `${u.name} ${fmtN(u.amount)}원`).join(', ');
     noticeMessage = `기존 미입금된 ${unpaidSummary || '청구 내역'} 확인 후 입금 부탁드립니다.`;
+  }
+  if(b.receiptLedger||wb.receiptLedger){
+    const pairs=[['월세',rentItem],['기본 관리비',mgmtItem],['공용전기료',elecItem],['승강기 유지비',elevItem],['수도요금',waterItem],['오물처리비',paymentState.items.pay_waste]].filter(([,item])=>!item.na);
+    totalDue=pairs.reduce((sum,[,item])=>sum+item.unpaid,0);
+    const confirmed=pairs.filter(([,item])=>item.received>0).map(([name,item])=>name+' '+fmtN(item.received)+'원 확인'+(item.undated?' (날짜 미지정 과거 확인 포함)':'')).join(' · ');
+    const outstanding=pairs.filter(([,item])=>item.unpaid>0).map(([name,item])=>name+' 잔액 '+fmtN(item.unpaid)+'원').join(' · ');
+    noticeMessage=(confirmed?confirmed+'. ':'')+(totalDue>0?outstanding+'. 합계 '+fmtN(totalDue)+'원 추가 입금 부탁드립니다.':'전액 확인되었습니다. 감사합니다.');
   }
 
   // 재계약 기간
@@ -3258,8 +3332,8 @@ function renderTaxSummary() {
       }
 
       const timing = Object.keys(b).length ? RentalBilling.historicalPayment(bt, b, Number(mk.slice(0, 4)), Number(mk.slice(5, 7)), new Date()) : null;
-      if (timing?.summary?.overdue) {
-        unpaidSum += timing.summary.overdue;
+      if (timing?.overdue) {
+        unpaidSum += timing.overdue;
       }
     });
 
@@ -3380,7 +3454,7 @@ function exportTaxCsv() {
       elevSum += (chg.pay_elev || 0);
       if (b.invoiceIssued) issued++;
       const timing = Object.keys(b).length ? RentalBilling.historicalPayment(bt, b, Number(mk.slice(0, 4)), Number(mk.slice(5, 7)), new Date()) : null;
-      if (timing?.summary?.overdue) unpaid += timing.summary.overdue;
+      if (timing?.overdue) unpaid += timing.overdue;
     });
     const taxable = rentNet + mgmtNet + elecNet;
     const vat = withVat(taxable) - taxable;
@@ -3523,8 +3597,7 @@ function replacementLabel(path, before, after) {
   return parts.map(part => labels[part] || part).join(' › ');
 }
 async function reviewDataReplacement(data, label, drafts = {}, settlementDrafts = {}, options = {}) {
-  if(loadedState.error?.code==='RECEIPT_INTERFACE_PENDING')throw loadedState.error;
-  if(RentalCore.hasReceiptLedgers(data))throw new Error('이 버전에서는 입금 원장 자료를 적용할 수 없습니다. 파일을 보관하고 지원되는 앱에서 다시 가져와주세요.');
+  RentalCore.assertReceiptStorage(appStorage,data);
   const fromGoogle=options.source==='google';
   if (replacementReview || (syncBusy&&!fromGoogle) || persistenceBusy || document.querySelector('.modal-overlay.open')) {
     throw new Error('진행 중인 저장이나 입력창을 마친 뒤 다시 가져와주세요.');
@@ -3698,6 +3771,7 @@ function openModal(id) {
   updateModalIsolation();focusModalStart(modal);
 }
 function closeModal(id) {
+  if(id==='modal-receipt-entry'&&!persistenceBusy){receiptTarget=null;if(cloudEnabled&&cloudDirty)saveTimer=setTimeout(doSync,2000);}
   if(id==='modal-backup-check')endBackupCheck();
   if (id === 'modal-data-replacement' && replacementReview) { finishReplacementReview(false); return; }
   const modal=document.getElementById(id);if(!modal)return;
@@ -3725,6 +3799,7 @@ document.querySelectorAll('.modal-overlay').forEach(modal => modal.addEventListe
 }));
 document.addEventListener('keydown', event => {
   const modal = activeModal(); if (!modal) return;
+  if(persistenceBusy&&modal.id==='modal-receipt-entry'){event.preventDefault();return;}
   if (event.key === 'Escape') { event.preventDefault();event.stopImmediatePropagation();closeModal(modal.id); return; }
   if (event.key !== 'Tab') return;
   const items=modalTabStops(modal);
@@ -3789,15 +3864,16 @@ document.addEventListener('DOMContentLoaded',()=>{
 let backgroundReadSequence=0;
 async function checkBackgroundCloudSync() {
   const startedRevision=revision,startedDraft=draftVersion;
+  if(document.querySelector('.modal-overlay.open'))return;
   if (!cloudEnabled || isDemo || cloudDirty || storageFault || conflictingTab || persistenceBusy || syncBusy || replacementReview) return;
   if (!navigator.onLine) return;
   const startedRead=++backgroundReadSequence;
   try {
     const remote = await cloudRequest();
+    if(document.querySelector('.modal-overlay.open'))return;
     if(startedRead!==backgroundReadSequence||revision!==startedRevision||draftVersion!==startedDraft||syncBusy||cloudDirty||replacementReview)return;
     if (!supportsSafeSync(remote)) return;
     const remoteData = RentalCore.validateData(remote.data);
-    assertReceiptInterface(remoteData);
     const localData = RentalCore.validateData(currentData());
     const isIdentical = JSON.stringify(remoteData) === JSON.stringify(localData);
 

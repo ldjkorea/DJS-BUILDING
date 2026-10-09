@@ -132,3 +132,14 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
   #replacement-details td+td{border-left:0}
   #replacement-details td::before{content:attr(data-label);display:block;color:var(--text2);font-size:0.75rem;font-weight:600;margin-bottom:8px}
 }
+.receipt-panel{margin-top:16px;padding:16px;border:1px solid var(--border2);border-radius:12px;background:var(--surface);overflow-wrap:anywhere;}
+.receipt-list{padding:0;list-style:none;margin:12px 0;}
+.receipt-entry{display:flex;align-items:start;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.receipt-entry>div{min-width:0;flex:1;}.receipt-entry span,.receipt-entry small{display:block;}.receipt-entry p{white-space:pre-wrap;margin:4px 0;}
+.receipt-entry>.btn{width:auto;flex:none;max-width:100%;}
+.receipt-panel button,.receipt-modal button.btn{min-height:44px;white-space:normal;}.receipt-panel li{overflow-wrap:anywhere;}
+.receipt-modal{width:min(540px,calc(100vw - 24px));}.receipt-modal fieldset{border:0;padding:0;margin:0;min-width:0;}
+.receipt-modal select,.receipt-modal textarea,.receipt-modal input:not([type=checkbox]){width:100%;box-sizing:border-box;min-width:0;}
+.receipt-actions{display:flex;gap:8px;flex-wrap:wrap;}.receipt-modal [hidden]{display:none!important;}
+.receipt-estimate-check{display:flex;align-items:flex-start;gap:9px;line-height:1.6;margin:12px 0;color:var(--text2);}.receipt-estimate-check input{flex:none;accent-color:#4e7850;margin-top:5px;}
+@media(max-width:540px){.receipt-entry{flex-wrap:wrap;}.receipt-entry>div{flex-basis:100%;}}

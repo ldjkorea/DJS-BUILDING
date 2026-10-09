@@ -4,6 +4,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {build} = require('../scripts/build.cjs');
 
+test('static template has unique element IDs so distinct dialogs open their own controls',()=>{
+ const html=fs.readFileSync(path.join(__dirname,'../src/index.template.html'),'utf8');
+ const ids=[...html.matchAll(/\sid="([^"]+)"/g)].map(match=>match[1]);assert.equal(new Set(ids).size,ids.length);
+});
+
 test('single HTML is deterministic, current and contains every source in order', () => {
   const html = build();
   assert.equal(html, build());

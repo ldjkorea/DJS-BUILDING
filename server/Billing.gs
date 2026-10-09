@@ -99,8 +99,7 @@
   }
   const itemKeys = ['pay_rent','pay_mgmt','pay_elec','pay_water','pay_elev','pay_waste'];
   const naFields = {pay_elec:'electricityNA',pay_water:'waterNA',pay_waste:'wasteNA'};
-  // Receipt journal foundation. Existing payment() continues to use legacy confirmations
-  // until the UI, historical projections and append-only server boundary are integrated.
+  // Receipt journals and legacy confirmations share the same public payment projection.
   const RECEIPT_FORMAT='rental-receipts-v1';
   const journalId=value=>typeof value==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(value)
     &&!['__proto__','constructor','prototype','toString','valueOf','hasOwnProperty'].includes(value);
@@ -274,6 +273,17 @@
     return after;
   }
   function payment(tenant, bill = {}, asOf = new Date(), year) {
+    if(Object.hasOwn(bill,'receiptLedger')){
+      validateReceiptBill(tenant,bill,bill.monthSnapshot+':'+tenant.id);
+      const state=receiptLedgerState(bill.receiptLedger,asOfKey(asOf)),items={},groups={};
+      for(const [key,item] of Object.entries(state.items))items[key]={...item,date:item.undated?'날짜 미지정':item.dates.at(-1)?.replaceAll('-','.')||'',dates:item.dates.map(date=>date.replaceAll('-','.'))};
+      for(const group of ['rent','mgmt']){
+        const keys=group==='rent'?['pay_rent']:itemKeys.filter(key=>key!=='pay_rent'),payable=keys.map(key=>items[key]).filter(item=>!item.na);
+        const total=payable.reduce((sum,item)=>sum+item.amount,0),received=payable.reduce((sum,item)=>sum+item.received,0);
+        groups[group]={total,received,unpaid:total-received,complete:total>0&&total===received,exempt:total===0,dates:[...new Set(payable.flatMap(item=>[...item.dates,...(item.undated?['날짜 미지정']:[])]))].sort()};
+      }
+      return {...state,items,groups};
+    }
     const amounts=charges(tenant,bill), items={}, cutoff=asOfKey(asOf);
     const paymentYear=year || Number(bill.monthSnapshot?.slice(0,4)) || Number(cutoff.slice(0,4));
     let total=0,received=0,exempt=0;
@@ -286,7 +296,8 @@
       const na=item.na===true || bill[naFields[key]]===true || amount===0;
       const paid=!na && ((stamped&&!rawDate) || (!!iso&&iso<=cutoff));
       items[key]={amount,paid,na,date:paid?(iso?iso.replaceAll('-','.'): '날짜 미지정'):rawDate,
-        undated:paid&&!iso};
+        undated:paid&&!iso,received:paid?amount:0,unpaid:na||paid?0:amount,partial:false,
+        dates:paid&&iso?[iso.replaceAll('-','.')]:[]};
       total+=amount;
       if(na)exempt+=amount;else if(paid)received+=amount;
     }
@@ -430,15 +441,17 @@
         exempt += item.amount;
       } else if (item.paid) {
         status = 'paid';
-        paid += item.amount;
+        paid += item.received;
       } else if (!itemDueDate || !cutoff || itemDueDate >= cutoff) {
         // 지급일이 설정되지 않은 월세도 임의로 체납으로 만들지 않는다.
         status = 'notDue';
-        notDue += item.amount;
-        if(!itemDueDate)unknownDue+=item.amount;
+        paid += item.received;
+        notDue += item.unpaid;
+        if(!itemDueDate)unknownDue+=item.unpaid;
       } else {
         status = 'overdue';
-        overdue += item.amount;
+        paid += item.received;
+        overdue += item.unpaid;
       }
       items[key] = {...item, status, dueDate: itemDueDate};
     }
@@ -500,10 +513,10 @@
       notDue += paymentState.notDue;
       for (const [key, item] of Object.entries(paymentState.items)) {
         if (item.status === 'overdue') {
-          if (key === 'pay_rent') overdueRent += item.amount;
-          else overdueUtilities += item.amount;
+          if (key === 'pay_rent') overdueRent += item.unpaid;
+          else overdueUtilities += item.unpaid;
         }
-        const paidDate = item.paid ? dateISO(item.date, year) : '';
+        const paidDate = item.dates?.at(-1)?dateISO(item.dates.at(-1),year):item.paid&&!item.undated?dateISO(item.date,year):'';
         if (paidDate && paidDate > lastPaymentDate) lastPaymentDate = paidDate;
       }
     }

@@ -570,26 +570,26 @@ function receiptStorageSample(){
  bill.receiptLedger=billing.openReceiptLedger(tenant,bill,past+':audit1','2026-10-01T00:00:00.000Z');
  bill.receiptLedger=billing.appendReceiptEvent(bill.receiptLedger,{kind:'receipt',id:'sample-r1',billId:past+':audit1',item:'pay_rent',amount:30000,receivedOn:'2026-10-02',recordedAt:'2026-10-10T00:00:00.000Z',note:'별도 검증 입금'});return data;
 }
-test('receipt storage recognized journal pauses unsupported UI and preserves exact export on PC mobile and large text',async()=>{
+test('receipt storage recognized journal displays balances exports history and blocks older history removal',async()=>{
  for(const width of [390,1366]){
   const data=receiptStorageSample(),{page,context,requests}=await open(data,{viewport:{width,height:1000}});await page.evaluate(()=>document.documentElement.style.fontSize='200%');
-  const raw=await page.evaluate(()=>localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY));assert.equal(raw,JSON.stringify(data));assert.match(await page.locator('#data-notice').innerText(),/입금 원장/);assert.doesNotMatch(await page.locator('#data-notice').innerText(),/손상/);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
-  const exported=await exportBackup(page);assert.equal(exported.recoveryRaw[core.STATE_KEY],raw);assert.equal(exported.reason,'receipt-interface-pending');const before=await page.evaluate(()=>({...localStorage}));
+  const raw=await page.evaluate(()=>localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY));assert.equal(raw,JSON.stringify(data));assert.equal(await page.evaluate(()=>storageFault),null);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+  const exported=await exportBackup(page);assert.deepEqual(core.validateData(exported),data);const before=await page.evaluate(()=>({...localStorage}));
   const message=await page.evaluate(async data=>{try{await reviewDataReplacement(data,'이전 백업');return '';}catch(e){return e.message;}},sample());assert.match(message,/입금 원장/);assert.equal(await page.locator('#modal-data-replacement.open').count(),0);assert.deepEqual(await page.evaluate(()=>({...localStorage})),before);assert.ok(requests.every(r=>r.method!=='POST'));await context.close();
  }
 });
-test('receipt storage incoming backup validates format but rejects applying before drafts storage and review change',async()=>{
+test('receipt storage incoming backup validates and opens an explicit cancelable review without writes',async()=>{
  const {page,requests}=await open(),data=receiptStorageSample();await openBackupChecker(page);const before=await backupCheckBaseline(page);await checkFile(page,data);assert.match(await page.locator('#backup-check-result').innerText(),/입금 원장/);assert.deepEqual(await backupCheckBaseline(page),before);await page.keyboard.press('Escape');
- const snapshot=await backupCheckBaseline(page);const message=await page.evaluate(async data=>{try{await reviewDataReplacement(RentalCore.validateData(data),'입금 백업');return '';}catch(e){return e.message;}},data);assert.match(message,/입금 원장/);assert.deepEqual(await backupCheckBaseline(page),snapshot);assert.equal(await page.locator('#modal-data-replacement.open').count(),0);assert.ok(requests.every(r=>r.method!=='POST'));
+ const snapshot=await backupCheckBaseline(page);await page.evaluate(data=>{window.receiptBackupReview=reviewDataReplacement(RentalCore.validateData(data),'입금 백업');},data);await page.locator('#modal-data-replacement.open').waitFor();await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>receiptBackupReview),false);assert.deepEqual(await backupCheckBaseline(page),snapshot);assert.ok(requests.every(r=>r.method!=='POST'));
 });
 test('receipt storage malformed journal stays raw and damaged export retains every original byte',async()=>{
  const data=receiptStorageSample();data.bills[past].audit1.receiptLedger.events[0].amount=-1;const {page}=await open(data);const before=await page.evaluate(()=>({...localStorage}));assert.match(await page.locator('#data-notice').innerText(),/입금 원장/);const exported=await exportBackup(page);assert.equal(exported.recoveryRaw[core.STATE_KEY],JSON.stringify(data));assert.deepEqual(await page.evaluate(()=>({...localStorage})),before);
  const error=await page.evaluate(async()=>{try{await writeLocal(RentalCore.empty(),true,null,()=>{throw Error('backup must not run');});return '';}catch(e){return e.message;}});assert.match(error,/입금 원장/);assert.deepEqual(await page.evaluate(()=>({...localStorage})),before);
 });
-test('receipt storage mock cloud reads stop before local replacement and manual upload',async()=>{
- const {page}=await open(),data=receiptStorageSample();const before=await backupCheckBaseline(page);
+test('receipt storage old mock server capability blocks uploading a supported local journal',async()=>{
+ const data=receiptStorageSample(),{page}=await open(data);const before=await backupCheckBaseline(page);
  await page.evaluate(data=>{cloudEnabled=true;cloudDirty=false;cloudBaseRevision='previous';window.receiptPosts=0;cloudRequest=async(options={})=>{if(options.method==='POST'){window.receiptPosts++;throw Error('unexpected POST');}return {status:'ok',protocol:'rental-sync-v2',revision:'new-version',capabilities:{conditionalWrite:true},data};};},data);
- const storage=await page.evaluate(()=>({...localStorage}));await page.evaluate(()=>checkBackgroundCloudSync());assert.match(await page.locator('#data-notice').innerText(),/입금 원장/);assert.deepEqual(await page.evaluate(()=>currentData()),before.data);assert.deepEqual(await page.evaluate(()=>({...localStorage})),storage);
+ const storage=await page.evaluate(()=>({...localStorage}));
  await page.evaluate(()=>doSync());assert.equal(await page.evaluate(()=>receiptPosts),0);assert.deepEqual(await page.evaluate(()=>currentData()),before.data);assert.deepEqual(await page.evaluate(()=>({...localStorage})),storage);assert.equal(await page.evaluate(()=>cloudBaseRevision),'previous');
 });
 

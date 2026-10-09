@@ -171,7 +171,6 @@ function inspectRecovery_(target) {
   return {revision:tail[1],batch:tail[3],at:tail[0],chunks:count,tenants:data.tenants.length,billMonths:Object.keys(data.bills).length};
 }
 function currentStatusResult_(state) {
-  if(RentalBilling.hasReceiptLedgers(state.data))return {status:'unsupported',message:'이 버전에서는 입금 원장 현황 문서를 갱신할 수 없습니다. 최신 서버에서 다시 생성해주세요.'};
   // This catch is intentionally outside the DB save transaction result.
   try { return generateCurrentStatus_(state.data, state.revision); }
   catch (err) {
