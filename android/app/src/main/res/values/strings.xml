@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">임대관리 독립앱</string>
+    <string name="welcome">내 건물의 업무를 한곳에서</string>
+    <string name="account_hint">Google 소유자 계정으로 로그인한 브라우저에서 사용합니다. 자료와 로그인 정보는 브라우저와 Google에 보관됩니다.</string>
+    <string name="open_app">임대관리 열기</string>
+    <string name="open_browser">기본 브라우저로 열기</string>
+    <string name="offline">인터넷에 연결한 뒤 다시 열어주세요. 작성 중인 내용은 브라우저의 기존 작업 화면에서 확인할 수 있습니다.</string>
+    <string name="browser_missing">사용할 브라우저를 찾지 못했습니다. Chrome 등 HTTPS를 지원하는 브라우저를 설치한 뒤 다시 열어주세요.</string>
+    <string name="return_message">작업 화면은 브라우저에 있습니다. 다시 열거나 브라우저의 최근 탭으로 돌아갈 수 있습니다.</string>
+    <string name="version_label">Android 2.0.0 · 웹 화면은 승인된 배포 버전을 사용합니다.</string>
+    <string name="updates">설치와 업데이트 안내</string>
+    <string name="update_info">웹 화면은 같은 주소에서 갱신됩니다. APK 업데이트는 같은 서명의 새 파일을 직접 설치하거나, 향후 승인된 Play 배포 채널을 사용합니다. 자동 설치는 수행하지 않습니다.</string>
+</resources>
