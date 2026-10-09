@@ -1,4 +1,4 @@
-const {applyReplacement,restoreRecovery:restoreRecoveryV2}=require('./navigation.cjs');
+const {applyReplacement,restoreRecovery:restoreRecoveryV2,applyCloudImport}=require('./navigation.cjs');
 const {navigate:navigateV2}=require('./navigation.cjs');
 const TEST_URL=process.env.RENTAL_TEST_URL||'http://127.0.0.1:4173/';
 /* Run against npm start. Uses an existing Playwright installation; no runtime dependency. */
@@ -186,8 +186,8 @@ async function state(page) { return page.evaluate(() => currentData()); }
     await context.route('https://script.google.com/**', route => {
       methods.push(route.request().method()); return route.fulfill({json: {status: 'ok', data: remote}});
     });
-    await page.evaluate(() => syncFromSheet()); await page.waitForTimeout(2200);
-    assert.deepEqual(methods, ['GET']); assert.equal((await state(page)).waterRatio.r2, 0);
+    await page.evaluate(() => {void syncFromSheet();}); await applyCloudImport(page); await page.waitForTimeout(2200);
+    assert.deepEqual(methods, ['GET','GET']); assert.equal((await state(page)).waterRatio.r2, 0);
     assert.equal(await page.locator('#wr2').inputValue(), '0'); await context.close();
   });
   await run('conditional cloud uploads deliver the newest edit after an in-flight save', async () => {

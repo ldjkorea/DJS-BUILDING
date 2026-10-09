@@ -367,7 +367,8 @@ async function cloudRequest(options = {}) {
   syncController=controller;
   const isPost = options.method === 'POST';
   const timeoutMs = isPost ? 90000 : 45000;
-  const timeout=setTimeout(()=>controller.abort(), timeoutMs);
+  let timedOut=false;
+  const timeout=setTimeout(()=>{timedOut=true;controller.abort();}, timeoutMs);
   try {
     const fetchUrl = isPost ? SHEET_URL : `${SHEET_URL}${SHEET_URL.includes('?') ? '&' : '?'}_t=${Date.now()}`;
     const fetchOptions = {
@@ -395,6 +396,8 @@ async function cloudRequest(options = {}) {
       }
     } catch (netErr) {
       if (controller.signal.aborted) {
+        if(conflictingTab)throw new Error('다른 창에서 데이터가 변경되어 구글 요청을 중단했습니다. 현재 작업을 백업한 뒤 새로고침해주세요.');
+        if(!timedOut)throw new Error('구글 요청이 중단되었습니다. 이 기기의 자료는 유지하며, 전송한 저장 결과는 다시 불러와 확인해주세요.');
         throw new Error(`구글 서버 응답 시간 초과(${Math.round(timeoutMs/1000)}초). 잠시 후 다시 시도해주세요.`);
       }
       throw new Error(`네트워크 연결 오류 (${netErr.message || '구글 서버 연결 실패'}). 인터넷 연결 상태를 확인해주세요.`);
@@ -581,17 +584,40 @@ async function manualSync() {
 async function syncFromSheet() {
   if(isDemo){showToast('예시 모드에서는 구글 저장소에 연결하지 않습니다.');return;}
   if(syncBusy||persistenceBusy||storageFault||conflictingTab||replacementReview){showToast('저장 상태를 확인한 뒤 다시 시도해주세요.');return;}
-  if(!confirm('구글 데이터를 불러와 현재 데이터를 교체할까요? 교체 전 복원 지점을 남깁니다.'))return;
+  if(document.querySelector('.modal-overlay.open')){showToast('입력창을 마친 뒤 다시 불러와주세요.');return;}
+  // Commit the current control's change event before taking the review baseline.
+  if(document.activeElement?.matches('input,select,textarea'))document.activeElement.blur();
+  if(persistenceBusy){showToast('입력 저장이 끝난 뒤 다시 불러와주세요.');return;}
   clearTimeout(saveTimer);
+  flushBillDraft();captureSettlementDraft();
   const startedRevision=revision, startedDraft=draftVersion;
+  const baseline=JSON.stringify(currentData());
+  const assertUnchanged=()=>{
+    if(revision!==startedRevision||draftVersion!==startedDraft||JSON.stringify(currentData())!==baseline)
+      throw new Error('불러오기 검토 중 편집이 발생했습니다. 현재 데이터를 유지합니다. 다시 비교해주세요.');
+    assertCurrentStorage();
+  };
+  let reviewed=false;
   syncBusy=true;
   try {
     syncUI('loading');
     const result=await cloudRequest(), data=RentalCore.validateData(result.data);
-    if(revision!==startedRevision||draftVersion!==startedDraft)throw new Error('불러오는 동안 편집이 발생했습니다. 현재 데이터를 유지합니다.');
-    persistenceBusy=true;
+    assertUnchanged();
     const base=supportsSafeSync(result)?result.revision:null;
-    await writeLocal(data,false,base,()=>backupCurrentData('구글 불러오기 전'));
+    syncUI('reviewing');
+    reviewed=await reviewDataReplacement(data,'Google에서 받은 자료',{}, {},{source:'google',safeRevision:base});
+    if(!reviewed){
+      syncUI(cloudEnabled?(cloudDirty?'pending':'ready'):'local');
+      showToast('불러오기 취소 · 이 기기의 자료와 초안을 유지했습니다.');return;
+    }
+    assertUnchanged();
+    // Re-read after consent: never apply a snapshot that changed during review.
+    const latest=await cloudRequest(), latestData=RentalCore.validateData(latest.data);
+    if((supportsSafeSync(latest)?latest.revision:null)!==base||JSON.stringify(latestData)!==JSON.stringify(data))
+      throw new Error('검토 중 Google 자료가 변경됐습니다. 현재 자료를 유지합니다. 다시 불러와 비교해주세요.');
+    assertUnchanged();
+    persistenceBusy=true;
+    await writeLocal(data,false,base,()=>{assertUnchanged();backupCurrentData('구글 불러오기 전');});
     assignData(data);cloudDirty=false;cloudBaseRevision=base;
     const draftsSaved=storeBillDrafts({});
     refreshDataViews();
@@ -604,7 +630,7 @@ async function syncFromSheet() {
       {text: '다시 시도', onClick: syncFromSheet}
     ]);
   }
-  finally{clearTimeout(saveTimer);syncBusy=false;persistenceBusy=false;}
+  finally{clearTimeout(saveTimer);syncBusy=false;persistenceBusy=false;if(reviewed)endReplacementReview();}
 }
 
 function setCloudEnabled(enabled) {
@@ -630,6 +656,7 @@ function syncUI(state) {
     pending: ['✓ 기기 저장 · 구글 저장 대기', 'var(--gold)'],
     saving: ['⟳ 구글에 저장 중', 'var(--text2)'],
     loading: ['⟳ 구글에서 불러오는 중', 'var(--text2)'],
+    reviewing: ['Google 자료 비교 중 · 적용 전', 'var(--gold)'],
     saved: ['✓ 구글 자료 대조 완료', 'var(--green)'],
     error: ['⚠ 구글 동기화 실패 · 기기 데이터 유지', 'var(--red)'],
     localError: ['⚠ 기기 저장 확인 필요', 'var(--red)'],
@@ -3441,7 +3468,7 @@ function finishReplacementReview(accepted) {
   if (accepted) {
     pending.applying = true;
     document.querySelectorAll('#modal-data-replacement button').forEach(button => { button.disabled = true; });
-    document.getElementById('replacement-apply').textContent = '복원 확인 중…';
+    document.getElementById('replacement-apply').textContent = pending.source==='google'?'최신 자료 확인 중…':'복원 확인 중…';
     pending.resolve(true);
     return;
   }
@@ -3477,8 +3504,9 @@ function replacementLabel(path, before, after) {
   }
   return parts.map(part => labels[part] || part).join(' › ');
 }
-async function reviewDataReplacement(data, label, drafts = {}, settlementDrafts = {}) {
-  if (replacementReview || syncBusy || persistenceBusy || document.querySelector('.modal-overlay.open')) {
+async function reviewDataReplacement(data, label, drafts = {}, settlementDrafts = {}, options = {}) {
+  const fromGoogle=options.source==='google';
+  if (replacementReview || (syncBusy&&!fromGoogle) || persistenceBusy || document.querySelector('.modal-overlay.open')) {
     throw new Error('진행 중인 저장이나 입력창을 마친 뒤 다시 가져와주세요.');
   }
   assertCurrentStorage();
@@ -3500,24 +3528,28 @@ async function reviewDataReplacement(data, label, drafts = {}, settlementDrafts 
     document.body.appendChild(overlay);
   }
   const incomingDrafts = Object.keys(drafts || {}).length + Object.keys(settlementDrafts || {}).length;
-  overlay.innerHTML = '<div class="modal replacement-review"><div class="card-header"><h2 class="modal-title">복원할 자료 미리보기</h2>' +
-    '<button type="button" class="modal-close" aria-label="복원 미리보기 닫기">×</button></div>' +
-    '<div class="replacement-body"><p>' + esc(label) + '</p><p class="hint-box">적용하면 이 기기의 자료가 아래 백업으로 바뀝니다. 적용 직전 현재 자료를 복원 지점으로 보관하며, Google 저장은 별도로 실행합니다.</p>' +
+  const incomingName=fromGoogle?'Google 자료':'백업';
+  const title=fromGoogle?'Google 자료 불러오기 검토':'복원할 자료 미리보기';
+  const hint=fromGoogle?'적용하면 이 기기의 자료가 아래 Google 자료로 바뀝니다. 현재 자료와 고지서·정산 초안은 복원 지점에 보관합니다. 고지서 초안은 비우고, 정산 초안은 기기에 유지합니다. 서버 자료·문서·Calendar는 변경하지 않습니다.':'적용하면 이 기기의 자료가 아래 백업으로 바뀝니다. 적용 직전 현재 자료를 복원 지점으로 보관하며, Google 저장은 별도로 실행합니다.';
+  overlay.innerHTML = '<div class="modal replacement-review"><div class="card-header"><h2 class="modal-title">'+title+'</h2>' +
+    '<button type="button" class="modal-close" aria-label="'+title+' 닫기">×</button></div>' +
+    '<div class="replacement-body"><p>' + esc(label) + '</p><p class="hint-box">'+hint+'</p>' +
+    (fromGoogle&&!options.safeRevision?'<p class="data-warning">이 서버는 버전 비교 저장을 지원하지 않습니다. 불러오기만 가능하며 구글 업로드는 차단됩니다.</p>':'') +
     (loadedState.error ? '<p class="data-warning">현재 저장 자료가 손상되어 기존 건수를 확인할 수 없습니다. 복원할 때 손상 원문을 별도로 보관합니다.</p>' : '') +
-    '<details class="replacement-counts"><summary>기록 수 비교 · 임차인 ' + (loadedState.error ? '?' : before[0]) + ' → ' + after[0] + '명 · 고지서 ' + (loadedState.error ? '?' : before[1]) + ' → ' + after[1] + '건</summary><div class="table-scroll"><table class="replacement-summary"><caption>현재 자료와 백업의 기록 수</caption><thead><tr><th scope="col">항목</th><th scope="col">현재</th><th scope="col">백업</th></tr></thead><tbody>' +
+    '<details class="replacement-counts"><summary>기록 수 비교 · 임차인 ' + (loadedState.error ? '?' : before[0]) + ' → ' + after[0] + '명 · 고지서 ' + (loadedState.error ? '?' : before[1]) + ' → ' + after[1] + '건</summary><div class="table-scroll"><table class="replacement-summary"><caption>현재 자료와 '+incomingName+'의 기록 수</caption><thead><tr><th scope="col">항목</th><th scope="col">현재</th><th scope="col">'+incomingName+'</th></tr></thead><tbody>' +
     metricNames.map((name, i) => '<tr><th scope="row">' + name + '</th><td>' + (loadedState.error ? '확인 불가' : before[i]) + '</td><td>' + after[i] + '</td></tr>').join('') + '</tbody></table></div></details>' +
-    '<p>자료 차이 ' + changes.length + '개 · 백업의 고지서/정산 초안 ' + incomingDrafts + '개</p>' +
+    '<p>자료 차이 ' + changes.length + '개'+(fromGoogle?' · 이 기기의 초안은 적용 전 복원 지점에 보관합니다.':' · 백업의 고지서/정산 초안 ' + incomingDrafts + '개')+'</p>' +
     '<details id="replacement-details" open><summary>변경되는 항목 확인</summary><p>최대 100개 항목을 표시합니다. 긴 값은 일부만 표시하므로 전체 자료는 JSON 백업으로 확인하세요.</p>' +
-    '<div class="table-scroll"><table class="replacement-summary"><thead><tr><th scope="col">항목</th><th scope="col">현재 자료</th><th scope="col">복원할 자료</th></tr></thead><tbody>' +
-    changes.slice(0, 100).map(row => '<tr><th scope="row">' + esc(replacementLabel(row.path, current, data)) + '</th><td>' + esc(replacementValue(row.remote)) + '</td><td>' + esc(replacementValue(row.local)) + '</td></tr>').join('') +
-    '</tbody></table></div>' + (changes.length ? '' : '<p>임대 자료는 동일합니다. 백업에 포함된 초안과 복원 기준도 적용됩니다.</p>') + '</details>' +
+    '<div class="table-scroll"><table class="replacement-summary"><thead><tr><th scope="col">항목</th><th scope="col">현재 자료</th><th scope="col">'+(fromGoogle?'Google 자료':'복원할 자료')+'</th></tr></thead><tbody>' +
+    changes.slice(0, 100).map(row => '<tr><th scope="row">' + esc(replacementLabel(row.path, current, data)) + '</th><td data-label="현재 자료">' + esc(replacementValue(row.remote)) + '</td><td data-label="'+(fromGoogle?'Google 자료':'복원할 자료')+'">' + esc(replacementValue(row.local)) + '</td></tr>').join('') +
+    '</tbody></table></div>' + (changes.length ? '' : '<p>임대 자료는 동일합니다. '+(fromGoogle?'적용하면 Google 동기화 기준을 갱신하고 고지서 초안을 비웁니다.':'백업에 포함된 초안과 복원 기준도 적용됩니다.')+'</p>') + '</details>' +
     '</div><div class="replacement-actions"><button type="button" class="btn btn-secondary" id="replacement-cancel">취소</button>' +
     '<button type="button" class="btn btn-secondary" id="replacement-backup">현재 자료 백업</button>' +
-    '<button type="button" class="btn btn-primary" id="replacement-apply">이 백업으로 복원</button></div></div>';
+    '<button type="button" class="btn btn-primary" id="replacement-apply">'+(fromGoogle?'Google 자료 적용':'이 백업으로 복원')+'</button></div></div>';
   clearTimeout(saveTimer);
   backgroundReadSequence++;
   const accepted = await new Promise(resolve => {
-    replacementReview = {resolve};
+    replacementReview = {resolve,source:options.source};
     overlay.querySelector('.modal-close').onclick = () => finishReplacementReview(false);
     overlay.querySelector('#replacement-cancel').onclick = () => finishReplacementReview(false);
     overlay.querySelector('#replacement-backup').onclick = exportData;
@@ -3525,7 +3557,7 @@ async function reviewDataReplacement(data, label, drafts = {}, settlementDrafts 
     openModal(overlay.id);
   });
   if (!accepted) {
-    if (cloudEnabled && cloudDirty) saveTimer = setTimeout(doSync, 2000);
+    if (!fromGoogle && cloudEnabled && cloudDirty) saveTimer = setTimeout(doSync, 2000);
     return false;
   }
   if (revision !== startedRevision || draftVersion !== startedDraft || JSON.stringify(currentData()) !== baseline) {

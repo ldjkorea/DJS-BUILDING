@@ -12,4 +12,10 @@ async function restoreRecovery(page){
  await page.evaluate(()=>{void restoreRecovery();});
  await applyReplacement(page);
 }
-module.exports={navigate,applyReplacement,restoreRecovery};
+async function applyCloudImport(page){
+ await page.locator('#modal-data-replacement.open').waitFor();
+ await page.getByRole('button',{name:'Google 자료 적용',exact:true}).click();
+ await page.locator('#modal-data-replacement.open').waitFor({state:'hidden'});
+ await page.waitForFunction(()=>!syncBusy);
+}
+module.exports={navigate,applyReplacement,restoreRecovery,applyCloudImport};
