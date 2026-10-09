@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="application-version" content="2.0.2">
+<meta name="application-version" content="2.0.3">
 <title>임대관리 독립앱 · Property Management</title>
 
 <meta name="theme-color" content="#f7f8fa">
@@ -669,6 +669,8 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 .replacement-review .hint-box{color:var(--text2);font-size:0.8125rem}
 .replacement-review .modal-title{margin:0}
 .sync-dot{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere}
+.draft-recovery-notice p{margin:0;flex:1;min-width:180px;overflow-wrap:anywhere}
+.draft-recovery-notice .btn{width:auto;min-height:44px;font-size:0.8125rem;margin:0}
 .replacement-review summary{min-height:44px;padding:8px 0;cursor:pointer}
 .replacement-summary{width:100%;border-collapse:collapse;font-size:0.8125rem}
 .replacement-summary caption{text-align:left;padding:10px 0;color:var(--text2)}
@@ -911,7 +913,7 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 
 </div><!-- /content -->
 
-<aside class="workspace-sidebar"><a href="#" class="workspace-brand" onclick="switchTab('home');return false;"><span class="brand-mark">P<span>·</span></span><span>Property<small>임대관리 독립앱</small></span></a><span class="nav-caption">임대 업무</span><nav class="pill-nav" aria-label="주요 메뉴"><div class="nav-group primary"><button type="button" class="pill-item" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="pi-label">대시보드</span></button><button type="button" class="pill-item" id="nav-history" onclick="switchTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span class="pi-label">고지서</span></button><button type="button" class="pill-item" id="nav-settlement" onclick="switchTab('settlement')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg><span class="pi-label">정산</span></button><button type="button" class="pill-item" id="nav-tenants" onclick="switchTab('tenants')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0112 0v3M16 4a3 3 0 010 6M18 14a5 5 0 013 4v3"/></svg><span class="pi-label">세입자</span></button></div><div class="nav-group secondary" id="secondary-nav" aria-label="보조 메뉴"><button type="button" class="pill-item" id="nav-building" onclick="switchTab('building')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V3h11v18M15 9h5v12M8 7h3M8 11h3M8 15h3M8 19h3M18 13v2M18 18v1"/></svg><span class="pi-label">운영현황</span></button><button type="button" class="pill-item" id="nav-tax" onclick="switchTab('tax')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 7h6M9 11h6M9 15h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg><span class="pi-label">세무집계</span></button><button type="button" class="pill-item" id="nav-settings" onclick="switchTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg><span class="pi-label">설정</span></button></div><button class="pill-item" id="nav-more" onclick="toggleMoreNav()" aria-expanded="false" aria-controls="secondary-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span class="pi-label">더보기</span></button></nav><div class="sidebar-bottom"><span class="live-dot"></span>원본과 분리된 독립앱<small>오늘의 업무를 정확하고 간결하게.</small><span class="version-label">INDEPENDENT 2.0.2</span></div></aside>
+<aside class="workspace-sidebar"><a href="#" class="workspace-brand" onclick="switchTab('home');return false;"><span class="brand-mark">P<span>·</span></span><span>Property<small>임대관리 독립앱</small></span></a><span class="nav-caption">임대 업무</span><nav class="pill-nav" aria-label="주요 메뉴"><div class="nav-group primary"><button type="button" class="pill-item" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="pi-label">대시보드</span></button><button type="button" class="pill-item" id="nav-history" onclick="switchTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span class="pi-label">고지서</span></button><button type="button" class="pill-item" id="nav-settlement" onclick="switchTab('settlement')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg><span class="pi-label">정산</span></button><button type="button" class="pill-item" id="nav-tenants" onclick="switchTab('tenants')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0112 0v3M16 4a3 3 0 010 6M18 14a5 5 0 013 4v3"/></svg><span class="pi-label">세입자</span></button></div><div class="nav-group secondary" id="secondary-nav" aria-label="보조 메뉴"><button type="button" class="pill-item" id="nav-building" onclick="switchTab('building')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V3h11v18M15 9h5v12M8 7h3M8 11h3M8 15h3M8 19h3M18 13v2M18 18v1"/></svg><span class="pi-label">운영현황</span></button><button type="button" class="pill-item" id="nav-tax" onclick="switchTab('tax')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 7h6M9 11h6M9 15h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg><span class="pi-label">세무집계</span></button><button type="button" class="pill-item" id="nav-settings" onclick="switchTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg><span class="pi-label">설정</span></button></div><button class="pill-item" id="nav-more" onclick="toggleMoreNav()" aria-expanded="false" aria-controls="secondary-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span class="pi-label">더보기</span></button></nav><div class="sidebar-bottom"><span class="live-dot"></span>원본과 분리된 독립앱<small>오늘의 업무를 정확하고 간결하게.</small><span class="version-label">INDEPENDENT 2.0.3</span></div></aside>
 <!-- ══ 모달들 ══ -->
 <!-- 세입자 추가/수정 -->
 <div class="modal-overlay" id="modal-tenant">
@@ -2384,7 +2386,7 @@ window.addEventListener('storage', event => {
   }
 });
 window.addEventListener('beforeunload', event => {
-  if (persistenceBusy || storageFault || conflictingTab || failedSaveData || retainedBillDrafts !== null || retainedSettlementDrafts !== null || settlementDraftError || (cloudEnabled && cloudDirty)) { event.preventDefault(); event.returnValue = ''; }
+  if (persistenceBusy || storageFault || conflictingTab || failedSaveData || retainedBillDrafts !== null || retainedSettlementDrafts !== null || pendingDraftRecovery.size || settlementDraftError || (cloudEnabled && cloudDirty)) { event.preventDefault(); event.returnValue = ''; }
 });
 
 function changeMonth(d){
@@ -5132,13 +5134,13 @@ function exportData() {
     if (loadedState.error) {
       const raw = {};
       [RentalCore.STATE_KEY, ...RentalCore.KEYS].forEach(key => raw[key] = appStorage.getItem(key));
-      downloadJson({recoveryRaw: raw}, '손상원본');
-    } else downloadJson({...RentalCore.envelope(failedSaveData||currentData()),localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts()}, failedSaveData?'미저장작업_복구':'백업');
+      downloadJson({recoveryRaw: raw,localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts(),localMeta:{draftRecovery:collectDraftRecovery()}}, '손상원본');
+    } else downloadJson({...RentalCore.envelope(failedSaveData||currentData()),localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts(),localMeta:{draftRecovery:collectDraftRecovery()}}, failedSaveData?'미저장작업_복구':'백업');
     showToast('백업 파일 다운로드를 시작했습니다.');
   } catch (error) { showToast('내보내기 실패: ' + error.message); }
 }
 function backupCurrentData(reason) {
-  const snapshot={reason,...RentalCore.envelope(currentData()),localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts()};
+  const snapshot={reason,...RentalCore.envelope(currentData()),localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts(),localMeta:{draftRecovery:collectDraftRecovery()}};
   appStorage.setItem(RentalCore.BACKUP_KEY,JSON.stringify(snapshot));
   return snapshot;
 }
@@ -5147,11 +5149,12 @@ function makeRecovery(reason) {
   try { assertCurrentStorage();backupCurrentData(reason); return true; }
   catch { showToast('복원 지점을 저장하지 못해 작업을 중단했습니다. 파일 백업과 저장 공간을 확인해주세요.'); return false; }
 }
-async function replaceData(data, reason, drafts = {}, settlementDrafts = {}) {
+async function replaceData(data, reason, drafts = {}, settlementDrafts = {}, draftSources = null) {
   if(syncBusy||persistenceBusy||conflictingTab)throw new Error('동기화 또는 다른 창의 변경을 먼저 확인해주세요.');
   clearTimeout(saveTimer);persistenceBusy=true;
   try {
     await writeLocal(data,true,null,()=>{
+      preserveIncomingDrafts(draftSources);
       if(loadedState.error){
         const raw={};
         [RentalCore.STATE_KEY,...RentalCore.KEYS].forEach(key=>raw[key]=appStorage.getItem(key));
@@ -5240,6 +5243,7 @@ async function reviewDataReplacement(data, label, drafts = {}, settlementDrafts 
   overlay.innerHTML = '<div class="modal replacement-review"><div class="card-header"><h2 class="modal-title">'+title+'</h2>' +
     '<button type="button" class="modal-close" aria-label="'+title+' 닫기">×</button></div>' +
     '<div class="replacement-body"><p>' + esc(label) + '</p><p class="hint-box">'+hint+'</p>' +
+    (options.draftWarning?'<p class="data-warning">이 백업에 확인이 필요한 초안 또는 복구 원문이 있습니다. 지원하지 않는 초안 내용은 자동 적용하지 않고 별도 원문으로 보관합니다. 원문 보관에 실패하면 자료 복원을 중단합니다.</p>':'') +
     (fromGoogle&&!options.safeRevision?'<p class="data-warning">이 서버는 버전 비교 저장을 지원하지 않습니다. 불러오기만 가능하며 구글 업로드는 차단됩니다.</p>':'') +
     (loadedState.error ? '<p class="data-warning">현재 저장 자료가 손상되어 기존 건수를 확인할 수 없습니다. 복원할 때 손상 원문을 별도로 보관합니다.</p>' : '') +
     '<details class="replacement-counts"><summary>기록 수 비교 · 임차인 ' + (loadedState.error ? '?' : before[0]) + ' → ' + after[0] + '명 · 고지서 ' + (loadedState.error ? '?' : before[1]) + ' → ' + after[1] + '건</summary><div class="table-scroll"><table class="replacement-summary"><caption>현재 자료와 '+incomingName+'의 기록 수</caption><thead><tr><th scope="col">항목</th><th scope="col">현재</th><th scope="col">'+incomingName+'</th></tr></thead><tbody>' +
@@ -5283,9 +5287,9 @@ async function restoreRecovery() {
     const data = RentalCore.validateData(backup);
     const drafts = validateDrafts(backup.localDrafts);
     const settlementDrafts = validateSettlementDrafts(backup.localSettlementDrafts);
-    reviewed = await reviewDataReplacement(data, `${backup.reason || '이전 데이터'} (${backup.exportedAt || ''})`, drafts, settlementDrafts);
+    reviewed = await reviewDataReplacement(data, `${backup.reason || '이전 데이터'} (${backup.exportedAt || ''})`, drafts, settlementDrafts,{draftWarning:incomingDraftWarning(backup)});
     if (!reviewed) return;
-    await replaceData(data, '복원 지점으로 되돌리기 전',drafts,settlementDrafts);
+    await replaceData(data, '복원 지점으로 되돌리기 전',drafts,settlementDrafts,backup);
     showToast('복원 완료 · 구글 저장은 별도로 실행해주세요.');
   } catch (error) { showToast('복원 실패: ' + error.message); }
   finally { if (reviewed) endReplacementReview(); }
@@ -5304,9 +5308,9 @@ function importData(event) {
       if(revision!==startedRevision||draftVersion!==startedDraft)throw new Error('파일을 읽는 동안 편집이 발생했습니다. 다시 가져와주세요.');
       const drafts = validateDrafts(parsed.localDrafts);
       const settlementDrafts = validateSettlementDrafts(parsed.localSettlementDrafts);
-      reviewed = await reviewDataReplacement(data, file.name, drafts, settlementDrafts);
+      reviewed = await reviewDataReplacement(data, file.name, drafts, settlementDrafts,{draftWarning:incomingDraftWarning(parsed)});
       if (!reviewed) return;
-      await replaceData(data, '파일 가져오기 전',drafts,settlementDrafts);
+      await replaceData(data, '파일 가져오기 전',drafts,settlementDrafts,parsed);
       showToast('가져오기 완료 · 구글 저장은 별도로 실행해주세요.');
     } catch (error) { showToast('가져오기 실패: ' + error.message); }
     finally { if (reviewed) endReplacementReview(); }
@@ -5526,14 +5530,114 @@ function validateDrafts(value) {
   }
   return result;
 }
+const DRAFT_RECOVERY_PREFIX='rentalApp.draftRecovery.v1.';
+const DRAFT_RECOVERY_FORMAT='rental-draft-recovery-v1';
+const pendingDraftRecovery=new Map(),draftDiagnostics=new Map();
+let draftRecoveryWriteFailed=false,draftNoticeSignature='';
+function draftContentChanged(original,clean){
+  if(original&&clean&&typeof original==='object'&&typeof clean==='object'&&Array.isArray(original)===Array.isArray(clean))
+    return Object.keys(original).some(key=>!Object.hasOwn(clean,key)||draftContentChanged(original[key],clean[key]));
+  return original!==clean;
+}
+function inspectDraftText(raw,source){
+  if(raw===null)return {clean:{},problem:false};
+  try {
+    const value=JSON.parse(raw),clean=source==='bill'?validateDrafts(value):validateSettlementDrafts(value);
+    return {clean,problem:!value||typeof value!=='object'||Array.isArray(value)||draftContentChanged(value,clean)};
+  } catch {return {clean:{},problem:true};}
+}
+function readDraftStorage(key,source){
+  try {
+    const raw=appStorage.getItem(key),inspection=inspectDraftText(raw,source);
+    if(inspection.problem)draftDiagnostics.set(source,raw);else draftDiagnostics.delete(source);
+    renderDraftRecoveryNotice();return inspection.clean;
+  } catch {
+    draftRecoveryWriteFailed=true;renderDraftRecoveryNotice();return {};
+  }
+}
+function storedDraftRecovery(){
+  const scope=STORAGE_PREFIX+(isDemo?'rentalDemo.':'')+DRAFT_RECOVERY_PREFIX,entries=[];
+  for(let i=0;i<localStorage.length;i++){
+    const physical=localStorage.key(i);if(!physical?.startsWith(scope))continue;
+    const raw=localStorage.getItem(physical);if(raw===null)continue;
+    try {
+      const entry=JSON.parse(raw);
+      if(entry&&['bill','settlement','recovery'].includes(entry.source)&&typeof entry.raw==='string')entries.push(entry);
+      else entries.push({source:'recovery',raw,at:'',id:physical.slice(scope.length)});
+    } catch {entries.push({source:'recovery',raw,at:'',id:physical.slice(scope.length)});}
+  }
+  return entries;
+}
+function collectDraftRecovery(){
+  readDraftStorage(DRAFT_KEY,'bill');readDraftStorage(SETT_DRAFT_KEY,'settlement');
+  const entries=[...storedDraftRecovery(),...pendingDraftRecovery.values()];
+  for(const [source,raw] of draftDiagnostics)if(!entries.some(entry=>entry.source===source&&entry.raw===raw))entries.push({source,raw,at:'',id:''});
+  return {format:DRAFT_RECOVERY_FORMAT,entries};
+}
+function preserveDraftText(source,raw){
+  const identity=source+'\n'+raw;
+  if(storedDraftRecovery().some(entry=>entry.source===source&&entry.raw===raw)){
+    pendingDraftRecovery.delete(identity);draftRecoveryWriteFailed=pendingDraftRecovery.size>0;renderDraftRecoveryNotice();return true;
+  }
+  const entry=pendingDraftRecovery.get(identity)||{source,raw,at:new Date().toISOString(),id:crypto.randomUUID()};
+  pendingDraftRecovery.set(identity,entry);
+  try {
+    const key=DRAFT_RECOVERY_PREFIX+entry.id,value=JSON.stringify(entry);
+    appStorage.setItem(key,value);
+    if(appStorage.getItem(key)!==value)throw new Error('초안 원문 보관 확인 실패');
+    pendingDraftRecovery.delete(identity);draftRecoveryWriteFailed=pendingDraftRecovery.size>0;renderDraftRecoveryNotice();return true;
+  } catch {draftRecoveryWriteFailed=true;renderDraftRecoveryNotice();return false;}
+}
+function preserveStoredDraft(key,source){
+  const raw=appStorage.getItem(key);
+  if(!inspectDraftText(raw,source).problem)return true;
+  return preserveDraftText(source,raw);
+}
+function preserveIncomingDrafts(backup){
+  if(!backup)return;
+  for(const [name,source] of [['localDrafts','bill'],['localSettlementDrafts','settlement']]){
+    if(backup[name]===undefined)continue;
+    const raw=JSON.stringify(backup[name]);
+    if(inspectDraftText(raw,source).problem&&!preserveDraftText(source,raw))throw new Error('가져올 초안 원문을 보관하지 못했습니다. 원본 파일을 유지하고 저장 공간을 확인해주세요.');
+  }
+  const recovery=backup.localMeta?.draftRecovery;if(recovery===undefined)return;
+  if(recovery?.format===DRAFT_RECOVERY_FORMAT&&Array.isArray(recovery.entries)){
+    if(Object.keys(recovery).some(key=>!['format','entries'].includes(key))&&!preserveDraftText('recovery',JSON.stringify(recovery)))throw new Error('확장된 초안 복구 원문을 보관하지 못했습니다. 원본 파일을 유지해주세요.');
+    for(const entry of recovery.entries){
+      const valid=entry&&['bill','settlement','recovery'].includes(entry.source)&&typeof entry.raw==='string';
+      if(valid&&Object.keys(entry).some(key=>!['source','raw','at','id'].includes(key))&&!preserveDraftText('recovery',JSON.stringify(entry)))throw new Error('확장된 초안 복구 원문을 보관하지 못했습니다. 원본 파일을 유지해주세요.');
+      if(!preserveDraftText(valid?entry.source:'recovery',valid?entry.raw:JSON.stringify(entry)))throw new Error('초안 복구 원문 보관에 실패했습니다. 원본 파일을 유지해주세요.');
+    }
+  } else if(!preserveDraftText('recovery',JSON.stringify(recovery)))throw new Error('초안 복구 원문 보관에 실패했습니다. 원본 파일을 유지해주세요.');
+}
+function incomingDraftWarning(backup){
+  return [['localDrafts','bill'],['localSettlementDrafts','settlement']].some(([key,source])=>backup[key]!==undefined&&inspectDraftText(JSON.stringify(backup[key]),source).problem)||backup.localMeta?.draftRecovery!==undefined;
+}
+function exportDraftRecovery(){
+  try {downloadJson(collectDraftRecovery(),'초안원문');showToast('초안 원문 파일 다운로드를 시작했습니다.');}
+  catch {showToast('초안 원문을 내보내지 못했습니다. 이 창을 유지하고 저장소 접근 상태를 확인해주세요.');}
+}
+function renderDraftRecoveryNotice(){
+  const anchor=document.getElementById('data-notice');if(!anchor)return;
+  let count=0;try{count=storedDraftRecovery().length+pendingDraftRecovery.size;}catch{draftRecoveryWriteFailed=true;}
+  const active=draftDiagnostics.size,signature=[count,active,draftRecoveryWriteFailed].join(':');
+  if(signature===draftNoticeSignature)return;draftNoticeSignature=signature;
+  let panel=document.getElementById('draft-recovery-notice');
+  if(!panel){panel=document.createElement('section');panel.id='draft-recovery-notice';panel.className='data-notice draft-recovery-notice';panel.setAttribute('role','status');anchor.after(panel);}
+  panel.hidden=!count&&!active&&!draftRecoveryWriteFailed;panel.replaceChildren();if(panel.hidden)return;
+  const text=document.createElement('p');
+  text.textContent=draftRecoveryWriteFailed?'초안 원문을 기기에 보관하지 못했습니다. 기존 초안 저장소는 유지합니다. 이 창을 닫기 전에 원문과 현재 입력을 파일로 내보내주세요.':active?'초안 확인 필요 · 읽지 못하거나 지원하지 않는 내용이 있습니다. 정상 고지서·정산 자료는 유지하며, 해당 원문은 초안에 자동 적용하지 않습니다.':'초안 복구 원문 '+count+'건을 이 기기에 보관했습니다. 파일로 내보내 장기 보관할 수 있습니다.';
+  const button=document.createElement('button');button.type='button';button.className='btn btn-secondary';button.textContent='초안 원문 내보내기';button.onclick=exportDraftRecovery;panel.append(text,button);
+}
+document.addEventListener('DOMContentLoaded',()=>{readDraftStorage(DRAFT_KEY,'bill');readDraftStorage(SETT_DRAFT_KEY,'settlement');renderDraftRecoveryNotice();});
+window.addEventListener('storage',event=>{if(event.key?.startsWith(STORAGE_PREFIX+(isDemo?'rentalDemo.':'')+DRAFT_RECOVERY_PREFIX))renderDraftRecoveryNotice();});
 function discardBillDraft(){
   clearBillDraft();editThisMonth();showToast('초안을 지우고 저장된 고지서를 표시합니다.');
 }
 
 function readBillDrafts() {
   if(retainedBillDrafts!==null)return validateDrafts(retainedBillDrafts);
-  try { const value=JSON.parse(appStorage.getItem(DRAFT_KEY)||'{}');return validateDrafts(value); }
-  catch { return {}; }
+  return readDraftStorage(DRAFT_KEY,'bill');
 }
 function collectBillDrafts() {
   return {...readBillDrafts(),...(pendingBillDraft?{[pendingBillDraft.key]:pendingBillDraft.value}:{})};
@@ -5541,8 +5645,9 @@ function collectBillDrafts() {
 function storeBillDrafts(drafts) {
   retainedBillDrafts=validateDrafts(drafts);
   try {
+    if(!preserveStoredDraft(DRAFT_KEY,'bill'))return false;
     appStorage.setItem(DRAFT_KEY,JSON.stringify(retainedBillDrafts));
-    retainedBillDrafts=null;return true;
+    retainedBillDrafts=null;readDraftStorage(DRAFT_KEY,'bill');return true;
   } catch {return false;}
 }
 function flushBillDraft() {
@@ -5675,7 +5780,7 @@ const SETT_DRAFT_KEY='rentalApp.settlementDrafts.v2';
 const settlementBaseline=()=>JSON.stringify({saved:settInputs[mk()]||{},tenants:activeTenants(),bills:bills[mk()]||{}});
 let retainedSettlementDrafts=null;
 let settlementDraftError=false,settlementDraftEdited=false;
-function readSettlementDrafts(){if(retainedSettlementDrafts!==null)return retainedSettlementDrafts;try{const v=JSON.parse(appStorage.getItem(SETT_DRAFT_KEY)||'{}');return v&&typeof v==='object'&&!Array.isArray(v)?v:{};}catch{return {};}}
+function readSettlementDrafts(){if(retainedSettlementDrafts!==null)return retainedSettlementDrafts;return readDraftStorage(SETT_DRAFT_KEY,'settlement');}
 function captureSettlementDraft(){
   if(!settlementDraftEdited||!document.getElementById('section-settlement')?.classList.contains('active')||!document.getElementById('sett-elec'))return;
   const fields={};
@@ -5683,7 +5788,7 @@ function captureSettlementDraft(){
   const drafts=readSettlementDrafts();drafts[mk()]={fields,baseline:settlementBaseline(),at:new Date().toISOString()};
   if(!storeSettlementDrafts(drafts))showDataNotice('정산 초안을 임시 저장하지 못했습니다. 화면을 유지한 채 백업과 저장 공간을 확인해주세요.');
 }
-function clearSettlementDraft(){const drafts=readSettlementDrafts();delete drafts[mk()];try{appStorage.setItem(SETT_DRAFT_KEY,JSON.stringify(drafts));settlementDraftError=false;}catch{settlementDraftError=true;}}
+function clearSettlementDraft(){const drafts=readSettlementDrafts();delete drafts[mk()];return storeSettlementDrafts(drafts);}
 function applySettlementDraft(){
   settlementDraftEdited=false;
   const d=readSettlementDrafts()[mk()];if(!d)return;
@@ -5717,7 +5822,7 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.0.2';
+const APPLICATION_VERSION='2.0.3';
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
   const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';
@@ -5760,7 +5865,7 @@ function validateSettlementDrafts(source){
 function storeSettlementDrafts(source){
   const clean=validateSettlementDrafts(source);
   retainedSettlementDrafts=clean;
-  try{appStorage.setItem(SETT_DRAFT_KEY,JSON.stringify(clean));retainedSettlementDrafts=null;settlementDraftError=false;return true;}catch{settlementDraftError=true;return false;}
+  try{if(!preserveStoredDraft(SETT_DRAFT_KEY,'settlement')){settlementDraftError=true;return false;}appStorage.setItem(SETT_DRAFT_KEY,JSON.stringify(clean));retainedSettlementDrafts=null;settlementDraftError=false;readDraftStorage(SETT_DRAFT_KEY,'settlement');return true;}catch{settlementDraftError=true;return false;}
 }
 async function inspectCloudRecovery(){
   if(isDemo||!cloudEnabled){showToast('Google에 연결한 독립앱에서 점검할 수 있습니다.');return;}

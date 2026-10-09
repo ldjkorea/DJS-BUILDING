@@ -58,14 +58,114 @@ function validateDrafts(value) {
   }
   return result;
 }
+const DRAFT_RECOVERY_PREFIX='rentalApp.draftRecovery.v1.';
+const DRAFT_RECOVERY_FORMAT='rental-draft-recovery-v1';
+const pendingDraftRecovery=new Map(),draftDiagnostics=new Map();
+let draftRecoveryWriteFailed=false,draftNoticeSignature='';
+function draftContentChanged(original,clean){
+  if(original&&clean&&typeof original==='object'&&typeof clean==='object'&&Array.isArray(original)===Array.isArray(clean))
+    return Object.keys(original).some(key=>!Object.hasOwn(clean,key)||draftContentChanged(original[key],clean[key]));
+  return original!==clean;
+}
+function inspectDraftText(raw,source){
+  if(raw===null)return {clean:{},problem:false};
+  try {
+    const value=JSON.parse(raw),clean=source==='bill'?validateDrafts(value):validateSettlementDrafts(value);
+    return {clean,problem:!value||typeof value!=='object'||Array.isArray(value)||draftContentChanged(value,clean)};
+  } catch {return {clean:{},problem:true};}
+}
+function readDraftStorage(key,source){
+  try {
+    const raw=appStorage.getItem(key),inspection=inspectDraftText(raw,source);
+    if(inspection.problem)draftDiagnostics.set(source,raw);else draftDiagnostics.delete(source);
+    renderDraftRecoveryNotice();return inspection.clean;
+  } catch {
+    draftRecoveryWriteFailed=true;renderDraftRecoveryNotice();return {};
+  }
+}
+function storedDraftRecovery(){
+  const scope=STORAGE_PREFIX+(isDemo?'rentalDemo.':'')+DRAFT_RECOVERY_PREFIX,entries=[];
+  for(let i=0;i<localStorage.length;i++){
+    const physical=localStorage.key(i);if(!physical?.startsWith(scope))continue;
+    const raw=localStorage.getItem(physical);if(raw===null)continue;
+    try {
+      const entry=JSON.parse(raw);
+      if(entry&&['bill','settlement','recovery'].includes(entry.source)&&typeof entry.raw==='string')entries.push(entry);
+      else entries.push({source:'recovery',raw,at:'',id:physical.slice(scope.length)});
+    } catch {entries.push({source:'recovery',raw,at:'',id:physical.slice(scope.length)});}
+  }
+  return entries;
+}
+function collectDraftRecovery(){
+  readDraftStorage(DRAFT_KEY,'bill');readDraftStorage(SETT_DRAFT_KEY,'settlement');
+  const entries=[...storedDraftRecovery(),...pendingDraftRecovery.values()];
+  for(const [source,raw] of draftDiagnostics)if(!entries.some(entry=>entry.source===source&&entry.raw===raw))entries.push({source,raw,at:'',id:''});
+  return {format:DRAFT_RECOVERY_FORMAT,entries};
+}
+function preserveDraftText(source,raw){
+  const identity=source+'\n'+raw;
+  if(storedDraftRecovery().some(entry=>entry.source===source&&entry.raw===raw)){
+    pendingDraftRecovery.delete(identity);draftRecoveryWriteFailed=pendingDraftRecovery.size>0;renderDraftRecoveryNotice();return true;
+  }
+  const entry=pendingDraftRecovery.get(identity)||{source,raw,at:new Date().toISOString(),id:crypto.randomUUID()};
+  pendingDraftRecovery.set(identity,entry);
+  try {
+    const key=DRAFT_RECOVERY_PREFIX+entry.id,value=JSON.stringify(entry);
+    appStorage.setItem(key,value);
+    if(appStorage.getItem(key)!==value)throw new Error('초안 원문 보관 확인 실패');
+    pendingDraftRecovery.delete(identity);draftRecoveryWriteFailed=pendingDraftRecovery.size>0;renderDraftRecoveryNotice();return true;
+  } catch {draftRecoveryWriteFailed=true;renderDraftRecoveryNotice();return false;}
+}
+function preserveStoredDraft(key,source){
+  const raw=appStorage.getItem(key);
+  if(!inspectDraftText(raw,source).problem)return true;
+  return preserveDraftText(source,raw);
+}
+function preserveIncomingDrafts(backup){
+  if(!backup)return;
+  for(const [name,source] of [['localDrafts','bill'],['localSettlementDrafts','settlement']]){
+    if(backup[name]===undefined)continue;
+    const raw=JSON.stringify(backup[name]);
+    if(inspectDraftText(raw,source).problem&&!preserveDraftText(source,raw))throw new Error('가져올 초안 원문을 보관하지 못했습니다. 원본 파일을 유지하고 저장 공간을 확인해주세요.');
+  }
+  const recovery=backup.localMeta?.draftRecovery;if(recovery===undefined)return;
+  if(recovery?.format===DRAFT_RECOVERY_FORMAT&&Array.isArray(recovery.entries)){
+    if(Object.keys(recovery).some(key=>!['format','entries'].includes(key))&&!preserveDraftText('recovery',JSON.stringify(recovery)))throw new Error('확장된 초안 복구 원문을 보관하지 못했습니다. 원본 파일을 유지해주세요.');
+    for(const entry of recovery.entries){
+      const valid=entry&&['bill','settlement','recovery'].includes(entry.source)&&typeof entry.raw==='string';
+      if(valid&&Object.keys(entry).some(key=>!['source','raw','at','id'].includes(key))&&!preserveDraftText('recovery',JSON.stringify(entry)))throw new Error('확장된 초안 복구 원문을 보관하지 못했습니다. 원본 파일을 유지해주세요.');
+      if(!preserveDraftText(valid?entry.source:'recovery',valid?entry.raw:JSON.stringify(entry)))throw new Error('초안 복구 원문 보관에 실패했습니다. 원본 파일을 유지해주세요.');
+    }
+  } else if(!preserveDraftText('recovery',JSON.stringify(recovery)))throw new Error('초안 복구 원문 보관에 실패했습니다. 원본 파일을 유지해주세요.');
+}
+function incomingDraftWarning(backup){
+  return [['localDrafts','bill'],['localSettlementDrafts','settlement']].some(([key,source])=>backup[key]!==undefined&&inspectDraftText(JSON.stringify(backup[key]),source).problem)||backup.localMeta?.draftRecovery!==undefined;
+}
+function exportDraftRecovery(){
+  try {downloadJson(collectDraftRecovery(),'초안원문');showToast('초안 원문 파일 다운로드를 시작했습니다.');}
+  catch {showToast('초안 원문을 내보내지 못했습니다. 이 창을 유지하고 저장소 접근 상태를 확인해주세요.');}
+}
+function renderDraftRecoveryNotice(){
+  const anchor=document.getElementById('data-notice');if(!anchor)return;
+  let count=0;try{count=storedDraftRecovery().length+pendingDraftRecovery.size;}catch{draftRecoveryWriteFailed=true;}
+  const active=draftDiagnostics.size,signature=[count,active,draftRecoveryWriteFailed].join(':');
+  if(signature===draftNoticeSignature)return;draftNoticeSignature=signature;
+  let panel=document.getElementById('draft-recovery-notice');
+  if(!panel){panel=document.createElement('section');panel.id='draft-recovery-notice';panel.className='data-notice draft-recovery-notice';panel.setAttribute('role','status');anchor.after(panel);}
+  panel.hidden=!count&&!active&&!draftRecoveryWriteFailed;panel.replaceChildren();if(panel.hidden)return;
+  const text=document.createElement('p');
+  text.textContent=draftRecoveryWriteFailed?'초안 원문을 기기에 보관하지 못했습니다. 기존 초안 저장소는 유지합니다. 이 창을 닫기 전에 원문과 현재 입력을 파일로 내보내주세요.':active?'초안 확인 필요 · 읽지 못하거나 지원하지 않는 내용이 있습니다. 정상 고지서·정산 자료는 유지하며, 해당 원문은 초안에 자동 적용하지 않습니다.':'초안 복구 원문 '+count+'건을 이 기기에 보관했습니다. 파일로 내보내 장기 보관할 수 있습니다.';
+  const button=document.createElement('button');button.type='button';button.className='btn btn-secondary';button.textContent='초안 원문 내보내기';button.onclick=exportDraftRecovery;panel.append(text,button);
+}
+document.addEventListener('DOMContentLoaded',()=>{readDraftStorage(DRAFT_KEY,'bill');readDraftStorage(SETT_DRAFT_KEY,'settlement');renderDraftRecoveryNotice();});
+window.addEventListener('storage',event=>{if(event.key?.startsWith(STORAGE_PREFIX+(isDemo?'rentalDemo.':'')+DRAFT_RECOVERY_PREFIX))renderDraftRecoveryNotice();});
 function discardBillDraft(){
   clearBillDraft();editThisMonth();showToast('초안을 지우고 저장된 고지서를 표시합니다.');
 }
 
 function readBillDrafts() {
   if(retainedBillDrafts!==null)return validateDrafts(retainedBillDrafts);
-  try { const value=JSON.parse(appStorage.getItem(DRAFT_KEY)||'{}');return validateDrafts(value); }
-  catch { return {}; }
+  return readDraftStorage(DRAFT_KEY,'bill');
 }
 function collectBillDrafts() {
   return {...readBillDrafts(),...(pendingBillDraft?{[pendingBillDraft.key]:pendingBillDraft.value}:{})};
@@ -73,8 +173,9 @@ function collectBillDrafts() {
 function storeBillDrafts(drafts) {
   retainedBillDrafts=validateDrafts(drafts);
   try {
+    if(!preserveStoredDraft(DRAFT_KEY,'bill'))return false;
     appStorage.setItem(DRAFT_KEY,JSON.stringify(retainedBillDrafts));
-    retainedBillDrafts=null;return true;
+    retainedBillDrafts=null;readDraftStorage(DRAFT_KEY,'bill');return true;
   } catch {return false;}
 }
 function flushBillDraft() {
@@ -207,7 +308,7 @@ const SETT_DRAFT_KEY='rentalApp.settlementDrafts.v2';
 const settlementBaseline=()=>JSON.stringify({saved:settInputs[mk()]||{},tenants:activeTenants(),bills:bills[mk()]||{}});
 let retainedSettlementDrafts=null;
 let settlementDraftError=false,settlementDraftEdited=false;
-function readSettlementDrafts(){if(retainedSettlementDrafts!==null)return retainedSettlementDrafts;try{const v=JSON.parse(appStorage.getItem(SETT_DRAFT_KEY)||'{}');return v&&typeof v==='object'&&!Array.isArray(v)?v:{};}catch{return {};}}
+function readSettlementDrafts(){if(retainedSettlementDrafts!==null)return retainedSettlementDrafts;return readDraftStorage(SETT_DRAFT_KEY,'settlement');}
 function captureSettlementDraft(){
   if(!settlementDraftEdited||!document.getElementById('section-settlement')?.classList.contains('active')||!document.getElementById('sett-elec'))return;
   const fields={};
@@ -215,7 +316,7 @@ function captureSettlementDraft(){
   const drafts=readSettlementDrafts();drafts[mk()]={fields,baseline:settlementBaseline(),at:new Date().toISOString()};
   if(!storeSettlementDrafts(drafts))showDataNotice('정산 초안을 임시 저장하지 못했습니다. 화면을 유지한 채 백업과 저장 공간을 확인해주세요.');
 }
-function clearSettlementDraft(){const drafts=readSettlementDrafts();delete drafts[mk()];try{appStorage.setItem(SETT_DRAFT_KEY,JSON.stringify(drafts));settlementDraftError=false;}catch{settlementDraftError=true;}}
+function clearSettlementDraft(){const drafts=readSettlementDrafts();delete drafts[mk()];return storeSettlementDrafts(drafts);}
 function applySettlementDraft(){
   settlementDraftEdited=false;
   const d=readSettlementDrafts()[mk()];if(!d)return;
@@ -249,7 +350,7 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.0.2';
+const APPLICATION_VERSION='2.0.3';
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
   const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';
@@ -292,7 +393,7 @@ function validateSettlementDrafts(source){
 function storeSettlementDrafts(source){
   const clean=validateSettlementDrafts(source);
   retainedSettlementDrafts=clean;
-  try{appStorage.setItem(SETT_DRAFT_KEY,JSON.stringify(clean));retainedSettlementDrafts=null;settlementDraftError=false;return true;}catch{settlementDraftError=true;return false;}
+  try{if(!preserveStoredDraft(SETT_DRAFT_KEY,'settlement')){settlementDraftError=true;return false;}appStorage.setItem(SETT_DRAFT_KEY,JSON.stringify(clean));retainedSettlementDrafts=null;settlementDraftError=false;readDraftStorage(SETT_DRAFT_KEY,'settlement');return true;}catch{settlementDraftError=true;return false;}
 }
 async function inspectCloudRecovery(){
   if(isDemo||!cloudEnabled){showToast('Google에 연결한 독립앱에서 점검할 수 있습니다.');return;}

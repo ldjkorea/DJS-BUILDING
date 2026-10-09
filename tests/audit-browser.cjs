@@ -343,6 +343,66 @@ test('Google import review keeps actions visible across six viewports and cancel
  }
 });
 
+test('draft recovery preserves malformed local text before subsequent draft writes',async()=>{
+ const {page}=await open();const raw='{broken draft text';
+ await page.evaluate(raw=>appStorage.setItem(DRAFT_KEY,raw),raw);await history(page,'audit1',past,true);
+ await page.locator('#bill-electricity').fill('65432');await page.evaluate(()=>flushBillDraft());
+ const backup=await exportBackup(page);assert.ok(backup.localMeta?.draftRecovery?.entries.some(entry=>entry.source==='bill'&&entry.raw===raw));
+ assert.equal(backup.localDrafts[past+':audit1'].fields.electricity,'65432');assert.equal(await page.evaluate(past=>bills[past].audit1.electricity,past),35000);
+});
+
+test('draft recovery reads mixed records without writing and preserves unsupported values on update',async()=>{
+ const {page}=await open();const baseline=await page.evaluate(past=>JSON.stringify(bills[past].audit1),past);
+ const mixed={[past+':audit1']:{fields:{electricity:'54321',futureInput:0},baseline,updatedAt:'old',futureValue:{null:null}},invalid:{fields:[]}};
+ const raw=JSON.stringify(mixed);await page.evaluate(raw=>appStorage.setItem(DRAFT_KEY,raw),raw);await history(page,'audit1',past,true);
+ assert.equal(await page.locator('#bill-electricity').inputValue(),'54321');assert.equal(await page.evaluate(()=>appStorage.getItem(DRAFT_KEY)),raw);assert.equal(await page.evaluate(()=>storedDraftRecovery().length),0);
+ assert.match(await page.locator('#draft-recovery-notice').innerText(),/지원하지 않는/);await page.locator('#bill-electricity').fill('67890');await page.evaluate(()=>flushBillDraft());
+ await page.reload();const backup=await exportBackup(page);assert.ok(backup.localMeta.draftRecovery.entries.some(entry=>entry.source==='bill'&&entry.raw===raw));assert.equal(backup.localDrafts[past+':audit1'].fields.electricity,'67890');
+});
+
+test('draft recovery blocks source overwrite on archive quota failure and retains new inputs for export',async()=>{
+ for(const source of ['bill','settlement']){
+  const {page,context}=await open();const keyName=source==='bill'?'rentalApp.billDrafts.v1':'rentalApp.settlementDrafts.v2',raw='{quota protected '+source;
+  await page.evaluate(({keyName,raw})=>{appStorage.setItem(keyName,raw);window.draftArchiveSet=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key.includes('rentalApp.draftRecovery.v1.'))throw new DOMException('test archive quota','QuotaExceededError');return window.draftArchiveSet.call(this,key,value);};},{keyName,raw});
+  if(source==='bill'){await history(page,'audit1',past,true);await page.locator('#bill-electricity').fill('76543');await page.evaluate(()=>flushBillDraft());}
+  else {await navigateV2(page,'settlement');await page.locator('#sett-elec').fill('76543');await page.evaluate(()=>captureSettlementDraft());}
+  assert.equal(await page.evaluate(keyName=>appStorage.getItem(keyName),keyName),raw);assert.match(await page.locator('#draft-recovery-notice').innerText(),/기존 초안 저장소는 유지/);
+  const backup=await exportBackup(page);assert.ok(backup.localMeta.draftRecovery.entries.some(entry=>entry.source===source&&entry.raw===raw));assert.equal(source==='bill'?backup.localDrafts[past+':audit1'].fields.electricity:backup.localSettlementDrafts[key].fields['sett-elec'].value,'76543');
+  await page.evaluate(()=>{Storage.prototype.setItem=window.draftArchiveSet;flushBillDraft();captureSettlementDraft();});assert.notEqual(await page.evaluate(keyName=>appStorage.getItem(keyName),keyName),raw);assert.equal(await page.evaluate(()=>storedDraftRecovery().length),1);await context.close();
+ }
+});
+
+test('draft recovery imports malformed metadata only after review and keeps it out of domain state',async()=>{
+ const {page}=await open(),incoming=sample();incoming.tenants[0].name='초안 복구 가져오기';incoming.localDrafts=['unknown',null,0];incoming.localSettlementDrafts={futureMonth:{fields:{unknown:''}}};incoming.localMeta={draftRecovery:{futureFormat:7,content:'<img src=x onerror="window.rawExecuted=1">'}};
+ const before=await page.evaluate(()=>currentData());await page.locator('#import-file').setInputFiles({name:'draft-recovery.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});await page.locator('#modal-data-replacement.open').waitFor();assert.match(await page.locator('.replacement-body').innerText(),/원문 보관에 실패하면 자료 복원을 중단/);assert.equal(await page.evaluate(()=>storedDraftRecovery().length),0);await page.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await page.evaluate(()=>currentData()),before);
+ await page.locator('#import-file').setInputFiles({name:'draft-recovery.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});await applyReplacement(page);const backup=await exportBackup(page);assert.equal(backup.localMeta.draftRecovery.entries.length,3);assert.ok(backup.localMeta.draftRecovery.entries.some(entry=>entry.raw===JSON.stringify(incoming.localDrafts)));assert.ok(backup.localMeta.draftRecovery.entries.some(entry=>entry.raw===JSON.stringify(incoming.localSettlementDrafts)));assert.ok(backup.localMeta.draftRecovery.entries.some(entry=>entry.raw===JSON.stringify(incoming.localMeta.draftRecovery)));assert.deepEqual(await page.evaluate(()=>currentData()),core.validateData(incoming));assert.equal(await page.evaluate(()=>Object.hasOwn(currentData(),'localMeta')),false);assert.equal(await page.evaluate(()=>window.rawExecuted),undefined);assert.equal(await page.locator('#draft-recovery-notice img').count(),0);
+});
+
+test('draft recovery import archive failure keeps domain and previous undo point while raw remains exportable',async()=>{
+ const {page}=await open(),incoming=sample();incoming.tenants[0].name='중단할 후보';incoming.localDrafts='keep incoming raw';
+ await page.evaluate(()=>{window.beforeDraftArchiveWrite=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key.includes('rentalApp.draftRecovery.v1.'))throw new DOMException('test quota','QuotaExceededError');return window.beforeDraftArchiveWrite.call(this,key,value);};});
+ const before=await page.evaluate(()=>({data:currentData(),state:appStorage.getItem(RentalCore.STATE_KEY),undo:appStorage.getItem(RentalCore.BACKUP_KEY)}));await page.locator('#import-file').setInputFiles({name:'archive-quota.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(incoming))});await applyReplacement(page);assert.deepEqual(await page.evaluate(()=>({data:currentData(),state:appStorage.getItem(RentalCore.STATE_KEY),undo:appStorage.getItem(RentalCore.BACKUP_KEY)})),before);assert.match(await page.locator('#toast').innerText(),/초안 원문/);assert.ok((await exportBackup(page)).localMeta.draftRecovery.entries.some(entry=>entry.raw===JSON.stringify(incoming.localDrafts)));
+});
+
+test('draft recovery JSON round trip and undo retain raw records without duplicating archives',async()=>{
+ const {page,context}=await open();await page.evaluate(()=>{appStorage.setItem(DRAFT_KEY,'{raw round trip');readBillDrafts();storeBillDrafts({});});const backup=await exportBackup(page);assert.equal(backup.localMeta.draftRecovery.entries.length,1);
+ const destination=await open(core.empty());await destination.page.locator('#import-file').setInputFiles({name:'round-trip.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});await applyReplacement(destination.page);assert.deepEqual((await exportBackup(destination.page)).localMeta.draftRecovery.entries.map(e=>[e.source,e.raw]),backup.localMeta.draftRecovery.entries.map(e=>[e.source,e.raw]));await restoreRecoveryV2(destination.page);assert.equal(await destination.page.evaluate(()=>storedDraftRecovery().length),1);
+ await destination.page.locator('#import-file').setInputFiles({name:'repeat.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});await applyReplacement(destination.page);assert.equal(await destination.page.evaluate(()=>storedDraftRecovery().length),1);await context.close();await destination.context.close();
+});
+
+test('draft recovery archives concurrent tab sources independently and keeps original and demo journals isolated',async()=>{
+ const {page,context}=await open(),other=await context.newPage();await other.goto(TEST_URL);await other.locator('.section.active').waitFor();await page.evaluate(()=>localStorage.setItem('rentalApp.draftRecovery.v1.original','original untouched'));
+ const saved=await Promise.all([page.evaluate(()=>preserveDraftText('bill','{first tab raw')),other.evaluate(()=>preserveDraftText('settlement','{second tab raw'))]);assert.deepEqual(saved,[true,true]);assert.equal(await page.evaluate(()=>storedDraftRecovery().length),2);assert.equal(await page.evaluate(()=>localStorage.getItem('rentalApp.draftRecovery.v1.original')),'original untouched');
+ const demo=await context.newPage();await demo.goto(TEST_URL+'?demo=1');await demo.locator('.section.active').waitFor();assert.equal(await demo.evaluate(()=>storedDraftRecovery().length),0);await demo.evaluate(()=>preserveDraftText('bill','{demo raw'));assert.equal(await page.evaluate(()=>storedDraftRecovery().length),2);assert.equal(await demo.evaluate(()=>storedDraftRecovery().length),1);
+});
+
+test('draft recovery notices and raw downloads remain usable across PC mobile and large text',async()=>{
+ for(const [width,height] of [[360,800],[390,844],[412,915],[768,1024],[1366,768],[1920,1080]])for(const size of ['100%','200%']){
+  const {page,context}=await open(sample(),{viewport:{width,height}});await page.evaluate(size=>{document.documentElement.style.fontSize=size;appStorage.setItem(DRAFT_KEY,'{example broken draft');readBillDrafts();},size);const button=page.getByRole('button',{name:'초안 원문 내보내기',exact:true});assert.ok((await button.boundingBox()).height>=44);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  const pending=page.waitForEvent('download');await button.click();const file=await pending,data=JSON.parse(fs.readFileSync(await file.path(),'utf8'));assert.ok(data.entries.some(e=>e.raw==='{example broken draft'));if(size==='100%'&&(width===390||width===1366))await page.screenshot({path:path.join(out,'draft-recovery-clean-'+width+'.png'),fullPage:true});await context.close();
+ }
+});
+
 (async()=>{
   browser=await chromium.launch({headless:true,executablePath:process.env.RENTAL_BROWSER||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
   try {

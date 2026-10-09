@@ -88,6 +88,8 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 .replacement-review .hint-box{color:var(--text2);font-size:0.8125rem}
 .replacement-review .modal-title{margin:0}
 .sync-dot{max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere}
+.draft-recovery-notice p{margin:0;flex:1;min-width:180px;overflow-wrap:anywhere}
+.draft-recovery-notice .btn{width:auto;min-height:44px;font-size:0.8125rem;margin:0}
 .replacement-review summary{min-height:44px;padding:8px 0;cursor:pointer}
 .replacement-summary{width:100%;border-collapse:collapse;font-size:0.8125rem}
 .replacement-summary caption{text-align:left;padding:10px 0;color:var(--text2)}

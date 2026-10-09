@@ -678,7 +678,7 @@ window.addEventListener('storage', event => {
   }
 });
 window.addEventListener('beforeunload', event => {
-  if (persistenceBusy || storageFault || conflictingTab || failedSaveData || retainedBillDrafts !== null || retainedSettlementDrafts !== null || settlementDraftError || (cloudEnabled && cloudDirty)) { event.preventDefault(); event.returnValue = ''; }
+  if (persistenceBusy || storageFault || conflictingTab || failedSaveData || retainedBillDrafts !== null || retainedSettlementDrafts !== null || pendingDraftRecovery.size || settlementDraftError || (cloudEnabled && cloudDirty)) { event.preventDefault(); event.returnValue = ''; }
 });
 
 function changeMonth(d){
@@ -3426,13 +3426,13 @@ function exportData() {
     if (loadedState.error) {
       const raw = {};
       [RentalCore.STATE_KEY, ...RentalCore.KEYS].forEach(key => raw[key] = appStorage.getItem(key));
-      downloadJson({recoveryRaw: raw}, '손상원본');
-    } else downloadJson({...RentalCore.envelope(failedSaveData||currentData()),localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts()}, failedSaveData?'미저장작업_복구':'백업');
+      downloadJson({recoveryRaw: raw,localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts(),localMeta:{draftRecovery:collectDraftRecovery()}}, '손상원본');
+    } else downloadJson({...RentalCore.envelope(failedSaveData||currentData()),localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts(),localMeta:{draftRecovery:collectDraftRecovery()}}, failedSaveData?'미저장작업_복구':'백업');
     showToast('백업 파일 다운로드를 시작했습니다.');
   } catch (error) { showToast('내보내기 실패: ' + error.message); }
 }
 function backupCurrentData(reason) {
-  const snapshot={reason,...RentalCore.envelope(currentData()),localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts()};
+  const snapshot={reason,...RentalCore.envelope(currentData()),localDrafts:collectBillDrafts(),localSettlementDrafts:readSettlementDrafts(),localMeta:{draftRecovery:collectDraftRecovery()}};
   appStorage.setItem(RentalCore.BACKUP_KEY,JSON.stringify(snapshot));
   return snapshot;
 }
@@ -3441,11 +3441,12 @@ function makeRecovery(reason) {
   try { assertCurrentStorage();backupCurrentData(reason); return true; }
   catch { showToast('복원 지점을 저장하지 못해 작업을 중단했습니다. 파일 백업과 저장 공간을 확인해주세요.'); return false; }
 }
-async function replaceData(data, reason, drafts = {}, settlementDrafts = {}) {
+async function replaceData(data, reason, drafts = {}, settlementDrafts = {}, draftSources = null) {
   if(syncBusy||persistenceBusy||conflictingTab)throw new Error('동기화 또는 다른 창의 변경을 먼저 확인해주세요.');
   clearTimeout(saveTimer);persistenceBusy=true;
   try {
     await writeLocal(data,true,null,()=>{
+      preserveIncomingDrafts(draftSources);
       if(loadedState.error){
         const raw={};
         [RentalCore.STATE_KEY,...RentalCore.KEYS].forEach(key=>raw[key]=appStorage.getItem(key));
@@ -3534,6 +3535,7 @@ async function reviewDataReplacement(data, label, drafts = {}, settlementDrafts 
   overlay.innerHTML = '<div class="modal replacement-review"><div class="card-header"><h2 class="modal-title">'+title+'</h2>' +
     '<button type="button" class="modal-close" aria-label="'+title+' 닫기">×</button></div>' +
     '<div class="replacement-body"><p>' + esc(label) + '</p><p class="hint-box">'+hint+'</p>' +
+    (options.draftWarning?'<p class="data-warning">이 백업에 확인이 필요한 초안 또는 복구 원문이 있습니다. 지원하지 않는 초안 내용은 자동 적용하지 않고 별도 원문으로 보관합니다. 원문 보관에 실패하면 자료 복원을 중단합니다.</p>':'') +
     (fromGoogle&&!options.safeRevision?'<p class="data-warning">이 서버는 버전 비교 저장을 지원하지 않습니다. 불러오기만 가능하며 구글 업로드는 차단됩니다.</p>':'') +
     (loadedState.error ? '<p class="data-warning">현재 저장 자료가 손상되어 기존 건수를 확인할 수 없습니다. 복원할 때 손상 원문을 별도로 보관합니다.</p>' : '') +
     '<details class="replacement-counts"><summary>기록 수 비교 · 임차인 ' + (loadedState.error ? '?' : before[0]) + ' → ' + after[0] + '명 · 고지서 ' + (loadedState.error ? '?' : before[1]) + ' → ' + after[1] + '건</summary><div class="table-scroll"><table class="replacement-summary"><caption>현재 자료와 '+incomingName+'의 기록 수</caption><thead><tr><th scope="col">항목</th><th scope="col">현재</th><th scope="col">'+incomingName+'</th></tr></thead><tbody>' +
@@ -3577,9 +3579,9 @@ async function restoreRecovery() {
     const data = RentalCore.validateData(backup);
     const drafts = validateDrafts(backup.localDrafts);
     const settlementDrafts = validateSettlementDrafts(backup.localSettlementDrafts);
-    reviewed = await reviewDataReplacement(data, `${backup.reason || '이전 데이터'} (${backup.exportedAt || ''})`, drafts, settlementDrafts);
+    reviewed = await reviewDataReplacement(data, `${backup.reason || '이전 데이터'} (${backup.exportedAt || ''})`, drafts, settlementDrafts,{draftWarning:incomingDraftWarning(backup)});
     if (!reviewed) return;
-    await replaceData(data, '복원 지점으로 되돌리기 전',drafts,settlementDrafts);
+    await replaceData(data, '복원 지점으로 되돌리기 전',drafts,settlementDrafts,backup);
     showToast('복원 완료 · 구글 저장은 별도로 실행해주세요.');
   } catch (error) { showToast('복원 실패: ' + error.message); }
   finally { if (reviewed) endReplacementReview(); }
@@ -3598,9 +3600,9 @@ function importData(event) {
       if(revision!==startedRevision||draftVersion!==startedDraft)throw new Error('파일을 읽는 동안 편집이 발생했습니다. 다시 가져와주세요.');
       const drafts = validateDrafts(parsed.localDrafts);
       const settlementDrafts = validateSettlementDrafts(parsed.localSettlementDrafts);
-      reviewed = await reviewDataReplacement(data, file.name, drafts, settlementDrafts);
+      reviewed = await reviewDataReplacement(data, file.name, drafts, settlementDrafts,{draftWarning:incomingDraftWarning(parsed)});
       if (!reviewed) return;
-      await replaceData(data, '파일 가져오기 전',drafts,settlementDrafts);
+      await replaceData(data, '파일 가져오기 전',drafts,settlementDrafts,parsed);
       showToast('가져오기 완료 · 구글 저장은 별도로 실행해주세요.');
     } catch (error) { showToast('가져오기 실패: ' + error.message); }
     finally { if (reviewed) endReplacementReview(); }

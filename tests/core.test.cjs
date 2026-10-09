@@ -2,6 +2,10 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const core = require('../assets/core.js');
 const fixture = () => ({...core.empty(), tenants: [{id: 't1', name: '테스트', unit: '201', rent: '1000000'}]});
+test('draft recovery metadata never becomes cloud domain data while future domain fields remain',()=>{
+ const input={...fixture(),localMeta:{draftRecovery:{format:'rental-draft-recovery-v1',entries:[{source:'bill',raw:'{broken private draft'}]}},futureDomain:{zero:0,missing:null}};
+ const data=core.validateData(input);assert.equal(Object.hasOwn(data,'localMeta'),false);assert.deepEqual(data.futureDomain,input.futureDomain);assert.equal(Object.hasOwn(core.envelope(input),'localMeta'),false);
+});
 function storage(initial = {}) {
   const data = new Map(Object.entries(initial));
   return {getItem: key => data.has(key) ? data.get(key) : null,
