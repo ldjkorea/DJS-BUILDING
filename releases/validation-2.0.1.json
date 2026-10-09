@@ -1,0 +1,97 @@
+{
+  "version": "2.0.1",
+  "baseline": "74df177",
+  "validatedAt": "2026-10-09T18:43:30.773Z",
+  "unit": {
+    "tests": 102,
+    "passed": 102,
+    "failed": 0
+  },
+  "browserSuites": [
+    {
+      "suite": "browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "audit-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "pwa-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "single-file-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "integrity-v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "independent-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ],
+  "addedBackupScenarios": [
+    {
+      "name": "backup replacement waits for visible review and cancel preserves current data",
+      "status": "pass"
+    },
+    {
+      "name": "backup replacement applies only after review and keeps complete undo data on PC and mobile",
+      "status": "pass"
+    },
+    {
+      "name": "backup replacement rejects edits and another tab changing the reviewed baseline",
+      "status": "pass"
+    },
+    {
+      "name": "backup replacement Escape cancels and cloud synchronization stays paused while reviewing",
+      "status": "pass"
+    },
+    {
+      "name": "backup replacement keeps its review open while waiting for a lock and preserves data on quota failure",
+      "status": "pass"
+    },
+    {
+      "name": "backup replacement review keeps its actions visible across six viewports and 200 percent text",
+      "status": "pass"
+    },
+    {
+      "name": "backup replacement counts valid drafts and keeps legacy domain data when draft metadata is malformed",
+      "status": "pass"
+    }
+  ],
+  "liveReadOnlyProof": {
+    "checkedAt": "2026-10-09T18:41:20.379Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e"
+  },
+  "archive": {
+    "file": "rental-independent-gas-2.0.1.zip",
+    "sha256": "2fda58c066159ed45ec03234a676efbb42b946ca49c40a8194ad14cb26016905"
+  },
+  "deploymentPerformed": false,
+  "androidNativeChanged": false,
+  "androidOwnerLogin": "NOT TESTED",
+  "remotePushPerformed": false,
+  "sourceCommit": "d1b071d"
+}
