@@ -1,0 +1,104 @@
+{
+  "version": "2.0.2",
+  "baseline": "64a6eba",
+  "validatedAt": "2026-10-09T19:02:20.692Z",
+  "unit": {
+    "tests": 102,
+    "passed": 102,
+    "failed": 0
+  },
+  "browserSuites": [
+    {
+      "suite": "browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "audit-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "pwa-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "single-file-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "integrity-v2-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "suite": "independent-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ],
+  "addedCloudReviewScenarios": [
+    {
+      "name": "Google import review waits for consent and cancellation preserves the entire local state",
+      "status": "pass"
+    },
+    {
+      "name": "Google import review accepts a rechecked snapshot with undo drafts and safe next upload",
+      "status": "pass"
+    },
+    {
+      "name": "Google import review rejects changed remote revision payload and server capabilities",
+      "status": "pass"
+    },
+    {
+      "name": "Google import review rejects form edits and another tab during revalidation",
+      "status": "pass"
+    },
+    {
+      "name": "Google import review retains data for lock wait edits and failed storage writes",
+      "status": "pass"
+    },
+    {
+      "name": "Google import review closes on failed downloads and invalid remote data",
+      "status": "pass"
+    },
+    {
+      "name": "Google import review shows identical data draft effects and legacy read only warning",
+      "status": "pass"
+    },
+    {
+      "name": "Google import review keeps actions visible across six viewports and cancels by Escape",
+      "status": "pass"
+    }
+  ],
+  "liveReadOnlyProof": {
+    "checkedAt": "2026-10-09T18:56:21.240Z",
+    "sourceUnchanged": true,
+    "deploymentsUnchanged": true,
+    "fileCount": 8,
+    "versions": [
+      null,
+      4
+    ],
+    "sourceHash": "b134535c117858a6d316aa19875151a4e48b9802e6fb6c778d0cc4f8e8247c0e"
+  },
+  "archive": {
+    "file": "rental-independent-gas-2.0.2.zip",
+    "sha256": "ba77121e8a4cc682ca13648e418f04092088e0b05c3f3a72db11338d80271fd2",
+    "verifiedFiles": 8,
+    "archiveContentsMatchManifest": true
+  },
+  "previousCandidatePreserved": true,
+  "deploymentPerformed": false,
+  "androidNativeChanged": false,
+  "androidOwnerLogin": "NOT TESTED",
+  "remotePushPerformed": false,
+  "sourceCommit": "621b89a"
+}
