@@ -1835,7 +1835,7 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
     if(!bill[flag])return;
     // Materialize stored dates even when they are later than today. The date
     // remains future evidence; the current payment projection still excludes it.
-    const state=payment(tenant,bill,'2200-12-31');
+    const state=payment(tenant,bill,'2200-12-31',Number(bill.monthSnapshot?.slice(0,4))||new Date().getFullYear());
     if (bill.paid == null) bill.paid = {};
     for(const itemKey of itemKeys.filter(k=>(k==='pay_rent')===(key==='pay_rent'))) {
       const item=state.items[itemKey];

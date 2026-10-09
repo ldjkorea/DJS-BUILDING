@@ -51,3 +51,7 @@ test('basis shared source runs without browser structuredClone in the generated 
  const vm=require('node:vm'),fs=require('node:fs'),context={};vm.runInNewContext(fs.readFileSync(require.resolve('../assets/billing'),'utf8'),context);
  const result=context.RentalBilling.correctBillBasis(tenant,invoice(),month,{rent:120000});assert.equal(result.bill.rent,120000);assert.deepEqual(JSON.parse(JSON.stringify(result.changedPayments)),['pay_rent']);
 });
+test('basis group materialization keeps the original default year for short dates without a month snapshot',()=>{
+ const bill={mgmt:10000,water:10000,stampedMgmt:true,stampedMgmtDate:'07/05'},next={...bill,mgmt:20000};
+ billing.invalidateChangedPayments(tenant,bill,next);assert.equal(next.paid.pay_water.date,new Date().getFullYear()+'.07.05');assert.notEqual(next.paid.pay_water.date,'2200.07.05');
+});
