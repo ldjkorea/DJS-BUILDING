@@ -1,13 +1,13 @@
 /* Execute tests against ZIP readback. All server services are mocks. */
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),http=require('node:http'),assert=require('node:assert/strict'),{spawn}=require('node:child_process');
-const {verifyArchive,hash}=require('./package-gas.cjs'),root=path.resolve(__dirname,'..');
+const {verifyCandidate,hash}=require('./package-gas.cjs'),root=path.resolve(__dirname,'..');
 const run=(file,env,unit=false)=>new Promise(resolve=>{
  const args=unit?['--test',path.join(root,'tests',file)]:[path.join(root,'tests',file)],child=spawn(process.execPath,args,{cwd:root,env,windowsHide:true,stdio:['ignore','pipe','pipe']});let log='';
  child.stdout.on('data',data=>{log+=data;process.stdout.write(data);});child.stderr.on('data',data=>{log+=data;process.stderr.write(data);});
  const timeout=setTimeout(()=>child.kill(),180000);child.on('error',error=>{log+=error.message;});child.on('close',exitCode=>{clearTimeout(timeout);resolve({file,exitCode,status:exitCode===0?'pass':'fail',log});});
 });
 (async()=>{
- const version=require('../package.json').version,manifestPath=path.join(root,'releases/gas-candidate-'+version+'.json'),manifest=JSON.parse(fs.readFileSync(manifestPath)),zip=path.join(root,'releases',manifest.archive.file),entries=verifyArchive(zip,manifest);
+ const version=require('../package.json').version,manifestPath=path.join(root,'releases/gas-candidate-'+version+'.json'),manifest=JSON.parse(fs.readFileSync(manifestPath)),zip=path.join(root,'releases',manifest.archive.file),entries=verifyCandidate(zip,manifest);
  const stage=fs.mkdtempSync(path.join(os.tmpdir(),'rental-gas-test-'));for(const entry of entries)fs.writeFileSync(path.join(stage,entry.name),entry.data,{flag:'wx'});
  const html=entries.find(entry=>entry.name==='App.html').data,server=http.createServer((req,res)=>{
   if(!['GET','HEAD'].includes(req.method)||!['/','/index.html'].includes(new URL(req.url,'http://localhost').pathname)){res.writeHead(404).end();return;}

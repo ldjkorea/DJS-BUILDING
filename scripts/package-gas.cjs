@@ -40,6 +40,13 @@ function assertProof(directory,version){
  }
  return proof;
 }
+function verifyCandidate(zipFile,manifest,directory=root){
+ assert.equal(manifest.version,readJson(path.join(directory,'package.json')).version,'Candidate version mismatch');
+ const proof=assertProof(directory,manifest.version);assert.equal(manifest.productValidationCommit,proof.sourceCommit,'Product validation reference mismatch');
+ const entries=verifyArchive(zipFile,manifest);
+ for(const file of sourceFiles(directory))assert.equal(entries.find(entry=>entry.name===file.name).sha256,hash(file.data),'Candidate entry differs from validated product source: '+file.name);
+ return entries;
+}
 function packageCandidate(directory=root){
  const version=readJson(path.join(directory,'package.json')).version;assert.match(version,/^\d+\.\d+\.\d+$/);
  const proof=assertProof(directory,version),files=sourceFiles(directory),release=path.join(directory,'releases'),zipFile=path.join(release,'rental-independent-gas-'+version+'.zip'),manifestFile=path.join(release,'gas-candidate-'+version+'.json');
@@ -58,4 +65,4 @@ function packageCandidate(directory=root){
  fs.copyFileSync(temporary,zipFile,fs.constants.COPYFILE_EXCL);fs.writeFileSync(manifestFile,JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});return manifest;
 }
 if(require.main===module){try{const result=packageCandidate();console.log(JSON.stringify({version:result.version,archive:result.archive,reused:result.reused===true,deploymentPerformed:false}));}catch(error){console.error(error.message);process.exitCode=1;}}
-module.exports={names,hash,sourceFiles,createArchive,inspectArchive,verifyArchive,assertProof,packageCandidate};
+module.exports={names,hash,sourceFiles,createArchive,inspectArchive,verifyArchive,verifyCandidate,assertProof,packageCandidate};

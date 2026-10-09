@@ -32,3 +32,9 @@ test('GAS packaging accepts the recorded product source and rejects byte drift b
  for(const file of [proofPath,...Object.keys(proof.sourceHashes)]){const dest=path.join(fixture,file);fs.mkdirSync(path.dirname(dest),{recursive:true});fs.copyFileSync(path.join(root,file),dest);}
  fs.appendFileSync(path.join(fixture,'assets/core.js'),'\n// unexpected drift');assert.throws(()=>packaging.assertProof(fixture,'2.1.3'),/Verified source changed: assets\/core.js/);
 });
+test('GAS execution gate rejects a forged ZIP and matching manifest against the recorded product',()=>{
+ const altered=files.map(file=>file.name==='Code.gs'?{...file,data:Buffer.concat([file.data,Buffer.from('\n// forged source\n')])}:file),forgedZip=path.join(folder,'forged.zip');
+ packaging.createArchive(altered,forgedZip);
+ const manifest={version:'2.1.3',productValidationCommit:packaging.assertProof(root,'2.1.3').sourceCommit,archive:{sha256:packaging.hash(fs.readFileSync(forgedZip))},files:altered.map(file=>({name:file.name,bytes:file.data.length,sha256:packaging.hash(file.data)}))};
+ assert.equal(packaging.verifyArchive(forgedZip,manifest).length,8);assert.throws(()=>packaging.verifyCandidate(forgedZip,manifest,root),/Candidate entry differs from validated product source: Code.gs/);
+});
