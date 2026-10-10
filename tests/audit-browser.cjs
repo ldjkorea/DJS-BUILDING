@@ -297,20 +297,23 @@ test('Google import review rejects changed remote revision payload and server ca
 
 test('Google import review rejects form edits and another tab during revalidation',async()=>{
  for(const mode of ['review-input','verification-input','verification-tab']){
-  const {page,context}=await open();await history(page,'audit1',past,true);const incoming=sample();incoming.tenants[0].name='미적용 서버 예시';let reads=0,release,entered;const waiting=new Promise(r=>release=r),started=new Promise(r=>entered=r);
-  await context.route('https://script.google.com/**',async route=>{reads++;if(reads===2){entered();await waiting;}return route.fulfill({json:{status:'ok',data:incoming,revision:'same-remote',capabilities:{conditionalWrite:true}}});});
+  const {page,context}=await open();await history(page,'audit1',past,true);const incoming=sample();incoming.tenants[0].name='미적용 서버 예시';
+  // Gate the reviewed snapshot itself while another tab edits. Holding an
+  // intercepted fetch open across tab startup made transport failures obscure
+  // the concurrency assertion on hosted Windows; transport has separate cases.
+  await page.evaluate(incoming=>{window.auditReads=0;const waiting=new Promise(resolve=>window.auditRelease=resolve);cloudRequest=async()=>{window.auditReads++;if(window.auditReads===2)await waiting;return {status:'ok',data:incoming,revision:'same-remote',capabilities:{conditionalWrite:true}};};},incoming);
   await page.evaluate(()=>{void syncFromSheet();});await page.locator('#modal-data-replacement.open').waitFor();
   if(mode==='review-input')await page.evaluate(()=>{const el=document.getElementById('bill-electricity');el.value='67890';el.dispatchEvent(new Event('input',{bubbles:true}));});
   await page.getByRole('button',{name:'Google 자료 적용',exact:true}).click();
   if(mode!=='review-input'){
-   await started;
+   await page.waitForFunction(()=>auditReads===2);
    if(mode==='verification-input')await page.evaluate(()=>{const el=document.getElementById('bill-electricity');el.value='67890';el.dispatchEvent(new Event('input',{bubbles:true}));});
    else {const other=await context.newPage();await other.goto(TEST_URL);await other.locator('.section.active').waitFor();await other.evaluate(async()=>{tenants[0].name='다른 창 보존';await save();});}
-   release();
+   await page.evaluate(()=>auditRelease());
   }
   await page.waitForFunction(()=>!syncBusy);assert.equal(await page.evaluate(()=>tenants[0].name),tenant.name);assert.match(await page.locator('#data-notice').innerText(),/입력|편집|다른 창/);
   if(mode!=='verification-tab')assert.equal(await page.locator('#bill-electricity').inputValue(),'67890');else assert.equal(await page.evaluate(()=>RentalCore.load(appStorage).data.tenants[0].name),'다른 창 보존');
-  assert.equal(reads,mode==='review-input'?1:2);await context.close();
+  assert.equal(await page.evaluate(()=>auditReads),mode==='review-input'?1:2);await context.close();
  }
 });
 
@@ -598,9 +601,9 @@ test('receipt storage old mock server capability blocks uploading a supported lo
   const shard=process.env.RENTAL_AUDIT_SHARD;
   let shardIndex=0,shardCount=1;
   if(shard){
-    assert.match(shard,/^[12]\/2$/,'Unknown audit shard');
+    assert.match(shard,/^[1-4]\/[24]$/,'Unknown audit shard');
     assert.equal(process.env.RENTAL_CASE,undefined,'Sharding must cover the complete audit inventory');
-    [shardIndex,shardCount]=shard.split('/').map(Number);shardIndex--;
+    [shardIndex,shardCount]=shard.split('/').map(Number);assert.ok(shardIndex<=shardCount,'Unknown audit shard');shardIndex--;
   }
   const assigned=selected.filter((_,index)=>index%shardCount===shardIndex);
   assert.ok(assigned.length,'Audit selection must contain cases');

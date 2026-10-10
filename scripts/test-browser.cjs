@@ -29,14 +29,15 @@ function run(file,env,logName=file+'.log'){
   for(const suite of suites){
     if(suite!=='audit-browser.cjs'){results.push(await run(suite,env));continue;}
     // Keep the three-minute bound for each worker. Split the complete audit
-    // inventory between two disposable browsers instead of timing out healthy
-    // progress near the end of this larger suite on hosted Windows runners.
-    const shards=await Promise.all([1,2].map(index=>run(suite,{...env,RENTAL_AUDIT_SHARD:index+'/2'},suite+'.'+index+'-of-2.log')));
+    // inventory into four parts, with at most two browsers running at once.
+    // This bounds each worker without increasing CPU contention on Windows.
+    const shardCount=4,shards=[];
+    for(const pair of [[1,2],[3,4]])shards.push(...await Promise.all(pair.map(index=>run(suite,{...env,RENTAL_AUDIT_SHARD:index+'/'+shardCount},suite+'.'+index+'-of-'+shardCount+'.log'))));
     let coverageError;
     try{
-      const parts=[1,2].map(index=>JSON.parse(fs.readFileSync(path.join(out,'audit-browser-results-'+index+'-of-2.json'),'utf8')));
+      const parts=[1,2,3,4].map(index=>JSON.parse(fs.readFileSync(path.join(out,'audit-browser-results-'+index+'-of-'+shardCount+'.json'),'utf8')));
       const merged=parts.flatMap(part=>part.results);
-      if(parts.some((part,index)=>part.shard!==index+1||part.shardCount!==2||part.totalCases!==parts[0].totalCases)||
+      if(parts.some((part,index)=>part.shard!==index+1||part.shardCount!==shardCount||part.totalCases!==parts[0].totalCases)||
         merged.length!==parts[0].totalCases||new Set(merged.map(row=>row.name)).size!==merged.length||merged.some(row=>row.status!=='pass'))throw Error('Audit shard coverage or assertions failed');
       fs.writeFileSync(path.join(out,'audit-browser-results.json'),JSON.stringify(merged,null,2));
     }catch(error){coverageError=error.message;console.error(coverageError);}

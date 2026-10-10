@@ -63,6 +63,7 @@ jobs:
           path: |
             test-results/*.log
             test-results/*results.json
+            test-results/audit-browser-results-*-of-*.json
             test-results/browser-suite-summary.json
             test-results/print-pdf-validation.json
             test-results/print-pdf-*/*.pdf
