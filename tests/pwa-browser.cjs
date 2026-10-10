@@ -19,6 +19,9 @@ async function test(name,action){
   fs.mkdirSync(out,{recursive:true});
   server=http.createServer((req,res)=>{
     const pathname=new URL(req.url,'http://localhost').pathname;
+    // Observe activation from a same-origin page outside the application's
+    // worker scope, so the observer cannot keep the old release alive.
+    if(pathname==='/pwa-observer')return res.writeHead(200,{'Content-Type':'text/html','Cache-Control':'no-store'}).end('<!doctype html><title>Anonymous lifecycle observer</title>');
     if(!pathname.startsWith('/rental-app/'))return res.writeHead(404).end();
     const file=pathname.slice('/rental-app/'.length)||'index.html';
     if(!assets.has(file))return res.writeHead(404).end();
@@ -71,8 +74,16 @@ async function test(name,action){
     assert.equal(await page.evaluate(()=>Object.values(readBillDrafts())[0].fields.electricity),'87654');
   });
   await test('closing all app windows activates update and only removes related old caches',async()=>{
-    await page.close();page=await context.newPage();page.on('dialog',d=>d.accept());page.on('pageerror',e=>errors.push(e.message));
-    await page.goto(url);await page.waitForFunction(async()=>!(await navigator.serviceWorker.getRegistration()).waiting);
+    const observer=await context.newPage();await observer.goto(origin+'/pwa-observer');
+    assert.equal(await observer.evaluate(()=>navigator.serviceWorker.controller),null);
+    await page.close();
+    await observer.waitForFunction(async appUrl=>{const registration=await navigator.serviceWorker.getRegistration(appUrl);return registration?.active?.state==='activated'&&!registration.waiting;},url);
+    await observer.close();page=await context.newPage();page.on('dialog',d=>d.accept());page.on('pageerror',e=>errors.push(e.message));
+    await page.goto(url,{waitUntil:'domcontentloaded'});
+    // Reload restores the user's last section, which was history in this flow.
+    await page.waitForFunction(()=>typeof renderAll==='function'&&!!document.querySelector('.section.active'));
+    await page.locator('.section.active').waitFor();
+    await page.waitForFunction(async()=>!!navigator.serviceWorker.controller&&!(await navigator.serviceWorker.getRegistration()).waiting);
     const names=await page.evaluate(()=>caches.keys());
     assert.ok(names.includes('rental-independent-20261009-%2Frental-app%2F-'+version+'-test-update'));
     assert.ok(!names.includes('rental-independent-20261009-%2Frental-app%2F-'+version));
@@ -87,6 +98,14 @@ async function test(name,action){
     assert.deepEqual(errors,[]);assert.equal(external.filter(u=>u.includes('script.google')).length,0);
   });
 })().catch(e=>{console.error(e.message);process.exitCode=1;}).finally(async()=>{
+  if(results.some(row=>row.status==='fail')&&context){
+    const current=context.pages().find(page=>page.url().includes('/rental-app/'));
+    if(current){
+      await current.screenshot({path:path.join(out,'pwa-failure.png'),fullPage:true}).catch(()=>{});
+      const visible=await current.evaluate(()=>({title:document.title,readyState:document.readyState,bodyText:document.body?.innerText.slice(0,1000),scriptCount:document.scripts.length,coreAvailable:typeof RentalCore!=='undefined',appAvailable:typeof renderAll!=='undefined',homePresent:!!document.querySelector('#section-home'),controller:!!navigator.serviceWorker.controller})).catch(error=>({error:error.message}));
+      fs.writeFileSync(path.join(out,'pwa-failure-results.json'),JSON.stringify({visible,errors,external},null,2));
+    }
+  }
   if(browser)await browser.close();if(server)await new Promise(resolve=>server.close(resolve));
   fs.writeFileSync(path.join(out,'pwa-browser-results.json'),JSON.stringify(results,null,2));
 });
