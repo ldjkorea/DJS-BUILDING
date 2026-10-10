@@ -1,0 +1,198 @@
+{
+  "version": "2.2.2",
+  "sourceCommit": "dbf28ebcc3cba64cddd29f6cab75ac3263d9eaac",
+  "productValidationCommit": "216ed176f52832252eaa5abe00ec1afd3adaf619",
+  "archiveSha256": "0d23ea2a8fec9b78905eafcbe6ab46b922afc44f331feda1fb5c3340924f31ae",
+  "startedAt": "2026-10-10T05:12:30.281Z",
+  "finishedAt": "2026-10-10T05:14:23.016Z",
+  "serverMockTests": 45,
+  "browserCases": {
+    "receipt": 11,
+    "receipt-basis": 8,
+    "bill-basis": 11,
+    "quarter": 8,
+    "operations": 6,
+    "restored-data": 6,
+    "print": 5
+  },
+  "restoredData": {
+    "appVersion": "2.2.2",
+    "startedAt": "2026-10-10T05:13:48.880Z",
+    "finishedAt": "2026-10-10T05:14:01.773Z",
+    "inputSha256": "df664dd26e9f86326aa8ad1f24fa506740fb78f6e06ddf9130ad8c0bd4126061",
+    "privateInput": false,
+    "sourceFilePreserved": true,
+    "screenshotsTaken": false,
+    "googleRequestsPerformed": false,
+    "asOf": "2026-10-10",
+    "tenantCount": 3,
+    "billCount": 3,
+    "monthCount": 2,
+    "results": [
+      {
+        "name": "backup preview cancel apply reload and JSON roundtrip preserve every domain field on PC and mobile",
+        "status": "pass"
+      },
+      {
+        "name": "every stored invoice renders exact charges and keeps estimated basis unconfirmed without data writes",
+        "status": "pass"
+      },
+      {
+        "name": "monthly CSV contains only saved invoices including archived and orphan rows and matches exact shared totals",
+        "status": "pass"
+      },
+      {
+        "name": "empty invoice placeholders remain unissued after reload and open an editor without saved-invoice actions",
+        "status": "pass",
+        "coverage": {
+          "unissuedCaseAvailable": true
+        }
+      },
+      {
+        "name": "quarter screen and downloaded CSV match all saved quarter totals after full backup restoration",
+        "status": "pass"
+      },
+      {
+        "name": "restored full data keeps all seven menus within six viewport widths without source changes",
+        "status": "pass"
+      }
+    ]
+  },
+  "printOutput": {
+    "appVersion": "2.2.2",
+    "startedAt": "2026-10-10T05:14:02.507Z",
+    "finishedAt": "2026-10-10T05:14:10.114Z",
+    "anonymous": true,
+    "googleRequestsPerformed": false,
+    "results": [
+      {
+        "name": "legacy",
+        "status": "pass"
+      },
+      {
+        "name": "journal",
+        "status": "pass"
+      },
+      {
+        "name": "journal-mobile",
+        "status": "pass"
+      },
+      {
+        "name": "quarter",
+        "status": "pass"
+      },
+      {
+        "name": "quarter-empty",
+        "status": "pass"
+      }
+    ],
+    "pdfs": [
+      {
+        "name": "legacy",
+        "file": "test-results\\print-pdf-P2pgog\\legacy.pdf",
+        "quarter": false,
+        "expected": {
+          "total": 1484516,
+          "received": 55000,
+          "unpaid": 1429516,
+          "tenantRows": 1,
+          "receiptEvents": 0
+        }
+      },
+      {
+        "name": "journal",
+        "file": "test-results\\print-pdf-P2pgog\\journal.pdf",
+        "quarter": false,
+        "expected": {
+          "total": 1484516,
+          "received": 78000,
+          "unpaid": 1406516,
+          "tenantRows": 1,
+          "receiptEvents": 25
+        }
+      },
+      {
+        "name": "journal-mobile",
+        "file": "test-results\\print-pdf-P2pgog\\journal-mobile.pdf",
+        "quarter": false,
+        "expected": {
+          "total": 1484516,
+          "received": 78000,
+          "unpaid": 1406516,
+          "tenantRows": 1,
+          "receiptEvents": 25
+        }
+      },
+      {
+        "name": "quarter",
+        "file": "test-results\\print-pdf-P2pgog\\quarter.pdf",
+        "quarter": true,
+        "expected": {
+          "total": 160327728,
+          "received": 0,
+          "unpaid": 160327728,
+          "tenantRows": 36,
+          "receiptEvents": 0
+        }
+      },
+      {
+        "name": "quarter-empty",
+        "file": "test-results\\print-pdf-P2pgog\\quarter-empty.pdf",
+        "quarter": true,
+        "expected": {
+          "total": 0,
+          "received": 0,
+          "unpaid": 0,
+          "tenantRows": 0,
+          "receiptEvents": 0
+        }
+      }
+    ]
+  },
+  "extractedAppHtmlSha256": "14fbab2643f875b1211c55464f78e52b9f2dd8007362c83d8cc37227353a76bd",
+  "readFromZip": true,
+  "realGoogleWrites": false,
+  "productionDeployed": false,
+  "results": [
+    {
+      "file": "server.test.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "receipt-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "receipt-basis-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "bill-basis-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "quarter-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "restored-data-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "print-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "operations-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ]
+}

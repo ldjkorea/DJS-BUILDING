@@ -1,0 +1,71 @@
+{
+  "format": "rental-operating-deployment-v1",
+  "at": "2026-10-10T05:16:08.792Z",
+  "appVersion": "2.2.2",
+  "operatingDeployed": true,
+  "deployment": {
+    "at": "2026-10-10T05:16:08.792Z",
+    "appVersion": "2.2.2",
+    "oldDeploymentVersion": 5,
+    "deploymentVersion": 6,
+    "scriptId": "1n9IWX9Mzu30fZtm_DcMW5SRR69RqxH6BqOo8ydC4jcbPeTLP00UT-EQ4",
+    "deploymentId": "AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae",
+    "url": "https://script.google.com/macros/s/AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae/exec",
+    "fileCount": 8,
+    "candidateHash": "c8365acc1d2b56445ecff854ab4ccb7bf86e748a6705265d65147ccf603f2662",
+    "zipSha256": "0d23ea2a8fec9b78905eafcbe6ab46b922afc44f331feda1fb5c3340924f31ae",
+    "sourceCommit": "216ed176f52832252eaa5abe00ec1afd3adaf619",
+    "connectionsAndPermissionsUnchanged": true,
+    "sourceAndImmutableVersionReadBack": true,
+    "appDataWrites": false
+  },
+  "browser": {
+    "actualOwnerAuthenticatedPage": true,
+    "title": "NEW RENT STORE",
+    "applicationVersion": "2.2.2",
+    "sidebarVersion": "NEW RENT STORE 2.2.2",
+    "googleReadCompleted": true,
+    "remoteRevision": "sha256-853e1a2afffccccc31063782058ec4d302d79c7f8e7686dc4763baeb7ccbeb45",
+    "remoteRevisionMatchesPreDeploymentNativeValues": true,
+    "localEditCount": 0,
+    "cloudEnabled": true,
+    "incomeTrendVisible": true,
+    "incomeMonths": 12,
+    "repairHistoryVisible": true,
+    "repairFormVisible": true,
+    "nativeValuesPreservedBeforeAfterAndPageLoad": true,
+    "screenshot": "test-results/new-rent-store-operating-2.2.2.png",
+    "actualRentalDataSavePerformed": false,
+    "docsRegenerated": false,
+    "calendarSynced": false
+  },
+  "validation": {
+    "zipBrowserCases": 55.0,
+    "nativeFinancialReconciliation": {
+      "monthCount": 11,
+      "financialDifferences": 0,
+      "aggregateDifferences": 0,
+      "normalizationChanges": 0,
+      "estimatedBasisInvoices": 30,
+      "billCount": 38,
+      "tenantCount": 4
+    },
+    "pdfPages": 18,
+    "zipServerMockTests": 45,
+    "browserSuites": 14,
+    "productAudit": 69,
+    "pdfCount": 5,
+    "productCiRunId": 38025746326,
+    "productUnit": 192
+  },
+  "preservation": {
+    "backupLocation": ".private/operating-222/",
+    "operatingRawValuesUnchanged": true,
+    "oldDeploymentVersion": 5,
+    "archived2025RentStoreWrites": false,
+    "oauthAccessUrlAndTargetsUnchanged": true,
+    "originalRentStoreWrites": false,
+    "checkpoint": "checkpoint/before-operating-222"
+  },
+  "scope": "Operating source deployment and actual owner page readback; no actual rental record save, Docs regeneration, Calendar synchronization, phone or physical printer verification."
+}
