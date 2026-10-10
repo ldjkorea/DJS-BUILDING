@@ -1,0 +1,470 @@
+{
+  "appVersion": "2.1.5",
+  "phase": "invoice-and-quarter-print-output",
+  "sourceCommit": "42539480399148687fa519fccc5d88c69e4c122b",
+  "recordedAt": "2026-10-10T00:08:43.283Z",
+  "reviewCandidate": true,
+  "productionReady": false,
+  "behavior": {
+    "printOnlyControlsHidden": true,
+    "focusedSkipLinkHidden": true,
+    "legacyActionHelpHiddenInPrint": true,
+    "completeReceiptEntryBreakAvoid": true,
+    "screenControlsRestored": true,
+    "blankPageFromViewportMinimumRemoved": true,
+    "billingAndCoreUnchanged": true,
+    "schemaVersion": 1
+  },
+  "validation": {
+    "command": "npm run test:all",
+    "unit": {
+      "total": 178,
+      "passed": 178
+    },
+    "browser": {
+      "startedAt": "2026-10-10T00:03:15.025Z",
+      "finishedAt": "2026-10-10T00:08:37.643Z",
+      "url": "http://127.0.0.1:2519/",
+      "node": "v24.18.0",
+      "results": [
+        {
+          "suite": "browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "audit-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "bill-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "quarter-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "restored-data-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "print-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "pwa-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "single-file-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "integrity-v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "independent-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        }
+      ]
+    },
+    "printBrowser": {
+      "appVersion": "2.1.5",
+      "startedAt": "2026-10-10T00:07:13.928Z",
+      "finishedAt": "2026-10-10T00:07:19.917Z",
+      "anonymous": true,
+      "googleRequestsPerformed": false,
+      "results": [
+        {
+          "name": "legacy",
+          "status": "pass"
+        },
+        {
+          "name": "journal",
+          "status": "pass"
+        },
+        {
+          "name": "journal-mobile",
+          "status": "pass"
+        },
+        {
+          "name": "quarter",
+          "status": "pass"
+        },
+        {
+          "name": "quarter-empty",
+          "status": "pass"
+        }
+      ],
+      "pdfs": [
+        {
+          "name": "legacy",
+          "file": "test-results\\print-pdf-7wPMSA\\legacy.pdf",
+          "quarter": false,
+          "expected": {
+            "total": 1484516,
+            "received": 55000,
+            "unpaid": 1429516,
+            "tenantRows": 1,
+            "receiptEvents": 0
+          }
+        },
+        {
+          "name": "journal",
+          "file": "test-results\\print-pdf-7wPMSA\\journal.pdf",
+          "quarter": false,
+          "expected": {
+            "total": 1484516,
+            "received": 78000,
+            "unpaid": 1406516,
+            "tenantRows": 1,
+            "receiptEvents": 25
+          }
+        },
+        {
+          "name": "journal-mobile",
+          "file": "test-results\\print-pdf-7wPMSA\\journal-mobile.pdf",
+          "quarter": false,
+          "expected": {
+            "total": 1484516,
+            "received": 78000,
+            "unpaid": 1406516,
+            "tenantRows": 1,
+            "receiptEvents": 25
+          }
+        },
+        {
+          "name": "quarter",
+          "file": "test-results\\print-pdf-7wPMSA\\quarter.pdf",
+          "quarter": true,
+          "expected": {
+            "total": 160327728,
+            "received": 0,
+            "unpaid": 160327728,
+            "tenantRows": 36,
+            "receiptEvents": 0
+          }
+        },
+        {
+          "name": "quarter-empty",
+          "file": "test-results\\print-pdf-7wPMSA\\quarter-empty.pdf",
+          "quarter": true,
+          "expected": {
+            "total": 0,
+            "received": 0,
+            "unpaid": 0,
+            "tenantRows": 0,
+            "receiptEvents": 0
+          }
+        }
+      ]
+    },
+    "actualPdfReadback": {
+      "appVersion": "2.1.5",
+      "anonymous": true,
+      "pdfCount": 5,
+      "checks": [
+        {
+          "name": "legacy",
+          "file": "test-results\\print-pdf-7wPMSA\\legacy.pdf",
+          "pages": 1,
+          "sha256": "a5ad4004329d2d7b9943f87512c7110a0abfd3ba47a45a15a31c98ef52710ad8",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        },
+        {
+          "name": "journal",
+          "file": "test-results\\print-pdf-7wPMSA\\journal.pdf",
+          "pages": 5,
+          "sha256": "646957b8c2dcbe94656bf52081887add61fa2f5d9680b6e1e922b344dbee2029",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": true,
+          "status": "pass"
+        },
+        {
+          "name": "journal-mobile",
+          "file": "test-results\\print-pdf-7wPMSA\\journal-mobile.pdf",
+          "pages": 5,
+          "sha256": "0aa0043a21095f2f1537d29893c34cf199873b446a15b090b90dcc2174379a62",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": true,
+          "status": "pass"
+        },
+        {
+          "name": "quarter",
+          "file": "test-results\\print-pdf-7wPMSA\\quarter.pdf",
+          "pages": 6,
+          "sha256": "905f0620b2ae65b732324935d4c9eaf3332a1ef54ae136e56660216a23985cb2",
+          "portrait": false,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        },
+        {
+          "name": "quarter-empty",
+          "file": "test-results\\print-pdf-7wPMSA\\quarter-empty.pdf",
+          "pages": 1,
+          "sha256": "5d9970ea65f39aeb01a31bf84a966fb465edc631f6e36dbb3c7ab5132a3206ec",
+          "portrait": false,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        }
+      ],
+      "scope": "Edge-generated PDF text, page dimensions and bounds. Visual rendering reviewed separately; no physical printer or Google execution."
+    },
+    "visualInspection": {
+      "renderTool": "Poppler pdftoppm",
+      "dpi": 110,
+      "pages": 18,
+      "allFinalImagesMatchVisuallyReviewedImages": true,
+      "images": [
+        {
+          "file": "journal-1.png",
+          "sha256": "5186d5205864e0b1be63899fb21e35546ed6dd45538d0458cc5509db6604752f"
+        },
+        {
+          "file": "journal-2.png",
+          "sha256": "de144d916ac8b1a2945709db41f2dff82ecdf686cc79c6f49db3a03253342760"
+        },
+        {
+          "file": "journal-3.png",
+          "sha256": "54d26dd4aa8d072b0d9bd7eee5bdec5d10b8b03429b2bfaa5ba90700dda550d5"
+        },
+        {
+          "file": "journal-4.png",
+          "sha256": "1ad744f434743508fa2a804bc7a708dab985f93b1cd1dc3f222e6d30f6eea26f"
+        },
+        {
+          "file": "journal-5.png",
+          "sha256": "02d96f450d1059ece8c0c709c01b35fdcbdb7dad2a63634b757c90e388a4a6e7"
+        },
+        {
+          "file": "journal-mobile-1.png",
+          "sha256": "5186d5205864e0b1be63899fb21e35546ed6dd45538d0458cc5509db6604752f"
+        },
+        {
+          "file": "journal-mobile-2.png",
+          "sha256": "de144d916ac8b1a2945709db41f2dff82ecdf686cc79c6f49db3a03253342760"
+        },
+        {
+          "file": "journal-mobile-3.png",
+          "sha256": "54d26dd4aa8d072b0d9bd7eee5bdec5d10b8b03429b2bfaa5ba90700dda550d5"
+        },
+        {
+          "file": "journal-mobile-4.png",
+          "sha256": "1ad744f434743508fa2a804bc7a708dab985f93b1cd1dc3f222e6d30f6eea26f"
+        },
+        {
+          "file": "journal-mobile-5.png",
+          "sha256": "02d96f450d1059ece8c0c709c01b35fdcbdb7dad2a63634b757c90e388a4a6e7"
+        },
+        {
+          "file": "legacy-1.png",
+          "sha256": "7248813d46916f0f9779b7afcc192785c77e534ced2e02a5d879727df59d1dfd"
+        },
+        {
+          "file": "quarter-1.png",
+          "sha256": "3c264e43009c89e8116a0d259b56693170caf6db24e0d077c383d6ef4b957589"
+        },
+        {
+          "file": "quarter-2.png",
+          "sha256": "5193a24c90d8f1ae3ded5cdd647a415fb82a7936fb6ceb1fcd5347728b8e0170"
+        },
+        {
+          "file": "quarter-3.png",
+          "sha256": "e3a53291b7bfcfe99480f97778cfb79377cfdc0356e5f48b5d4c5a2677768eda"
+        },
+        {
+          "file": "quarter-4.png",
+          "sha256": "f63d4103e39f548a1c7dfd99b84a8dee43259170a5aaa0c9444baaef7a9b963e"
+        },
+        {
+          "file": "quarter-5.png",
+          "sha256": "b2e1922548fa44c532307d9ca76f3f739d66ca3c72b9961e422afff8b11787dc"
+        },
+        {
+          "file": "quarter-6.png",
+          "sha256": "d20ede59b349212d482c1dfe5901cc1638e14e7806979fe469816e5e2c820842"
+        },
+        {
+          "file": "quarter-empty-1.png",
+          "sha256": "c16b121c0424a24081f7e218c142faf3d87c370f11e2e005e36d0f0deaad8999"
+        }
+      ]
+    },
+    "standalonePrintCommand": {
+      "command": "npm run test:print",
+      "startedAt": "2026-10-10T00:09:35.118Z",
+      "finishedAt": "2026-10-10T00:09:41.348Z",
+      "cases": 5,
+      "allPassed": true,
+      "selfHostedTemporaryServer": true,
+      "pdfReadbackPassed": true
+    }
+  },
+  "beforeAfter": {
+    "legacyPages": {
+      "before": 2,
+      "after": 1
+    },
+    "emptyQuarterPages": {
+      "before": 2,
+      "after": 1
+    },
+    "receiptAndQuarterAmountsAndHistoryPreserved": true
+  },
+  "artifacts": [
+    {
+      "file": "output/pdf/invoice-example-2.1.5.pdf",
+      "pages": 1,
+      "bytes": 52519,
+      "sha256": "a5ad4004329d2d7b9943f87512c7110a0abfd3ba47a45a15a31c98ef52710ad8",
+      "anonymous": true,
+      "visuallyInspected": true
+    },
+    {
+      "file": "output/pdf/receipt-ledger-example-2.1.5.pdf",
+      "pages": 5,
+      "bytes": 71649,
+      "sha256": "646957b8c2dcbe94656bf52081887add61fa2f5d9680b6e1e922b344dbee2029",
+      "anonymous": true,
+      "visuallyInspected": true
+    },
+    {
+      "file": "output/pdf/quarter-example-2.1.5.pdf",
+      "pages": 6,
+      "bytes": 108219,
+      "sha256": "905f0620b2ae65b732324935d4c9eaf3332a1ef54ae136e56660216a23985cb2",
+      "anonymous": true,
+      "visuallyInspected": true
+    },
+    {
+      "file": "output/pdf/quarter-empty-example-2.1.5.pdf",
+      "pages": 1,
+      "bytes": 71673,
+      "sha256": "5d9970ea65f39aeb01a31bf84a966fb465edc631f6e36dbb3c7ab5132a3206ec",
+      "anonymous": true,
+      "visuallyInspected": true
+    }
+  ],
+  "sourceHashes": {
+    "package.json": "05cfeb8f7795d9301c24faf210d43cc61b3d35a88dd0f5c1f61fb70377d7b6d8",
+    "index.html": "a0853e63ca3a453cc7696aa413a97f3d34d927ccba62a8399ef7a2513b58da39",
+    "src/index.template.html": "55d4eedbd18baefdd12dcf7aad3eefb909ff366c1e78cc5bc9a880aeb88a24c2",
+    "assets/app.js": "23bca7a4f2791d97f895a1232900eab4d344ce28af8a2baabcced19f2f159c18",
+    "assets/enhancements.js": "46cd12b6ce16822954ace4a3f8c789ca48309e24840f8b36b24fda1d684e337a",
+    "assets/core.js": "b10b52212c0b6bec7d7173ed2321ef4d392852e0265d54d64453f299692e7f17",
+    "assets/billing.js": "1250de59157d5a0853561b7cbd70fb21925c27d60c33ff83783f07da5b7faf00",
+    "sw.js": "6f5e0d4c1bef22637514b013ae62176295a7acb5f6726b8bf160c994cac0142b",
+    "scripts/build.cjs": "87c271bd5d87e1d611363539bf6e643d20c90a7d8d2fe8bf23a08128def14b6b",
+    "scripts/test-browser.cjs": "bf61d9df0a13a281178420f13ff2033d512e00b082ef97650b92a54bfafadf22",
+    "scripts/package-gas.cjs": "d5fe454bac3073f168a78f6a0ec2f193f3ecddcf63087ca661df65555b3619b4",
+    "tests/package-gas.test.cjs": "14e084d044c7e48b7f65849fc47b1746d63a38e6c45ad72a0f59356835af5a19",
+    "tests/restored-data-browser.cjs": "92a2007562fcbe80b9960d13836048c9f39966f6e1d9f093bba67fe614cb6a07",
+    "server/appsscript.json": "a6954c274b74d412d9ff0968b40641931869fcc31f5a0eb622a54575ca8d1247",
+    "server/AuthorizeDocs.gs": "5512c7b1828320898d8c86fc78163c2860bc9b63d9317ec98f81a4bac838efbb",
+    "server/Billing.gs": "a20d4072e65d8bc129d1b5e9c5e0a2d171595ba623d4d8fc9c080a5d9dab20fc",
+    "server/CalendarSync.gs": "501747cb87a69dd4f61cf26e86960d45e4bc156f788188805a551738a4c39a6c",
+    "server/Code.gs": "ae1b44c77a92ccd3b8da9011c73fc89de44279befec996e5685c6c847e62550d",
+    "server/CurrentStatus.gs": "8dcf4fc79d5d8f388797b0ca0babe93e0b6bcec3ea3bd543803b75ea3a9cff7f",
+    "server/IndependentApp.gs": "c97eb66869f7c898b09763710e6d8fa5b370c468f924ef77ee9b01b5f2550f41",
+    "assets/mobile.css": "7926d345de48d44374726e7d8c75757e5d134943ccb2538e0ed535bbfb63d644",
+    "assets/styles.css": "bbf4427f60be53b58f7e96a41599442f9aad13dd5dbdcb944587858d45e3aeb2",
+    "assets/workspace.css": "4ba42ceb57148fba549e025625d2d5f309cf308ce6c7697812c0cfb13ab4fcad",
+    "tests/print-browser.cjs": "c25cebc0dc901d16ba189156056140dc44b0b4f53d1e61996db501ba9b11840f",
+    "tests/print-fixtures.cjs": "9d6bfe5043ddaf9899385a2896965328f04d81dd04de2854881cc93bd0b65aa2",
+    "tests/validate-print-pdf.py": "10a94bb140f77dd072485ede74037383f29ceb55486f39065d17c2824b30f7ea",
+    ".gitignore": "756fcf150c41a8002425ba5b888f900341cfb5298685145766d0ed330c894142"
+  },
+  "preservedCandidates": [
+    {
+      "version": "2.0.6",
+      "file": "releases/rental-independent-gas-2.0.6.zip",
+      "sha256": "fc03fdf04b43da7e9870e6c0e37ccf3ef5fd5cfadb82d318d8ebefecf1aeadd7",
+      "preserved": true
+    },
+    {
+      "version": "2.1.3",
+      "file": "releases/rental-independent-gas-2.1.3.zip",
+      "sha256": "46e4f65eab6cbf69344aae34d3ac245c1bc5c66cea3b7392b8ce8c87d0648e10",
+      "preserved": true
+    },
+    {
+      "version": "2.1.4",
+      "file": "releases/rental-independent-gas-2.1.4.zip",
+      "sha256": "c151f751859517a307dfe0d44dcffeec7b618c0f77d8440d1610ccb997c87020",
+      "preserved": true
+    }
+  ],
+  "operating": {
+    "googleApiCalled": false,
+    "actualDataWrite": false,
+    "actualDocsRegeneration": false,
+    "actualCalendarSync": false,
+    "deploymentPerformed": false,
+    "pushPerformed": false,
+    "androidChanged": false,
+    "lastSeparateCheck": "2026-10-09T23:45:11.984Z",
+    "lastCheckedAppVersion": "1.0.0",
+    "lastCheckedDeploymentVersion": 4,
+    "freshOperatingCheckPerformed": false
+  },
+  "privacy": {
+    "anonymousFixturesOnly": true,
+    "realDataIncludedInPdf": false,
+    "actualDataRestorationPerformedInThisPhase": false
+  },
+  "scope": "Local Edge actual PDF creation, text/page bounds and all-page rendering. Physical phone, printer, Google iframe and operating writes are not verified.",
+  "remaining": [
+    "Physical printer and phone print dialog verification",
+    "Original document review of historical estimated bases",
+    "Opened-journal basis correction policy",
+    "Authorized actual Google write/readback Docs and Calendar verification"
+  ]
+}
