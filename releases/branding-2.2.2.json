@@ -1,0 +1,55 @@
+{
+  "format": "rental-branding-v1",
+  "at": "2026-10-10T04:24:03.3515975Z",
+  "appVersion": "2.2.2",
+  "local": {
+    "unitPassed": 192,
+    "unitTotal": 192,
+    "independentBrowserPassed": 7,
+    "pwaBrowserPassed": 5,
+    "viewportWidths": [
+      1366,
+      390
+    ],
+    "title": "NEW RENT STORE",
+    "manifestIdentityPreserved": true,
+    "storageKeysPreserved": true,
+    "auditPassed": 69,
+    "auditShardCases": [
+      35,
+      34
+    ],
+    "auditShardSeconds": [
+      72.94,
+      87.95
+    ]
+  },
+  "operating": {
+    "projectTitle": "NEW RENT STORE - GAS",
+    "functionalBaseline": "1.0",
+    "oldDeploymentVersion": 4,
+    "deploymentVersion": 5,
+    "changedFiles": [
+      "App",
+      "Code"
+    ],
+    "applicationJavaScriptByteIdentical": true,
+    "otherSixFilesByteIdentical": true,
+    "urlAndAccessPreserved": true,
+    "sheetNativeValuesPreservedAfterPageLoad": true,
+    "appDataWrites": false
+  },
+  "ci": {
+    "runId": 38023739148,
+    "url": "https://github.com/ldjkorea/NEW-RENT-STORE/actions/runs/38023739148",
+    "lastObservedStatus": "completed",
+    "successNotYetConfirmed": true,
+    "conclusion": "failure"
+  },
+  "previousGasCandidate": {
+    "sha256": "c19a1d248ec81ec06398bcc0212f2d0512635258ebf109edb7da9a5129f8e64a",
+    "preserved": true,
+    "version": "2.2.0"
+  },
+  "initialBrandingSourceCommit": "3aadfeb458c62a56af49d130d04eacc33451a078"
+}

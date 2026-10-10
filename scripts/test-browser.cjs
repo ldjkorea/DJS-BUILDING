@@ -5,13 +5,13 @@ const path=require('node:path');
 const root=path.resolve(__dirname,'..'),out=path.join(root,'test-results');
 const suites=['browser.cjs','v2-browser.cjs','audit-browser.cjs','receipt-browser.cjs','receipt-basis-browser.cjs','bill-basis-browser.cjs','quarter-browser.cjs','restored-data-browser.cjs','print-browser.cjs','pwa-browser.cjs','single-file-browser.cjs','integrity-v2-browser.cjs','independent-browser.cjs','operations-browser.cjs'];
 let server,serverExited;
-function run(file,env){
+function run(file,env,logName=file+'.log'){
   return new Promise(resolve=>{
     const child=spawn(process.execPath,[path.join(root,'tests',file)],{cwd:root,env,windowsHide:true,stdio:['ignore','pipe','pipe']});
     let log='';child.stdout.on('data',b=>{log+=b;process.stdout.write(b);});child.stderr.on('data',b=>{log+=b;process.stderr.write(b);});
     const timeout=setTimeout(()=>{log+='\nSuite timed out';child.kill();},180000);
     child.on('error',e=>{log+='\n'+e.message;});
-    child.on('close',code=>{clearTimeout(timeout);fs.writeFileSync(path.join(out,file+'.log'),log);resolve({suite:file,exitCode:code,status:code===0?'pass':'fail'});});
+    child.on('close',code=>{clearTimeout(timeout);fs.writeFileSync(path.join(out,logName),log);resolve({suite:file,exitCode:code,status:code===0?'pass':'fail'});});
   });
 }
 (async()=>{
@@ -24,9 +24,25 @@ function run(file,env){
     server.on('exit',code=>{clearTimeout(timeout);reject(new Error('Test server exited: '+code));});
     server.stdout.on('data',chunk=>{output+=chunk;const match=output.match(/http:\/\/127\.0\.0\.1:\d+/);if(match){clearTimeout(timeout);resolve(match[0]+'/');}});
   });
-  const env={...process.env,RENTAL_TEST_URL:url};delete env.RENTAL_CASE;delete env.RENTAL_RESTORE_INPUT;
+  const env={...process.env,RENTAL_TEST_URL:url};delete env.RENTAL_CASE;delete env.RENTAL_RESTORE_INPUT;delete env.RENTAL_AUDIT_SHARD;
   const startedAt=new Date().toISOString(),results=[];
-  for(const suite of suites)results.push(await run(suite,env));
+  for(const suite of suites){
+    if(suite!=='audit-browser.cjs'){results.push(await run(suite,env));continue;}
+    // Keep the three-minute bound for each worker. Split the complete audit
+    // inventory between two disposable browsers instead of timing out healthy
+    // progress near the end of this larger suite on hosted Windows runners.
+    const shards=await Promise.all([1,2].map(index=>run(suite,{...env,RENTAL_AUDIT_SHARD:index+'/2'},suite+'.'+index+'-of-2.log')));
+    let coverageError;
+    try{
+      const parts=[1,2].map(index=>JSON.parse(fs.readFileSync(path.join(out,'audit-browser-results-'+index+'-of-2.json'),'utf8')));
+      const merged=parts.flatMap(part=>part.results);
+      if(parts.some((part,index)=>part.shard!==index+1||part.shardCount!==2||part.totalCases!==parts[0].totalCases)||
+        merged.length!==parts[0].totalCases||new Set(merged.map(row=>row.name)).size!==merged.length||merged.some(row=>row.status!=='pass'))throw Error('Audit shard coverage or assertions failed');
+      fs.writeFileSync(path.join(out,'audit-browser-results.json'),JSON.stringify(merged,null,2));
+    }catch(error){coverageError=error.message;console.error(coverageError);}
+    const passed=shards.every(shard=>shard.status==='pass')&&!coverageError;
+    results.push({suite,exitCode:passed?0:1,status:passed?'pass':'fail',shards,...(coverageError?{coverageError}:{})});
+  }
   fs.writeFileSync(path.join(out,'browser-suite-summary.json'),JSON.stringify({startedAt,finishedAt:new Date().toISOString(),url,node:process.version,results},null,2));
   if(results.some(r=>r.status==='fail'))process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{

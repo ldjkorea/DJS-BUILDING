@@ -594,16 +594,30 @@ test('receipt storage old mock server capability blocks uploading a supported lo
 });
 
 (async()=>{
+  const selected=cases.filter(c=>!process.env.RENTAL_CASE||c.name.includes(process.env.RENTAL_CASE));
+  const shard=process.env.RENTAL_AUDIT_SHARD;
+  let shardIndex=0,shardCount=1;
+  if(shard){
+    assert.match(shard,/^[12]\/2$/,'Unknown audit shard');
+    assert.equal(process.env.RENTAL_CASE,undefined,'Sharding must cover the complete audit inventory');
+    [shardIndex,shardCount]=shard.split('/').map(Number);shardIndex--;
+  }
+  const assigned=selected.filter((_,index)=>index%shardCount===shardIndex);
+  assert.ok(assigned.length,'Audit selection must contain cases');
+  console.log('AUDIT '+(shard||'all')+' '+assigned.length+'/'+selected.length+' cases');
   browser=await chromium.launch({headless:true,executablePath:process.env.RENTAL_BROWSER||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
   try {
-    for(const {name,fn} of cases.filter(c=>!process.env.RENTAL_CASE||c.name.includes(process.env.RENTAL_CASE))){
+    for(const {name,fn} of assigned){
       runtimeErrors=[];
       try{await fn();assert.deepEqual(runtimeErrors,[]);results.push({name,status:'pass'});console.log('PASS '+name);}
       catch(error){results.push({name,status:'fail',error:error.stack});console.error('FAIL '+name+': '+error.message);}
       finally{await Promise.all(browser.contexts().map(c=>c.close()));}
     }
   } finally {
-    await browser.close();fs.writeFileSync(path.join(out,'audit-browser-results.json'),JSON.stringify(results,null,2));
+    await browser.close();
+    const output=shard?{shard:shardIndex+1,shardCount,totalCases:selected.length,results}:results;
+    const file=shard?'audit-browser-results-'+(shardIndex+1)+'-of-'+shardCount+'.json':'audit-browser-results.json';
+    fs.writeFileSync(path.join(out,file),JSON.stringify(output,null,2));
   }
   if(results.some(r=>r.status==='fail'))process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1;});

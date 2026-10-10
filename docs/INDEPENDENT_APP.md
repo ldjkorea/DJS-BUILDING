@@ -1,10 +1,10 @@
-# 임대관리 독립앱 — 연결 대상과 검증 기록
+# NEW RENT STORE — 연결 대상과 검증 기록
 
 2026-10-09 생성. 임대관리 1.4 저장소의 현재 `main` 커밋 `a937698`를 전체 Git 이력과 함께 별도 폴더에 복제했다. 계산 규칙과 화면, 백업 JSON 형식은 이어받고 저장 경로와 Google 연결 대상을 분리했다.
 
 ## 바로 사용하기
 
-주 사용 주소: [임대관리 독립앱](https://script.google.com/macros/s/AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae/exec).
+주 사용 주소: [NEW RENT STORE](https://script.google.com/macros/s/AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae/exec).
 
 해당 Google 소유자 계정으로 로그인해야 한다. 사용자 승인 후 시트·문서·Calendar 권한 부여를 완료했다. GAS 내부에서 앱을 제공하며, `google.script.run`을 통해 동일한 독립 프로젝트의 API를 호출한다. 초기 실행은 복제한 시트 자료를 가져오며, 설정의 **구글에 지금 저장**과 운영현황의 **Google Calendar 동기화**를 사용할 수 있다.
 
@@ -17,7 +17,7 @@
 | 자료 폴더 | [임대관리 독립앱 - 2026-10-09](https://drive.google.com/drive/folders/1W1s4IzT4sBDymE7xK-KKvEiE0424SbxC) |
 | 데이터베이스 | [임대관리 독립앱 - 데이터베이스](https://docs.google.com/spreadsheets/d/1E9YcSQSNTLTC41fqWBYHMNpSRKQrDlvAXeF9AxdDFb8/edit) |
 | 현재현황 문서 | [임대관리 독립앱 - 현재현황](https://docs.google.com/document/d/1YjTZPiRA2vnfAuWp1UTBci8F4yUNozQjYhE9QwMdtuQ/edit) |
-| GAS 프로젝트 | [임대관리 독립앱 - GAS](https://script.google.com/u/0/home/projects/1n9IWX9Mzu30fZtm_DcMW5SRR69RqxH6BqOo8ydC4jcbPeTLP00UT-EQ4/edit) |
+| GAS 프로젝트 | [NEW RENT STORE - GAS](https://script.google.com/u/0/home/projects/1n9IWX9Mzu30fZtm_DcMW5SRR69RqxH6BqOo8ydC4jcbPeTLP00UT-EQ4/edit) |
 | Calendar | `임대관리 독립앱 - 계약 일정` |
 
 독립 Calendar ID: `46b18e877a67e561142297edc9ea44486c33f728809f327cd35e339a8e491c9f@group.calendar.google.com`.
@@ -75,3 +75,5 @@ GAS가 제공하는 웹앱은 로그인된 온라인 이용을 기준으로 한�
 Playwright가 설치된 환경에서 `npm run test:independent`를 실행한다. 이번 작업은 Codex의 기존 번들 Playwright와 Windows Edge를 사용했으며 새 런타임 의존성을 추가하지 않았다.
 
 원본 연결 ID를 다시 넣거나 원본 원격에 push하지 않는다. 별도의 GitHub 저장소나 정적 PWA 호스팅은 요청에 따라 추가할 수 있다.
+
+2026-10-10 이름 변경: 연결된 GAS 프로젝트 이름과 실제 운영 앱 표시를 NEW RENT STORE로 통일했다. 운영 배포 버전은 5이며 기존 1.0 기능과 연결·접근 권한을 유지한다. 개발 소스 2.2.2 및 구체적인 검증 범위는 [이름 변경 기록](BRANDING_2.2.2.md)을 따른다.
