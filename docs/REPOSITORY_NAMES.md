@@ -30,3 +30,9 @@ GitHub 저장소의 이전 주소는 현재 저장소로 연결되는 것을 API
 - 이번 Git 변경은 이름 안내·현재 링크를 정리하는 문서에 한정한다. `[skip ci]` 커밋으로 중복 검사를 생략하고 제품·검사·workflow 파일의 변경이 없는지 Git diff로 확인한다.
 
 과거 릴리스 증거·기록의 저장소 이름과 URL은 당시 값을 보존한다. 새 개발 작업에서는 위의 현재 이름과 주소를 사용한다.
+
+## Pages 갱신 완료 기록
+
+`RENT STORE`의 Pages 상태는 `built`이며 빌드 커밋은 이름 변경 전과 같은 `2b01a2ead927221a27322bba5290754b5db18969`다.
+
+오래된 저장소를 보관 상태로 복원하는 시점에 최초 자동 Pages 배포가 보관 제한으로 중단되었다. 제품 소스를 변경하지 않고 GitHub 공식 Pages 빌드 API로 새 실행을 요청했다. [새 주소의 Pages 빌드·배포](https://github.com/ldjkorea/2025-RENT-STORE/actions/runs/38022724704)가 성공했고, 빌드 커밋은 기존 `dd6800f418f45482453fa2bc7fe42ac16e60a53d`와 같다. 최종 HTML의 HTTP 200과 SHA-256 일치, Pages 상태 `built`를 확인한 뒤 `2025 RENT STORE`를 다시 보관 상태로 복원했다.
