@@ -4,7 +4,7 @@ var INDEPENDENT_SHEET_ID = 0;
 var SYNC_FORMAT = 'rental-sync-storage-v2';
 var SYNC_JOURNAL_PROPERTY = 'INDEPENDENT_SYNC_WRITE_JOURNAL';
 var LEASE_STATUSES = ['임대중','재계약예정','계약종료예정','명도소송중','강제집행중','공실(정리중)','임대모집중'];
-function capabilities_() { return {conditionalWrite:true, currentStatus:true, contractCalendar:true,receiptLedgerStorage:'rental-receipts-v1'}; }
+function capabilities_() { return {conditionalWrite:true, currentStatus:true, contractCalendar:true,receiptLedgerStorage:'rental-receipts-v1',operationsHistoryStorage:'rental-operations-v1'}; }
 function json_(value) {
   return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON);
 }
@@ -68,6 +68,7 @@ function validate_(data) {
   Object.keys(data.expenses || {}).forEach(function(month) { (data.expenses[month] || []).forEach(function(row) { amount(row.amount,'지출'); }); });
   Object.keys(data.settInputs || {}).forEach(function(month) { moneyFields(data.settInputs[month],['elec','waterTotal','elev','waste'],'정산'); });
   walk(data, 0);
+  RentalBilling.validateOperationsData(data);
   return data; // Do not normalize or discard historical fields.
 }
 function locked_(operation) {
@@ -123,7 +124,9 @@ function doGet(e) {
     var state = read_(source_().sheet);
     if(RentalBilling.hasReceiptLedgers(state.data)&&e.parameter.receiptLedgerProtocol!==RentalBilling.RECEIPT_FORMAT)
       return {status:'unsupported',message:'입금 원장 자료는 이를 지원하는 최신 앱에서 불러와주세요.',capabilities:capabilities_()};
-    return {status:'ok', data:state.data, revision:state.revision, appVersion:'2.1.5', capabilities:capabilities_(), protocol:'rental-sync-v2'};
+    if(RentalBilling.hasOperationalRecords(state.data)&&e.parameter.operationsHistoryProtocol!==RentalBilling.OPERATIONS_FORMAT)
+      return {status:'unsupported',message:'계약·수리 이력은 이를 지원하는 최신 앱에서 불러와주세요.',capabilities:capabilities_()};
+    return {status:'ok', data:state.data, revision:state.revision, appVersion:'2.2.0', capabilities:capabilities_(), protocol:'rental-sync-v2'};
   });
 }
 function ensureRows_(sheet, count) {
@@ -212,6 +215,8 @@ function doPost(e) {
     validate_(req.data);
     if((RentalBilling.hasReceiptLedgers(state.data)||RentalBilling.hasReceiptLedgers(req.data))&&req.receiptLedgerProtocol!==RentalBilling.RECEIPT_FORMAT)
       return {status:'unsupported',message:'입금 원장을 유지하는 최신 앱에서 저장해주세요.',capabilities:capabilities_()};
+    if((RentalBilling.hasOperationalRecords(state.data)||RentalBilling.hasOperationalRecords(req.data))&&req.operationsHistoryProtocol!==RentalBilling.OPERATIONS_FORMAT)
+      return {status:'unsupported',message:'계약·수리 이력을 유지하는 최신 앱에서 저장해주세요.',capabilities:capabilities_()};
     var fingerprint = hash_(JSON.stringify({expectedRevision:req.expectedRevision, data:req.data}));
     var duplicate = state.receipts.filter(function(r) { return r.id === req.requestId; })[0];
     if (duplicate) {
@@ -221,6 +226,7 @@ function doPost(e) {
     }
     if (req.expectedRevision !== state.revision) return {status:'conflict', message:'다른 기기에서 변경된 자료입니다. 현재 자료를 유지합니다.'};
     RentalBilling.assertReceiptDataTransition(state.data,req.data);
+    RentalBilling.assertOperationsTransition(state.data,req.data);
     var receipts = state.receipts.slice(-15).concat([{id:req.requestId, hash:fingerprint}]);
     var raw = JSON.stringify({format:SYNC_FORMAT, version:Utilities.getUuid(), data:req.data, receipts:receipts});
     if (raw.length > 5000000) throw new Error('자료 크기가 안전 한도(5MB)를 초과했습니다.');

@@ -373,7 +373,7 @@ async function cloudRequest(options = {}) {
   let timedOut=false;
   const timeout=setTimeout(()=>{timedOut=true;controller.abort();}, timeoutMs);
   try {
-    const fetchUrl = isPost ? SHEET_URL : `${SHEET_URL}${SHEET_URL.includes('?') ? '&' : '?'}receiptLedgerProtocol=${RentalBilling.RECEIPT_FORMAT}&_t=${Date.now()}`;
+    const fetchUrl = isPost ? SHEET_URL : `${SHEET_URL}${SHEET_URL.includes('?') ? '&' : '?'}receiptLedgerProtocol=${RentalBilling.RECEIPT_FORMAT}&operationsHistoryProtocol=${RentalBilling.OPERATIONS_FORMAT}&_t=${Date.now()}`;
     const fetchOptions = {
       ...options,
       redirect: 'follow',
@@ -391,7 +391,7 @@ async function cloudRequest(options = {}) {
           controller.signal.addEventListener('abort',abort,{once:true});
           google.script.run.withSuccessHandler(result=>finish(resolve,{ok:true,json:async()=>JSON.parse(result)}))
             .withFailureHandler(error=>finish(reject,new Error(error.message||'구글 서버 연결 실패')))
-            .independentRequest({method:isPost?'POST':'GET',body:isPost?options.body:null,receiptLedgerProtocol:RentalBilling.RECEIPT_FORMAT});
+            .independentRequest({method:isPost?'POST':'GET',body:isPost?options.body:null,receiptLedgerProtocol:RentalBilling.RECEIPT_FORMAT,operationsHistoryProtocol:RentalBilling.OPERATIONS_FORMAT});
         });
       } else {
         if(!SHEET_URL)throw new Error('새 GAS 앱 주소에서 열어주세요. 이 화면은 기기 저장만 사용할 수 있습니다.');
@@ -517,6 +517,7 @@ async function doSync(options = {}) {
     const remote=await cloudRequest();
     const remoteData=RentalCore.validateData(remote.data);
     if((RentalCore.hasReceiptLedgers(remoteData)||RentalCore.hasReceiptLedgers(currentData()))&&remote.capabilities?.receiptLedgerStorage!==RentalBilling.RECEIPT_FORMAT)throw new Error('Google 서버가 입금 원장 저장을 지원하지 않습니다. 기기 자료를 보관하고 독립 서버 업데이트 후 다시 저장해주세요.');
+    if((RentalBilling.hasOperationalRecords(remoteData)||RentalBilling.hasOperationalRecords(currentData()))&&remote.capabilities?.operationsHistoryStorage!==RentalBilling.OPERATIONS_FORMAT)throw new Error('Google 서버가 계약·수리 이력 보호를 지원하지 않습니다. 기기 자료를 보관하고 서버 업데이트 후 다시 저장해주세요.');
     if(!supportsSafeSync(remote))throw new Error('기존 서버가 버전 비교 저장을 지원하지 않아 업로드를 차단했습니다. 불러오기는 가능합니다.');
     const localData=RentalCore.validateData(currentData());
     if(!cloudBaseRevision) {
@@ -545,8 +546,8 @@ async function doSync(options = {}) {
     const pendingKey='rentalApp.pendingCloudRequest.v2';
     let pending=null;
     try { pending=JSON.parse(appStorage.getItem(pendingKey)||'null'); } catch { throw new Error('저장 요청 기록을 확인할 수 없습니다. 백업 후 동기화 상태를 확인해주세요.'); }
-    const reusable=pending && pending.protocol==='rental-sync-v2' && JSON.stringify(pending.data)===JSON.stringify(data)&&(!RentalCore.hasReceiptLedgers(data)||pending.receiptLedgerProtocol===RentalBilling.RECEIPT_FORMAT);
-    const request=reusable?pending:{protocol:'rental-sync-v2',expectedRevision:cloudBaseRevision,requestId:crypto.randomUUID(),data,receiptLedgerProtocol:RentalBilling.RECEIPT_FORMAT};
+    const reusable=pending && pending.protocol==='rental-sync-v2' && JSON.stringify(pending.data)===JSON.stringify(data)&&(!RentalCore.hasReceiptLedgers(data)||pending.receiptLedgerProtocol===RentalBilling.RECEIPT_FORMAT)&&(!RentalBilling.hasOperationalRecords(data)||pending.operationsHistoryProtocol===RentalBilling.OPERATIONS_FORMAT);
+    const request=reusable?pending:{protocol:'rental-sync-v2',expectedRevision:cloudBaseRevision,requestId:crypto.randomUUID(),data,receiptLedgerProtocol:RentalBilling.RECEIPT_FORMAT,operationsHistoryProtocol:RentalBilling.OPERATIONS_FORMAT};
     const requestId=request.requestId;
     appStorage.setItem(pendingKey,JSON.stringify(request));
     const result=await cloudRequest({method:'POST',body:JSON.stringify(request)});
@@ -846,6 +847,7 @@ function buildingStatusClass(status) {
   return 'is-alert';
 }
 function renderBuildingOperations(asOf=new Date()) {
+  if(typeof renderOperationPanel==='function')renderOperationPanel();
   const list=document.getElementById('building-floor-list');if(!list)return;
   renderContractAlerts(asOf);
   document.querySelectorAll('#building-filters button').forEach(button=>{
@@ -1820,8 +1822,10 @@ async function saveTenant(){
         showToast('새 계약기간을 정확히 입력하고 종료일을 기존 종료일보다 늦게 지정해주세요.');document.getElementById('inp-contract').focus();return;
       }
     }
-    for(const [month,rows] of Object.entries(bills))if(rows[editTenantId])snapshotBill(previous,rows[editTenantId],month,true);
     if(!mgmtEdited){d.mgmt=previous.mgmt||0;if(previous.mgmtItems)d.mgmtItems=previous.mgmtItems;else delete d.mgmtItems;}
+    let contractRecord;
+    try{contractRecord=RentalBilling.createContractChange(previous,{...previous,...d},contractChangeOptions());}catch(error){showToast(error.message);document.getElementById('inp-contract-effective').focus();return;}
+    for(const [month,rows] of Object.entries(bills))if(rows[editTenantId])snapshotBill(previous,rows[editTenantId],month,true);
     const changes=tenantChanges(previous,d);
     if(renewalEdit){
       changes.renewalDone={from:renewalDone[previous.id]??null,to:renewalEdit.oldEnd};
@@ -1829,9 +1833,13 @@ async function saveTenant(){
     }
     Object.assign(previous,d);
     if(Object.keys(changes).length)addAudit(previous,renewalEdit?'재계약 완료':'임차인 정보 변경',tenantChangeDetail(changes),changes);
+    if(contractRecord)extraDomainData.contractChanges=[...(extraDomainData.contractChanges||[]),contractRecord];
   } else {
     const tenant={id:crypto.randomUUID(),...d};
+    let contractRecord;
+    try{contractRecord=RentalBilling.createContractChange({},tenant,contractChangeOptions());}catch(error){showToast(error.message);document.getElementById('inp-contract-effective').focus();return;}
     const changes=tenantChanges({},d);addAudit(tenant,'임차인 등록',tenantChangeDetail(changes),changes);tenants.push(tenant);
+    if(contractRecord)extraDomainData.contractChanges=[...(extraDomainData.contractChanges||[]),contractRecord];
   }
   if(!await save())return;
   const renewed=!!renewalEdit;renewalEdit=null;closeModal('modal-tenant');renderAll();renderRenewalChecklist();
@@ -3734,6 +3742,10 @@ function announceModalNotice(message){
 function openModal(id) {
   const modal = document.getElementById(id);
   if(!modal)return;
+  if(id==='modal-tenant'&&!modal.classList.contains('open')){
+    const date=document.getElementById('inp-contract-effective');if(date)date.value=operationsToday();
+    const reason=document.getElementById('inp-contract-reason');if(reason)reason.value='';
+  }
   modal.querySelector('.modal-status')?.remove();
   if(!modalContexts.has(id)){
     const opener=document.activeElement;

@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="application-version" content="2.1.5">
+<meta name="application-version" content="2.2.0">
 <title>임대관리 독립앱 · Property Management</title>
 
 <meta name="theme-color" content="#f7f8fa">
@@ -770,6 +770,19 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 @media(max-width:560px){.receipt-basis-list dl{grid-template-columns:repeat(auto-fit,minmax(min(100%,6rem),1fr));}}
 .receipt-estimate-check{display:flex;align-items:flex-start;gap:9px;line-height:1.6;margin:12px 0;color:var(--text2);}.receipt-estimate-check input{flex:none;accent-color:#4e7850;margin-top:5px;}
 @media(max-width:540px){.receipt-entry{flex-wrap:wrap;}.receipt-entry>div{flex-basis:100%;}}
+.operations-card{margin-top:18px;min-width:0;}
+.operations-help{font-size:12px;line-height:1.7;color:var(--text2);overflow-wrap:anywhere;margin:10px 0;}
+.operations-card .card-header{align-items:flex-start;flex-wrap:wrap;gap:12px;}
+.operations-table-wrap{width:100%;max-width:100%;overflow-x:auto;}
+.operations-table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap;}
+.operations-table th,.operations-table td{padding:10px;border-bottom:1px solid var(--border);text-align:right;}
+.operations-table th:first-child{text-align:left;}.operations-table small{display:block;color:var(--text2);white-space:normal;max-width:180px;}
+.operations-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.operations-card .field{min-width:0;}.operations-card input,.operations-card select,.operations-card textarea{max-width:100%;}.operations-card textarea{width:100%;min-height:110px;resize:vertical;}
+.operations-record{border-top:1px solid var(--border);padding:14px 0;overflow-wrap:anywhere;}
+.operations-record p{white-space:pre-wrap;}.operations-record dl>div{margin:8px 0;}.operations-record dd{margin:4px 0;color:var(--text2);}
+.operations-record details{margin-top:12px;}.operations-card summary{cursor:pointer;font-weight:600;}
+@media(max-width:600px){.operations-form-grid{grid-template-columns:minmax(0,1fr);}}
 
 </style>
 <style data-source="assets/mobile.css">
@@ -895,6 +908,7 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
       <button type="button" data-filter="overdue" aria-pressed="false" onclick="setBuildingFilter('overdue')">연체</button>
     </div>
     <div id="building-floor-list" class="building-floor-list" aria-live="polite"></div>
+    <div id="operations-panel"></div>
   </section>
 
   <!-- ======= 고지서 탭 ======= -->
@@ -1001,7 +1015,7 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 
 </main><!-- /content -->
 
-<aside class="workspace-sidebar"><a href="#" class="workspace-brand" onclick="switchTab('home');return false;"><span class="brand-mark">P<span>·</span></span><span>Property<small>임대관리 독립앱</small></span></a><span class="nav-caption">임대 업무</span><nav class="pill-nav" aria-label="주요 메뉴"><div class="nav-group primary"><button type="button" class="pill-item" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="pi-label">대시보드</span></button><button type="button" class="pill-item" id="nav-history" onclick="switchTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span class="pi-label">고지서</span></button><button type="button" class="pill-item" id="nav-settlement" onclick="switchTab('settlement')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg><span class="pi-label">정산</span></button><button type="button" class="pill-item" id="nav-tenants" onclick="switchTab('tenants')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0112 0v3M16 4a3 3 0 010 6M18 14a5 5 0 013 4v3"/></svg><span class="pi-label">세입자</span></button></div><div class="nav-group secondary" id="secondary-nav" aria-label="보조 메뉴"><button type="button" class="pill-item" id="nav-building" onclick="switchTab('building')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V3h11v18M15 9h5v12M8 7h3M8 11h3M8 15h3M8 19h3M18 13v2M18 18v1"/></svg><span class="pi-label">운영현황</span></button><button type="button" class="pill-item" id="nav-tax" onclick="switchTab('tax')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 7h6M9 11h6M9 15h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg><span class="pi-label">세무집계</span></button><button type="button" class="pill-item" id="nav-settings" onclick="switchTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg><span class="pi-label">설정</span></button></div><button class="pill-item" id="nav-more" onclick="toggleMoreNav()" aria-expanded="false" aria-controls="secondary-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span class="pi-label">더보기</span></button></nav><div class="sidebar-bottom"><span class="live-dot"></span>원본과 분리된 독립앱<small>오늘의 업무를 정확하고 간결하게.</small><span class="version-label">INDEPENDENT 2.1.5</span></div></aside>
+<aside class="workspace-sidebar"><a href="#" class="workspace-brand" onclick="switchTab('home');return false;"><span class="brand-mark">P<span>·</span></span><span>Property<small>임대관리 독립앱</small></span></a><span class="nav-caption">임대 업무</span><nav class="pill-nav" aria-label="주요 메뉴"><div class="nav-group primary"><button type="button" class="pill-item" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="pi-label">대시보드</span></button><button type="button" class="pill-item" id="nav-history" onclick="switchTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span class="pi-label">고지서</span></button><button type="button" class="pill-item" id="nav-settlement" onclick="switchTab('settlement')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg><span class="pi-label">정산</span></button><button type="button" class="pill-item" id="nav-tenants" onclick="switchTab('tenants')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0112 0v3M16 4a3 3 0 010 6M18 14a5 5 0 013 4v3"/></svg><span class="pi-label">세입자</span></button></div><div class="nav-group secondary" id="secondary-nav" aria-label="보조 메뉴"><button type="button" class="pill-item" id="nav-building" onclick="switchTab('building')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V3h11v18M15 9h5v12M8 7h3M8 11h3M8 15h3M8 19h3M18 13v2M18 18v1"/></svg><span class="pi-label">운영현황</span></button><button type="button" class="pill-item" id="nav-tax" onclick="switchTab('tax')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 7h6M9 11h6M9 15h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg><span class="pi-label">세무집계</span></button><button type="button" class="pill-item" id="nav-settings" onclick="switchTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg><span class="pi-label">설정</span></button></div><button class="pill-item" id="nav-more" onclick="toggleMoreNav()" aria-expanded="false" aria-controls="secondary-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span class="pi-label">더보기</span></button></nav><div class="sidebar-bottom"><span class="live-dot"></span>원본과 분리된 독립앱<small>오늘의 업무를 정확하고 간결하게.</small><span class="version-label">INDEPENDENT 2.2.0</span></div></aside>
 <!-- ══ 모달들 ══ -->
 <!-- 세입자 추가/수정 -->
 <div class="modal-overlay" id="modal-tenant">
@@ -1028,6 +1042,11 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
     <div class="field"><label for="inp-deposit">보증금 (원)</label><input type="number" id="inp-deposit" min="0" step="1" placeholder="금액 확인 후 입력"><div style="font-size:11px;color:var(--text2);margin-top:4px;">비워 두면 기존 값을 유지합니다. 기존 값이 없으면 확인 필요로 표시합니다.</div></div>
     <div class="field"><label>최초 계약기간</label><input type="text" id="inp-contract-first" placeholder="2016/10/20 ~ 2017/10/19"></div>
     <div class="field"><label>현재 계약기간</label><input type="text" id="inp-contract" placeholder="2025/10/20 ~ 2026/10/19" oninput="updateRenewPreview()"></div>
+    <div class="field-row">
+      <div class="field"><label for="inp-contract-effective">조건 변경 적용일</label><input type="date" id="inp-contract-effective"></div>
+      <div class="field"><label for="inp-contract-reason">변경 사유</label><input type="text" id="inp-contract-reason" maxlength="500" placeholder="계약서 대조·재계약 등"></div>
+    </div>
+    <p class="operations-help">적용일과 이전 조건을 별도 이력에 남깁니다. 현재 조건을 저장하며 미래 자동 적용·일할 계산은 하지 않습니다. 이미 저장된 고지서의 당시 조건은 유지합니다.</p>
     <div class="field" id="renew-preview-wrap" style="display:none;">
       <label>갱신 가능 기간 (자동)</label>
       <div id="renew-preview" style="padding:9px 12px;background:var(--goldbg);border-radius:8px;font-size:13px;color:var(--gold);font-family:'DM Mono',monospace;"></div>
@@ -1276,12 +1295,13 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
     const raw=storage.getItem(STATE_KEY);let previous;
     if(raw!==null){
       try{previous=JSON.parse(raw);}catch{
-        if(/"receiptLedger"\s*:/.test(raw))fail('입금 원장 원문을 읽지 못해 덮어쓰기를 중단했습니다. 원본을 보관해주세요.');
+        if(/"(?:receiptLedger|contractChanges|propertyRecords)"\s*:/.test(raw))fail('저장 이력 원문을 읽지 못해 덮어쓰기를 중단했습니다. 원본을 보관해주세요.');
       }
     }else{
       const bills=storage.getItem('bills');if(bills!==null){try{previous={bills:JSON.parse(bills)};}catch{if(/"receiptLedger"\s*:/.test(bills))fail('기존 입금 원장 원문을 보관해주세요.');}}
     }
     if(hasReceiptLedgers(previous)||hasReceiptLedgers(data))receiptRules().assertReceiptDataTransition(previous,data);
+    if(['contractChanges','propertyRecords'].some(key=>Object.hasOwn(previous||{},key)||Object.hasOwn(data||{},key)))receiptRules().assertOperationsTransition(previous,data);
   }
   const record = (value, label) => isObject(value) || fail(`${label}: 객체 형식이 필요합니다.`);
   const id = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(value)
@@ -1469,6 +1489,7 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
       data.waterRatio[key] = Number(data.waterRatio[key]);
     }
     if (['r2', 'r3', 'r4'].reduce((sum, key) => sum + data.waterRatio[key], 0) <= 0) fail('수도 비율 합계는 0보다 커야 합니다.');
+    if(['contractChanges','propertyRecords'].some(key=>Object.hasOwn(data,key)))receiptRules().validateOperationsData(data);
     return JSON.parse(JSON.stringify(data));
   }
   function envelope(data) {
@@ -2113,11 +2134,90 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
     const totals=zeros();for(const row of rows)add(totals,row);
     return {year,quarter,months,asOf:cutoff,rows,totals};
   }
+  const OPERATIONS_FORMAT='rental-operations-v1';
+  const contractTermKeys=['unit','contract','contract_first','deposit','rent','mgmt','mgmtItems','elevator','elecType','elecFixed','payday','paytype','renew','period_mgmt','period_rent','period_elec','period_elev','period_waste','period_water_day','period_water_odd'];
+  const operationClone=value=>JSON.parse(JSON.stringify(value));
+  const operationDay=at=>new Date(new Date(at).valueOf()+9*3600000).toISOString().slice(0,10);
+  function operationError(message){throw Error('운영 이력: '+message);}
+  function operationText(value,max,required=true){if(typeof value!=='string'||value.length>max||(required&&!value.trim()))operationError('문자 값과 길이를 확인해주세요.');}
+  function operationId(value){if(typeof value!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(value)||['__proto__','constructor','prototype'].includes(value))operationError('기록 ID를 확인해주세요.');}
+  function operationTime(value){if(typeof value!=='string'||!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(value)||!Number.isFinite(Date.parse(value))||new Date(value).toISOString()!==value)operationError('기록 시각을 확인해주세요.');}
+  function operationDate(value,at){if(dateISO(value)!==value||value>operationDay(at))operationError('날짜는 실제 날짜이며 기록일 이후가 아니어야 합니다.');}
+  function contractTerms(tenant){return Object.fromEntries(contractTermKeys.filter(key=>Object.hasOwn(tenant,key)).map(key=>[key,operationClone(tenant[key])]));}
+  function validateContractTerms(value){
+    if(!journalObject(value)||Object.keys(value).some(key=>!contractTermKeys.includes(key)))operationError('계약 조건 형식을 확인해주세요.');
+    for(const [key,item] of Object.entries(value)){
+      if(['deposit','rent','mgmt','elevator','elecFixed'].includes(key)){if(item==null||item==='')continue;const n=typeof item==='string'?Number(item.replaceAll(',','')):item;if(!['string','number'].includes(typeof item)||!Number.isSafeInteger(n)||n<0||n>1e12)operationError('계약 금액을 확인해주세요.');}
+      else if(key==='mgmtItems'){if(item===null)continue;if(!Array.isArray(item)||item.some(row=>!journalObject(row)||row.amount!=null&&(!Number.isSafeInteger(Number(row.amount))||Number(row.amount)<0||Number(row.amount)>1e12)))operationError('관리비 조건을 확인해주세요.');}
+      else if(item!==null)operationText(item,2000,false);
+    }
+  }
+  function validateOperationsData(data){
+    for(const key of ['contractChanges','propertyRecords']){
+      const rows=data?.[key];if(rows===undefined)continue;if(!Array.isArray(rows)||rows.length>10000)operationError('이력 목록을 확인해주세요.');
+      const seen=new Set(),repairs=new Set(),voided=new Set();let previousAt='';
+      for(const row of rows){
+        if(!journalObject(row))operationError('기록 객체를 확인해주세요.');operationId(row.id);if(seen.has(row.id))operationError('중복 기록 ID입니다.');seen.add(row.id);operationTime(row.recordedAt);if(row.recordedAt<previousAt)operationError('기록 순서를 확인해주세요.');previousAt=row.recordedAt;
+        if(key==='contractChanges'){
+          if(Object.keys(row).some(field=>!['id','tenantId','effectiveOn','recordedAt','reason','before','after'].includes(field)))operationError('지원하지 않는 계약 기록 필드입니다.');
+          operationId(row.tenantId);operationDate(row.effectiveOn,row.recordedAt);operationText(row.reason,500);validateContractTerms(row.before);validateContractTerms(row.after);
+          if(receiptEqual(row.before,row.after))operationError('변경 전후 계약 조건이 같습니다.');
+        }else if(row.kind==='repair'){
+          if(Object.keys(row).some(field=>!['id','kind','tenantId','location','occurredOn','recordedAt','amount','description','evidenceUrl'].includes(field)))operationError('지원하지 않는 수리 기록 필드입니다.');
+          if(row.tenantId)operationId(row.tenantId);operationText(row.location,100);operationDate(row.occurredOn,row.recordedAt);operationText(row.description,2000);
+          if(!Number.isSafeInteger(row.amount)||row.amount<0||row.amount>1e12)operationError('수리 비용은 0 이상의 원 단위 정수여야 합니다.');
+          operationText(row.evidenceUrl,2000,false);if(row.evidenceUrl&&(!/^https:\/\/(?:[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?|\[[0-9a-f:]+\])(?::\d{1,5})?(?:[/?#][^\s]*)?$/i.test(row.evidenceUrl)||/[<>"'`]/.test(row.evidenceUrl)))operationError('증빙 링크는 사용자 인증정보가 없는 HTTPS 주소로 입력해주세요.');repairs.add(row.id);
+        }else if(row.kind==='void'){
+          if(Object.keys(row).some(field=>!['id','kind','reference','recordedAt','reason'].includes(field)))operationError('지원하지 않는 취소 기록 필드입니다.');
+          operationId(row.reference);operationText(row.reason,500);if(!repairs.has(row.reference)||voided.has(row.reference))operationError('취소할 수리 기록을 확인해주세요.');voided.add(row.reference);
+        }else operationError('기록 종류를 확인해주세요.');
+      }
+    }
+    return data;
+  }
+  const hasOperationalRecords=data=>['contractChanges','propertyRecords'].some(key=>Array.isArray(data?.[key])&&data[key].length>0);
+  function assertOperationsTransition(before,after){
+    validateOperationsData(before);validateOperationsData(after);
+    for(const key of ['contractChanges','propertyRecords']){const old=before?.[key]||[],next=after?.[key]||[];if(next.length<old.length||old.some((row,index)=>!receiptEqual(row,next[index])))operationError('기존 계약·수리 기록을 변경하거나 제거할 수 없습니다. 새 기록으로 사유를 남겨주세요.');}
+    return after;
+  }
+  function createContractChange(previous,next,options){
+    const before=contractTerms(previous),after=contractTerms(next),comparable=value=>Object.fromEntries(Object.entries(value).map(([key,item])=>[key,['deposit','rent','mgmt','elevator','elecFixed'].includes(key)&&item!=null&&item!==''?Number(String(item).replaceAll(',','')):item]));
+    if(receiptEqual(comparable(before),comparable(after)))return null;
+    const row={id:options.id,tenantId:next.id||previous.id,effectiveOn:options.effectiveOn,recordedAt:options.recordedAt,reason:options.reason||'임차인 조건 변경',before,after};validateOperationsData({contractChanges:[row]});return row;
+  }
+  function incomeTrend(data,year,asOf){
+    if(!Number.isInteger(year)||year<1900||year>2200||dateISO(asOf)!==asOf)operationError('조회 연도와 기준일을 확인해주세요.');
+    const rows=Array.from({length:12},(_,i)=>({month:monthKey(year,i+1),plannedFixed:null,issued:0,newReceipts:0,legacyDated:0,plannedUncertain:0})),people=new Map((data.tenants||[]).map(t=>[t.id,t]));let legacyUndated=0;
+    const add=(key,day,n)=>{if(!day||day>asOf||day.slice(0,4)!==String(year))return;const row=rows[Number(day.slice(5,7))-1],total=row[key]+n;if(!Number.isSafeInteger(total)||total<0)operationError('집계 금액 범위를 확인해주세요.');row[key]=total;};
+    for(const [month,billsForMonth] of Object.entries(data.bills||{}))for(const [id,bill] of Object.entries(billsForMonth)){
+      if(!bill||!Object.keys(bill).length)continue;const tenant=people.get(id)||{id,name:'',unit:bill.unitSnapshot||'',rent:0,mgmt:0,elevator:0},state=payment(tenant,bill,asOf,Number(month.slice(0,4)));
+      if(bill.invoiceIssued===true&&month.slice(0,4)===String(year)){const row=rows[Number(month.slice(5,7))-1];row.issued+=state.total;if(!Number.isSafeInteger(row.issued))operationError('집계 금액 범위를 확인해주세요.');}
+      if(bill.receiptLedger){
+        const ledger=bill.receiptLedger,events=ledger.events.filter(e=>operationDay(e.recordedAt)<=asOf),cancelled=new Set(events.filter(e=>e.kind==='void').map(e=>e.reference));
+        for(const event of events)if(event.kind==='receipt'&&!cancelled.has(event.id))add('newReceipts',event.receivedOn,event.amount);
+        for(const [key,item] of Object.entries(journalLegacy(ledger)))if(!cancelled.has('legacy:'+key)){if(item.undated){if(month.slice(0,4)===String(year))legacyUndated+=item.amount;}else add('legacyDated',item.date,item.amount);}
+      }else for(const item of Object.values(state.items))if(item.received){if(item.undated){if(month.slice(0,4)===String(year))legacyUndated+=item.received;}else add('legacyDated',dateISO(item.date,Number(month.slice(0,4))),item.received);}
+    }
+    for(const row of rows)if(row.month>=asOf.slice(0,7)){
+      row.plannedFixed=0;
+      for(const tenant of data.tenants||[]){
+        if(tenant.archived||['공실(정리중)','임대모집중'].includes(tenant.leaseStatus))continue;
+        const start=dateISO(String(tenant.contract||'').split('~')[0]?.trim()),end=contractEndDate(tenant.contract);
+        if(!start||!end){row.plannedUncertain++;continue;}
+        if(start.slice(0,7)>row.month||end.slice(0,7)<row.month)continue;
+        const amounts=charges(tenant,{});row.plannedFixed+=amounts.pay_rent+amounts.pay_mgmt;if(!Number.isSafeInteger(row.plannedFixed))operationError('예정 금액 범위를 확인해주세요.');
+      }
+    }
+    if(!Number.isSafeInteger(legacyUndated))operationError('과거 확인 금액 범위를 확인해주세요.');
+    return {year,asOf,rows,legacyUndated};
+  }
   root.RentalBilling = {won, withVat, floorOf, distribute, calculate, reconcile, charges, payment, quarterlyStatement,
     dateISO, contractEndDate, contractDeadline, period, dueDate, historicalPayment, arrears, itemKeys, naFields,
     materializeGroup, invalidateChangedPayments, freezeBill, effectiveTenant, correctBillBasis, collectionStatus,
     RECEIPT_FORMAT,openReceiptLedger,validateReceiptLedger,appendReceiptEvent,receiptLedgerState,
-    hasReceiptLedgers,validateReceiptBill,assertReceiptDataTransition};
+    hasReceiptLedgers,validateReceiptBill,assertReceiptDataTransition,
+    OPERATIONS_FORMAT,contractTerms,createContractChange,validateOperationsData,hasOperationalRecords,assertOperationsTransition,incomeTrend};
   if (typeof module !== 'undefined') module.exports = root.RentalBilling;
 })(globalThis);
 
@@ -2498,7 +2598,7 @@ async function cloudRequest(options = {}) {
   let timedOut=false;
   const timeout=setTimeout(()=>{timedOut=true;controller.abort();}, timeoutMs);
   try {
-    const fetchUrl = isPost ? SHEET_URL : `${SHEET_URL}${SHEET_URL.includes('?') ? '&' : '?'}receiptLedgerProtocol=${RentalBilling.RECEIPT_FORMAT}&_t=${Date.now()}`;
+    const fetchUrl = isPost ? SHEET_URL : `${SHEET_URL}${SHEET_URL.includes('?') ? '&' : '?'}receiptLedgerProtocol=${RentalBilling.RECEIPT_FORMAT}&operationsHistoryProtocol=${RentalBilling.OPERATIONS_FORMAT}&_t=${Date.now()}`;
     const fetchOptions = {
       ...options,
       redirect: 'follow',
@@ -2516,7 +2616,7 @@ async function cloudRequest(options = {}) {
           controller.signal.addEventListener('abort',abort,{once:true});
           google.script.run.withSuccessHandler(result=>finish(resolve,{ok:true,json:async()=>JSON.parse(result)}))
             .withFailureHandler(error=>finish(reject,new Error(error.message||'구글 서버 연결 실패')))
-            .independentRequest({method:isPost?'POST':'GET',body:isPost?options.body:null,receiptLedgerProtocol:RentalBilling.RECEIPT_FORMAT});
+            .independentRequest({method:isPost?'POST':'GET',body:isPost?options.body:null,receiptLedgerProtocol:RentalBilling.RECEIPT_FORMAT,operationsHistoryProtocol:RentalBilling.OPERATIONS_FORMAT});
         });
       } else {
         if(!SHEET_URL)throw new Error('새 GAS 앱 주소에서 열어주세요. 이 화면은 기기 저장만 사용할 수 있습니다.');
@@ -2642,6 +2742,7 @@ async function doSync(options = {}) {
     const remote=await cloudRequest();
     const remoteData=RentalCore.validateData(remote.data);
     if((RentalCore.hasReceiptLedgers(remoteData)||RentalCore.hasReceiptLedgers(currentData()))&&remote.capabilities?.receiptLedgerStorage!==RentalBilling.RECEIPT_FORMAT)throw new Error('Google 서버가 입금 원장 저장을 지원하지 않습니다. 기기 자료를 보관하고 독립 서버 업데이트 후 다시 저장해주세요.');
+    if((RentalBilling.hasOperationalRecords(remoteData)||RentalBilling.hasOperationalRecords(currentData()))&&remote.capabilities?.operationsHistoryStorage!==RentalBilling.OPERATIONS_FORMAT)throw new Error('Google 서버가 계약·수리 이력 보호를 지원하지 않습니다. 기기 자료를 보관하고 서버 업데이트 후 다시 저장해주세요.');
     if(!supportsSafeSync(remote))throw new Error('기존 서버가 버전 비교 저장을 지원하지 않아 업로드를 차단했습니다. 불러오기는 가능합니다.');
     const localData=RentalCore.validateData(currentData());
     if(!cloudBaseRevision) {
@@ -2670,8 +2771,8 @@ async function doSync(options = {}) {
     const pendingKey='rentalApp.pendingCloudRequest.v2';
     let pending=null;
     try { pending=JSON.parse(appStorage.getItem(pendingKey)||'null'); } catch { throw new Error('저장 요청 기록을 확인할 수 없습니다. 백업 후 동기화 상태를 확인해주세요.'); }
-    const reusable=pending && pending.protocol==='rental-sync-v2' && JSON.stringify(pending.data)===JSON.stringify(data)&&(!RentalCore.hasReceiptLedgers(data)||pending.receiptLedgerProtocol===RentalBilling.RECEIPT_FORMAT);
-    const request=reusable?pending:{protocol:'rental-sync-v2',expectedRevision:cloudBaseRevision,requestId:crypto.randomUUID(),data,receiptLedgerProtocol:RentalBilling.RECEIPT_FORMAT};
+    const reusable=pending && pending.protocol==='rental-sync-v2' && JSON.stringify(pending.data)===JSON.stringify(data)&&(!RentalCore.hasReceiptLedgers(data)||pending.receiptLedgerProtocol===RentalBilling.RECEIPT_FORMAT)&&(!RentalBilling.hasOperationalRecords(data)||pending.operationsHistoryProtocol===RentalBilling.OPERATIONS_FORMAT);
+    const request=reusable?pending:{protocol:'rental-sync-v2',expectedRevision:cloudBaseRevision,requestId:crypto.randomUUID(),data,receiptLedgerProtocol:RentalBilling.RECEIPT_FORMAT,operationsHistoryProtocol:RentalBilling.OPERATIONS_FORMAT};
     const requestId=request.requestId;
     appStorage.setItem(pendingKey,JSON.stringify(request));
     const result=await cloudRequest({method:'POST',body:JSON.stringify(request)});
@@ -2971,6 +3072,7 @@ function buildingStatusClass(status) {
   return 'is-alert';
 }
 function renderBuildingOperations(asOf=new Date()) {
+  if(typeof renderOperationPanel==='function')renderOperationPanel();
   const list=document.getElementById('building-floor-list');if(!list)return;
   renderContractAlerts(asOf);
   document.querySelectorAll('#building-filters button').forEach(button=>{
@@ -3945,8 +4047,10 @@ async function saveTenant(){
         showToast('새 계약기간을 정확히 입력하고 종료일을 기존 종료일보다 늦게 지정해주세요.');document.getElementById('inp-contract').focus();return;
       }
     }
-    for(const [month,rows] of Object.entries(bills))if(rows[editTenantId])snapshotBill(previous,rows[editTenantId],month,true);
     if(!mgmtEdited){d.mgmt=previous.mgmt||0;if(previous.mgmtItems)d.mgmtItems=previous.mgmtItems;else delete d.mgmtItems;}
+    let contractRecord;
+    try{contractRecord=RentalBilling.createContractChange(previous,{...previous,...d},contractChangeOptions());}catch(error){showToast(error.message);document.getElementById('inp-contract-effective').focus();return;}
+    for(const [month,rows] of Object.entries(bills))if(rows[editTenantId])snapshotBill(previous,rows[editTenantId],month,true);
     const changes=tenantChanges(previous,d);
     if(renewalEdit){
       changes.renewalDone={from:renewalDone[previous.id]??null,to:renewalEdit.oldEnd};
@@ -3954,9 +4058,13 @@ async function saveTenant(){
     }
     Object.assign(previous,d);
     if(Object.keys(changes).length)addAudit(previous,renewalEdit?'재계약 완료':'임차인 정보 변경',tenantChangeDetail(changes),changes);
+    if(contractRecord)extraDomainData.contractChanges=[...(extraDomainData.contractChanges||[]),contractRecord];
   } else {
     const tenant={id:crypto.randomUUID(),...d};
+    let contractRecord;
+    try{contractRecord=RentalBilling.createContractChange({},tenant,contractChangeOptions());}catch(error){showToast(error.message);document.getElementById('inp-contract-effective').focus();return;}
     const changes=tenantChanges({},d);addAudit(tenant,'임차인 등록',tenantChangeDetail(changes),changes);tenants.push(tenant);
+    if(contractRecord)extraDomainData.contractChanges=[...(extraDomainData.contractChanges||[]),contractRecord];
   }
   if(!await save())return;
   const renewed=!!renewalEdit;renewalEdit=null;closeModal('modal-tenant');renderAll();renderRenewalChecklist();
@@ -5859,6 +5967,10 @@ function announceModalNotice(message){
 function openModal(id) {
   const modal = document.getElementById(id);
   if(!modal)return;
+  if(id==='modal-tenant'&&!modal.classList.contains('open')){
+    const date=document.getElementById('inp-contract-effective');if(date)date.value=operationsToday();
+    const reason=document.getElementById('inp-contract-reason');if(reason)reason.value='';
+  }
   modal.querySelector('.modal-status')?.remove();
   if(!modalContexts.has(id)){
     const opener=document.activeElement;
@@ -6577,7 +6689,7 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.1.5';
+const APPLICATION_VERSION='2.2.0';
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
   const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';
@@ -6631,6 +6743,57 @@ async function inspectCloudRecovery(){
     const r=result.recovery;if(result.requestId!==requestId||!r||!/^sha256-[a-f0-9]{64}$/.test(r.revision))throw new Error('서버 복구점 검증 결과를 확인하지 못했습니다. 서버 버전과 복구 시트를 확인해주세요.');
     showDataNotice('최근 서버 복구점 해시 검증 완료 · '+r.tenants+'명 · '+r.billMonths+'개월 · '+r.chunks+'청크 · '+r.revision+'. 점검은 DB나 문서를 변경하지 않습니다. 복원은 문서에 정리한 절차에 따라 원문을 보관하고 진행하세요.');
   }catch(error){showDataNotice('서버 복구점 점검 실패: '+error.message);}finally{syncBusy=false;button.disabled=false;}
+}
+
+/* Optional operational records preserve legacy backups and original invoices. */
+function operationsToday(){return new Date(Date.now()+9*3600000).toISOString().slice(0,10);}
+function contractChangeOptions(){return {id:crypto.randomUUID(),effectiveOn:document.getElementById('inp-contract-effective')?.value||operationsToday(),recordedAt:new Date().toISOString(),reason:document.getElementById('inp-contract-reason')?.value.trim()||'임차인 조건 변경'};}
+let operationYear=null,repairLocationFilter='',repairDraft={},repairVoidReasons={};
+function setRepairDraft(key,value){repairDraft[key]=value;}
+function changeOperationYear(value){operationYear=Number(value);renderOperationPanel();}
+function renderIncomeTrend(data,today){
+  const year=operationYear||Number(today.slice(0,4)),trend=RentalBilling.incomeTrend(data,year,today);
+  const years=[...new Set([Number(today.slice(0,4))-1,Number(today.slice(0,4)),Number(today.slice(0,4))+1,...Object.keys(bills).map(key=>Number(key.slice(0,4))),year])].sort((a,b)=>b-a);
+  return `<section class="card operations-card"><div class="card-header"><div><h3 class="card-title">월별 수입 추세</h3><p class="operations-help">예정은 현재 계약의 월세·관리비(VAT 포함)입니다. 과거 예정액은 복원하지 않습니다. 세금계산서 발급 표시는 저장된 고지서 기준이며 입금은 고지서 월과 관계없이 입금일로 집계합니다.</p></div><select id="income-year" aria-label="수입 조회 연도" onchange="changeOperationYear(this.value)">${years.map(value=>`<option value="${value}" ${value===year?'selected':''}>${value}년</option>`).join('')}</select></div>
+    <div class="operations-table-wrap"><table class="operations-table"><thead><tr><th>월</th><th>예정 월세·관리비</th><th>세금계산서 발급 표시 청구액</th><th>새 입금 기록</th><th>날짜 있는 과거 확인</th></tr></thead><tbody>${trend.rows.map(row=>`<tr data-income-month="${row.month}"><th>${Number(row.month.slice(5))}월</th><td>${row.plannedFixed===null?'근거 없음':fmt(row.plannedFixed)}${row.plannedUncertain?`<small>계약기간 확인 필요 ${row.plannedUncertain}건</small>`:''}</td><td>${fmt(row.issued)}</td><td>${fmt(row.newReceipts)}</td><td>${fmt(row.legacyDated)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="operations-help">${year}년 고지서의 날짜 미지정 과거 확인 ${fmt(trend.legacyUndated)} · 월별 입금에 넣지 않습니다. 현재 확인된 취소 기록을 반영하며 실제 환급·타월 배분은 의미하지 않습니다.</p></section>`;
+}
+function renderContractChanges(data){
+  const history=data.contractChanges||[],value=item=>item==null?'확인 불가':typeof item==='object'?JSON.stringify(item):String(item);
+  return `<section class="card operations-card"><details><summary>계약 조건 변경 이력 ${history.length}건</summary><p class="operations-help">최신 20건 표시 · 기록을 시작한 이후의 실제 변경을 보존합니다. 전체 기록은 JSON 백업에 포함됩니다.</p><div id="contract-change-records">${history.slice(-20).reverse().map(row=>{
+    const changes=Object.keys({...row.before,...row.after}).filter(key=>JSON.stringify(row.before[key])!==JSON.stringify(row.after[key]));
+    return `<article class="operations-record"><strong>${esc(row.effectiveOn)} · ${esc(row.after.unit||row.before.unit||row.tenantId)}</strong><p>${esc(row.reason)}</p><dl>${changes.map(key=>`<div><dt>${esc(tenantFieldLabels[key]||key)}</dt><dd>${esc(value(row.before[key]))} → ${esc(value(row.after[key]))}</dd></div>`).join('')}</dl><small>기록 ${esc(row.recordedAt)}</small></article>`;
+  }).join('')||'<p>새로 기록한 계약 조건 변경이 없습니다.</p>'}</div></details></section>`;
+}
+function renderRepairRecords(data,today){
+  const records=data.propertyRecords||[],cancelled=new Set(records.filter(row=>row.kind==='void').map(row=>row.reference)),repairs=records.filter(row=>row.kind==='repair'),locations=[...new Set(repairs.map(row=>row.location))].sort(),visible=repairs.filter(row=>!repairLocationFilter||row.location===repairLocationFilter).slice(-50).reverse();
+  if(!repairDraft.occurredOn)repairDraft.occurredOn=today;
+  return `<section class="card operations-card"><h3 class="card-title">수리·증빙 이력</h3><p class="operations-help">호실·내용·비용과 HTTPS 영수증 링크를 기록합니다. 기존 지출에 자동 반영되지 않습니다. 취소는 사유를 추가하며 원래 기록을 보존합니다. 링크 저장으로 공유 권한은 바뀌지 않습니다.</p>
+    <form id="repair-form" onsubmit="event.preventDefault();saveRepairRecord()"><div class="operations-form-grid">
+      <div class="field"><label for="repair-location">호실 또는 공용 구역</label><input id="repair-location" maxlength="100" value="${esc(repairDraft.location||'')}" required oninput="setRepairDraft('location',this.value)"></div>
+      <div class="field"><label for="repair-date">수리일</label><input type="date" id="repair-date" max="${today}" value="${esc(repairDraft.occurredOn)}" required oninput="setRepairDraft('occurredOn',this.value)"></div>
+      <div class="field"><label for="repair-amount">비용(원)</label><input type="number" id="repair-amount" min="0" max="1000000000000" step="1" value="${esc(repairDraft.amount??'')}" required oninput="setRepairDraft('amount',this.value)"></div>
+      <div class="field"><label for="repair-evidence">영수증·증빙 링크</label><input type="url" id="repair-evidence" maxlength="2000" value="${esc(repairDraft.evidenceUrl||'')}" placeholder="https://..." oninput="setRepairDraft('evidenceUrl',this.value)"></div>
+    </div><div class="field"><label for="repair-description">수리 내용</label><textarea id="repair-description" maxlength="2000" required oninput="setRepairDraft('description',this.value)">${esc(repairDraft.description||'')}</textarea></div><button id="save-repair" class="btn btn-primary" type="submit">수리 기록 저장</button></form>
+    <div class="field"><label for="repair-filter">호실별 조회</label><select id="repair-filter" onchange="repairLocationFilter=this.value;renderOperationPanel()"><option value="">전체</option>${locations.map(location=>`<option value="${esc(location)}" ${location===repairLocationFilter?'selected':''}>${esc(location)}</option>`).join('')}</select></div><p class="operations-help">총 ${repairs.length}건 · 선택한 구역의 최신 50건 표시 · 전체 기록은 JSON 백업에 포함됩니다.</p>
+    <div id="repair-records">${visible.map(row=>`<article class="operations-record" data-repair-id="${row.id}"><strong>${esc(row.occurredOn)} · ${esc(row.location)} · ${fmt(row.amount)}${cancelled.has(row.id)?' · 취소 기록 있음':''}</strong><p>${esc(row.description)}</p>${row.evidenceUrl?`<a href="${esc(row.evidenceUrl)}" target="_blank" rel="noopener noreferrer">영수증·증빙 열기</a>`:''}${cancelled.has(row.id)?`<p>취소 사유: ${esc(records.find(event=>event.kind==='void'&&event.reference===row.id).reason)}</p>`:`<details><summary>이 기록 취소</summary><label for="repair-void-${row.id}">취소 사유</label><input id="repair-void-${row.id}" maxlength="500" value="${esc(repairVoidReasons[row.id]||'')}" oninput="repairVoidReasons['${row.id}']=this.value"><button type="button" class="btn" onclick="voidRepairRecord('${row.id}')">사유와 취소 기록 저장</button></details>`}</article>`).join('')||'<p>저장된 수리 기록이 없습니다.</p>'}</div></section>`;
+}
+function renderOperationPanel(){
+  const host=document.getElementById('operations-panel');if(!host)return;const today=operationsToday(),data=currentData();
+  host.innerHTML=renderIncomeTrend(data,today)+renderRepairRecords(data,today)+renderContractChanges(data);
+}
+async function saveRepairRecord(){
+  if(persistenceBusy)return;
+  try{
+    assertCurrentStorage();const raw=document.getElementById('repair-amount').value.trim();if(!/^\d+$/.test(raw))throw Error('수리 비용은 0 이상의 원 단위 정수로 입력해주세요.');
+    repairDraft.id=repairDraft.id||crypto.randomUUID();const row={kind:'repair',id:repairDraft.id,location:document.getElementById('repair-location').value.trim(),occurredOn:document.getElementById('repair-date').value,recordedAt:new Date().toISOString(),amount:Number(raw),description:document.getElementById('repair-description').value.trim(),evidenceUrl:document.getElementById('repair-evidence').value.trim()};
+    const next=[...(extraDomainData.propertyRecords||[]),row];RentalBilling.validateOperationsData({propertyRecords:next});extraDomainData.propertyRecords=next;
+    if(!await save())return;repairDraft={};renderAll();showToast('수리·증빙 기록을 저장했습니다.');
+  }catch(error){showToast(error.message);}
+}
+async function voidRepairRecord(reference){
+  if(persistenceBusy)return;
+  try{assertCurrentStorage();const row={kind:'void',id:crypto.randomUUID(),reference,recordedAt:new Date().toISOString(),reason:(repairVoidReasons[reference]||'').trim()},next=[...(extraDomainData.propertyRecords||[]),row];RentalBilling.validateOperationsData({propertyRecords:next});extraDomainData.propertyRecords=next;if(!await save())return;delete repairVoidReasons[reference];renderAll();showToast('원래 수리 기록을 보존하고 취소 사유를 추가했습니다.');}catch(error){showToast(error.message);}
 }
 
 </script>

@@ -531,7 +531,7 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.1.5';
+const APPLICATION_VERSION='2.2.0';
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
   const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';
@@ -585,4 +585,55 @@ async function inspectCloudRecovery(){
     const r=result.recovery;if(result.requestId!==requestId||!r||!/^sha256-[a-f0-9]{64}$/.test(r.revision))throw new Error('서버 복구점 검증 결과를 확인하지 못했습니다. 서버 버전과 복구 시트를 확인해주세요.');
     showDataNotice('최근 서버 복구점 해시 검증 완료 · '+r.tenants+'명 · '+r.billMonths+'개월 · '+r.chunks+'청크 · '+r.revision+'. 점검은 DB나 문서를 변경하지 않습니다. 복원은 문서에 정리한 절차에 따라 원문을 보관하고 진행하세요.');
   }catch(error){showDataNotice('서버 복구점 점검 실패: '+error.message);}finally{syncBusy=false;button.disabled=false;}
+}
+
+/* Optional operational records preserve legacy backups and original invoices. */
+function operationsToday(){return new Date(Date.now()+9*3600000).toISOString().slice(0,10);}
+function contractChangeOptions(){return {id:crypto.randomUUID(),effectiveOn:document.getElementById('inp-contract-effective')?.value||operationsToday(),recordedAt:new Date().toISOString(),reason:document.getElementById('inp-contract-reason')?.value.trim()||'임차인 조건 변경'};}
+let operationYear=null,repairLocationFilter='',repairDraft={},repairVoidReasons={};
+function setRepairDraft(key,value){repairDraft[key]=value;}
+function changeOperationYear(value){operationYear=Number(value);renderOperationPanel();}
+function renderIncomeTrend(data,today){
+  const year=operationYear||Number(today.slice(0,4)),trend=RentalBilling.incomeTrend(data,year,today);
+  const years=[...new Set([Number(today.slice(0,4))-1,Number(today.slice(0,4)),Number(today.slice(0,4))+1,...Object.keys(bills).map(key=>Number(key.slice(0,4))),year])].sort((a,b)=>b-a);
+  return `<section class="card operations-card"><div class="card-header"><div><h3 class="card-title">월별 수입 추세</h3><p class="operations-help">예정은 현재 계약의 월세·관리비(VAT 포함)입니다. 과거 예정액은 복원하지 않습니다. 세금계산서 발급 표시는 저장된 고지서 기준이며 입금은 고지서 월과 관계없이 입금일로 집계합니다.</p></div><select id="income-year" aria-label="수입 조회 연도" onchange="changeOperationYear(this.value)">${years.map(value=>`<option value="${value}" ${value===year?'selected':''}>${value}년</option>`).join('')}</select></div>
+    <div class="operations-table-wrap"><table class="operations-table"><thead><tr><th>월</th><th>예정 월세·관리비</th><th>세금계산서 발급 표시 청구액</th><th>새 입금 기록</th><th>날짜 있는 과거 확인</th></tr></thead><tbody>${trend.rows.map(row=>`<tr data-income-month="${row.month}"><th>${Number(row.month.slice(5))}월</th><td>${row.plannedFixed===null?'근거 없음':fmt(row.plannedFixed)}${row.plannedUncertain?`<small>계약기간 확인 필요 ${row.plannedUncertain}건</small>`:''}</td><td>${fmt(row.issued)}</td><td>${fmt(row.newReceipts)}</td><td>${fmt(row.legacyDated)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="operations-help">${year}년 고지서의 날짜 미지정 과거 확인 ${fmt(trend.legacyUndated)} · 월별 입금에 넣지 않습니다. 현재 확인된 취소 기록을 반영하며 실제 환급·타월 배분은 의미하지 않습니다.</p></section>`;
+}
+function renderContractChanges(data){
+  const history=data.contractChanges||[],value=item=>item==null?'확인 불가':typeof item==='object'?JSON.stringify(item):String(item);
+  return `<section class="card operations-card"><details><summary>계약 조건 변경 이력 ${history.length}건</summary><p class="operations-help">최신 20건 표시 · 기록을 시작한 이후의 실제 변경을 보존합니다. 전체 기록은 JSON 백업에 포함됩니다.</p><div id="contract-change-records">${history.slice(-20).reverse().map(row=>{
+    const changes=Object.keys({...row.before,...row.after}).filter(key=>JSON.stringify(row.before[key])!==JSON.stringify(row.after[key]));
+    return `<article class="operations-record"><strong>${esc(row.effectiveOn)} · ${esc(row.after.unit||row.before.unit||row.tenantId)}</strong><p>${esc(row.reason)}</p><dl>${changes.map(key=>`<div><dt>${esc(tenantFieldLabels[key]||key)}</dt><dd>${esc(value(row.before[key]))} → ${esc(value(row.after[key]))}</dd></div>`).join('')}</dl><small>기록 ${esc(row.recordedAt)}</small></article>`;
+  }).join('')||'<p>새로 기록한 계약 조건 변경이 없습니다.</p>'}</div></details></section>`;
+}
+function renderRepairRecords(data,today){
+  const records=data.propertyRecords||[],cancelled=new Set(records.filter(row=>row.kind==='void').map(row=>row.reference)),repairs=records.filter(row=>row.kind==='repair'),locations=[...new Set(repairs.map(row=>row.location))].sort(),visible=repairs.filter(row=>!repairLocationFilter||row.location===repairLocationFilter).slice(-50).reverse();
+  if(!repairDraft.occurredOn)repairDraft.occurredOn=today;
+  return `<section class="card operations-card"><h3 class="card-title">수리·증빙 이력</h3><p class="operations-help">호실·내용·비용과 HTTPS 영수증 링크를 기록합니다. 기존 지출에 자동 반영되지 않습니다. 취소는 사유를 추가하며 원래 기록을 보존합니다. 링크 저장으로 공유 권한은 바뀌지 않습니다.</p>
+    <form id="repair-form" onsubmit="event.preventDefault();saveRepairRecord()"><div class="operations-form-grid">
+      <div class="field"><label for="repair-location">호실 또는 공용 구역</label><input id="repair-location" maxlength="100" value="${esc(repairDraft.location||'')}" required oninput="setRepairDraft('location',this.value)"></div>
+      <div class="field"><label for="repair-date">수리일</label><input type="date" id="repair-date" max="${today}" value="${esc(repairDraft.occurredOn)}" required oninput="setRepairDraft('occurredOn',this.value)"></div>
+      <div class="field"><label for="repair-amount">비용(원)</label><input type="number" id="repair-amount" min="0" max="1000000000000" step="1" value="${esc(repairDraft.amount??'')}" required oninput="setRepairDraft('amount',this.value)"></div>
+      <div class="field"><label for="repair-evidence">영수증·증빙 링크</label><input type="url" id="repair-evidence" maxlength="2000" value="${esc(repairDraft.evidenceUrl||'')}" placeholder="https://..." oninput="setRepairDraft('evidenceUrl',this.value)"></div>
+    </div><div class="field"><label for="repair-description">수리 내용</label><textarea id="repair-description" maxlength="2000" required oninput="setRepairDraft('description',this.value)">${esc(repairDraft.description||'')}</textarea></div><button id="save-repair" class="btn btn-primary" type="submit">수리 기록 저장</button></form>
+    <div class="field"><label for="repair-filter">호실별 조회</label><select id="repair-filter" onchange="repairLocationFilter=this.value;renderOperationPanel()"><option value="">전체</option>${locations.map(location=>`<option value="${esc(location)}" ${location===repairLocationFilter?'selected':''}>${esc(location)}</option>`).join('')}</select></div><p class="operations-help">총 ${repairs.length}건 · 선택한 구역의 최신 50건 표시 · 전체 기록은 JSON 백업에 포함됩니다.</p>
+    <div id="repair-records">${visible.map(row=>`<article class="operations-record" data-repair-id="${row.id}"><strong>${esc(row.occurredOn)} · ${esc(row.location)} · ${fmt(row.amount)}${cancelled.has(row.id)?' · 취소 기록 있음':''}</strong><p>${esc(row.description)}</p>${row.evidenceUrl?`<a href="${esc(row.evidenceUrl)}" target="_blank" rel="noopener noreferrer">영수증·증빙 열기</a>`:''}${cancelled.has(row.id)?`<p>취소 사유: ${esc(records.find(event=>event.kind==='void'&&event.reference===row.id).reason)}</p>`:`<details><summary>이 기록 취소</summary><label for="repair-void-${row.id}">취소 사유</label><input id="repair-void-${row.id}" maxlength="500" value="${esc(repairVoidReasons[row.id]||'')}" oninput="repairVoidReasons['${row.id}']=this.value"><button type="button" class="btn" onclick="voidRepairRecord('${row.id}')">사유와 취소 기록 저장</button></details>`}</article>`).join('')||'<p>저장된 수리 기록이 없습니다.</p>'}</div></section>`;
+}
+function renderOperationPanel(){
+  const host=document.getElementById('operations-panel');if(!host)return;const today=operationsToday(),data=currentData();
+  host.innerHTML=renderIncomeTrend(data,today)+renderRepairRecords(data,today)+renderContractChanges(data);
+}
+async function saveRepairRecord(){
+  if(persistenceBusy)return;
+  try{
+    assertCurrentStorage();const raw=document.getElementById('repair-amount').value.trim();if(!/^\d+$/.test(raw))throw Error('수리 비용은 0 이상의 원 단위 정수로 입력해주세요.');
+    repairDraft.id=repairDraft.id||crypto.randomUUID();const row={kind:'repair',id:repairDraft.id,location:document.getElementById('repair-location').value.trim(),occurredOn:document.getElementById('repair-date').value,recordedAt:new Date().toISOString(),amount:Number(raw),description:document.getElementById('repair-description').value.trim(),evidenceUrl:document.getElementById('repair-evidence').value.trim()};
+    const next=[...(extraDomainData.propertyRecords||[]),row];RentalBilling.validateOperationsData({propertyRecords:next});extraDomainData.propertyRecords=next;
+    if(!await save())return;repairDraft={};renderAll();showToast('수리·증빙 기록을 저장했습니다.');
+  }catch(error){showToast(error.message);}
+}
+async function voidRepairRecord(reference){
+  if(persistenceBusy)return;
+  try{assertCurrentStorage();const row={kind:'void',id:crypto.randomUUID(),reference,recordedAt:new Date().toISOString(),reason:(repairVoidReasons[reference]||'').trim()},next=[...(extraDomainData.propertyRecords||[]),row];RentalBilling.validateOperationsData({propertyRecords:next});extraDomainData.propertyRecords=next;if(!await save())return;delete repairVoidReasons[reference];renderAll();showToast('원래 수리 기록을 보존하고 취소 사유를 추가했습니다.');}catch(error){showToast(error.message);}
 }

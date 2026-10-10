@@ -131,7 +131,13 @@ async function workflow(page, label) {
   const download=await downloadEvent;
   const backupPath=path.join(out,label+'-backup.json');
   await download.saveAs(backupPath);
+  // Adding a tenant now records immutable contract history. A backup that
+  // removes that history must be rejected before replacement review opens.
+  const beforeLegacy=await page.evaluate(()=>localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY));
   await page.locator('#import-file').setInputFiles({name:'legacy.json',mimeType:'application/json',buffer:Buffer.from('{"tenants":[],"bills":{}}')});
+  await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('가져오기 실패'));
+  assert.equal(await page.evaluate(()=>localStorage.getItem('rentalIndependent20261009.'+RentalCore.STATE_KEY)),beforeLegacy);
+  await page.locator('#import-file').setInputFiles({name:'replacement.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({tenants:[],bills:{},contractChanges:expected.contractChanges}))});
   await applyReplacement(page);
   await page.waitForFunction(()=>tenants.length===0&&!persistenceBusy);
   await page.getByRole('button',{name:'↩ 직전 복원 지점으로 되돌리기'}).click();

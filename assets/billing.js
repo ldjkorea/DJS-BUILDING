@@ -588,10 +588,89 @@
     const totals=zeros();for(const row of rows)add(totals,row);
     return {year,quarter,months,asOf:cutoff,rows,totals};
   }
+  const OPERATIONS_FORMAT='rental-operations-v1';
+  const contractTermKeys=['unit','contract','contract_first','deposit','rent','mgmt','mgmtItems','elevator','elecType','elecFixed','payday','paytype','renew','period_mgmt','period_rent','period_elec','period_elev','period_waste','period_water_day','period_water_odd'];
+  const operationClone=value=>JSON.parse(JSON.stringify(value));
+  const operationDay=at=>new Date(new Date(at).valueOf()+9*3600000).toISOString().slice(0,10);
+  function operationError(message){throw Error('운영 이력: '+message);}
+  function operationText(value,max,required=true){if(typeof value!=='string'||value.length>max||(required&&!value.trim()))operationError('문자 값과 길이를 확인해주세요.');}
+  function operationId(value){if(typeof value!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(value)||['__proto__','constructor','prototype'].includes(value))operationError('기록 ID를 확인해주세요.');}
+  function operationTime(value){if(typeof value!=='string'||!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(value)||!Number.isFinite(Date.parse(value))||new Date(value).toISOString()!==value)operationError('기록 시각을 확인해주세요.');}
+  function operationDate(value,at){if(dateISO(value)!==value||value>operationDay(at))operationError('날짜는 실제 날짜이며 기록일 이후가 아니어야 합니다.');}
+  function contractTerms(tenant){return Object.fromEntries(contractTermKeys.filter(key=>Object.hasOwn(tenant,key)).map(key=>[key,operationClone(tenant[key])]));}
+  function validateContractTerms(value){
+    if(!journalObject(value)||Object.keys(value).some(key=>!contractTermKeys.includes(key)))operationError('계약 조건 형식을 확인해주세요.');
+    for(const [key,item] of Object.entries(value)){
+      if(['deposit','rent','mgmt','elevator','elecFixed'].includes(key)){if(item==null||item==='')continue;const n=typeof item==='string'?Number(item.replaceAll(',','')):item;if(!['string','number'].includes(typeof item)||!Number.isSafeInteger(n)||n<0||n>1e12)operationError('계약 금액을 확인해주세요.');}
+      else if(key==='mgmtItems'){if(item===null)continue;if(!Array.isArray(item)||item.some(row=>!journalObject(row)||row.amount!=null&&(!Number.isSafeInteger(Number(row.amount))||Number(row.amount)<0||Number(row.amount)>1e12)))operationError('관리비 조건을 확인해주세요.');}
+      else if(item!==null)operationText(item,2000,false);
+    }
+  }
+  function validateOperationsData(data){
+    for(const key of ['contractChanges','propertyRecords']){
+      const rows=data?.[key];if(rows===undefined)continue;if(!Array.isArray(rows)||rows.length>10000)operationError('이력 목록을 확인해주세요.');
+      const seen=new Set(),repairs=new Set(),voided=new Set();let previousAt='';
+      for(const row of rows){
+        if(!journalObject(row))operationError('기록 객체를 확인해주세요.');operationId(row.id);if(seen.has(row.id))operationError('중복 기록 ID입니다.');seen.add(row.id);operationTime(row.recordedAt);if(row.recordedAt<previousAt)operationError('기록 순서를 확인해주세요.');previousAt=row.recordedAt;
+        if(key==='contractChanges'){
+          if(Object.keys(row).some(field=>!['id','tenantId','effectiveOn','recordedAt','reason','before','after'].includes(field)))operationError('지원하지 않는 계약 기록 필드입니다.');
+          operationId(row.tenantId);operationDate(row.effectiveOn,row.recordedAt);operationText(row.reason,500);validateContractTerms(row.before);validateContractTerms(row.after);
+          if(receiptEqual(row.before,row.after))operationError('변경 전후 계약 조건이 같습니다.');
+        }else if(row.kind==='repair'){
+          if(Object.keys(row).some(field=>!['id','kind','tenantId','location','occurredOn','recordedAt','amount','description','evidenceUrl'].includes(field)))operationError('지원하지 않는 수리 기록 필드입니다.');
+          if(row.tenantId)operationId(row.tenantId);operationText(row.location,100);operationDate(row.occurredOn,row.recordedAt);operationText(row.description,2000);
+          if(!Number.isSafeInteger(row.amount)||row.amount<0||row.amount>1e12)operationError('수리 비용은 0 이상의 원 단위 정수여야 합니다.');
+          operationText(row.evidenceUrl,2000,false);if(row.evidenceUrl&&(!/^https:\/\/(?:[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?|\[[0-9a-f:]+\])(?::\d{1,5})?(?:[/?#][^\s]*)?$/i.test(row.evidenceUrl)||/[<>"'`]/.test(row.evidenceUrl)))operationError('증빙 링크는 사용자 인증정보가 없는 HTTPS 주소로 입력해주세요.');repairs.add(row.id);
+        }else if(row.kind==='void'){
+          if(Object.keys(row).some(field=>!['id','kind','reference','recordedAt','reason'].includes(field)))operationError('지원하지 않는 취소 기록 필드입니다.');
+          operationId(row.reference);operationText(row.reason,500);if(!repairs.has(row.reference)||voided.has(row.reference))operationError('취소할 수리 기록을 확인해주세요.');voided.add(row.reference);
+        }else operationError('기록 종류를 확인해주세요.');
+      }
+    }
+    return data;
+  }
+  const hasOperationalRecords=data=>['contractChanges','propertyRecords'].some(key=>Array.isArray(data?.[key])&&data[key].length>0);
+  function assertOperationsTransition(before,after){
+    validateOperationsData(before);validateOperationsData(after);
+    for(const key of ['contractChanges','propertyRecords']){const old=before?.[key]||[],next=after?.[key]||[];if(next.length<old.length||old.some((row,index)=>!receiptEqual(row,next[index])))operationError('기존 계약·수리 기록을 변경하거나 제거할 수 없습니다. 새 기록으로 사유를 남겨주세요.');}
+    return after;
+  }
+  function createContractChange(previous,next,options){
+    const before=contractTerms(previous),after=contractTerms(next),comparable=value=>Object.fromEntries(Object.entries(value).map(([key,item])=>[key,['deposit','rent','mgmt','elevator','elecFixed'].includes(key)&&item!=null&&item!==''?Number(String(item).replaceAll(',','')):item]));
+    if(receiptEqual(comparable(before),comparable(after)))return null;
+    const row={id:options.id,tenantId:next.id||previous.id,effectiveOn:options.effectiveOn,recordedAt:options.recordedAt,reason:options.reason||'임차인 조건 변경',before,after};validateOperationsData({contractChanges:[row]});return row;
+  }
+  function incomeTrend(data,year,asOf){
+    if(!Number.isInteger(year)||year<1900||year>2200||dateISO(asOf)!==asOf)operationError('조회 연도와 기준일을 확인해주세요.');
+    const rows=Array.from({length:12},(_,i)=>({month:monthKey(year,i+1),plannedFixed:null,issued:0,newReceipts:0,legacyDated:0,plannedUncertain:0})),people=new Map((data.tenants||[]).map(t=>[t.id,t]));let legacyUndated=0;
+    const add=(key,day,n)=>{if(!day||day>asOf||day.slice(0,4)!==String(year))return;const row=rows[Number(day.slice(5,7))-1],total=row[key]+n;if(!Number.isSafeInteger(total)||total<0)operationError('집계 금액 범위를 확인해주세요.');row[key]=total;};
+    for(const [month,billsForMonth] of Object.entries(data.bills||{}))for(const [id,bill] of Object.entries(billsForMonth)){
+      if(!bill||!Object.keys(bill).length)continue;const tenant=people.get(id)||{id,name:'',unit:bill.unitSnapshot||'',rent:0,mgmt:0,elevator:0},state=payment(tenant,bill,asOf,Number(month.slice(0,4)));
+      if(bill.invoiceIssued===true&&month.slice(0,4)===String(year)){const row=rows[Number(month.slice(5,7))-1];row.issued+=state.total;if(!Number.isSafeInteger(row.issued))operationError('집계 금액 범위를 확인해주세요.');}
+      if(bill.receiptLedger){
+        const ledger=bill.receiptLedger,events=ledger.events.filter(e=>operationDay(e.recordedAt)<=asOf),cancelled=new Set(events.filter(e=>e.kind==='void').map(e=>e.reference));
+        for(const event of events)if(event.kind==='receipt'&&!cancelled.has(event.id))add('newReceipts',event.receivedOn,event.amount);
+        for(const [key,item] of Object.entries(journalLegacy(ledger)))if(!cancelled.has('legacy:'+key)){if(item.undated){if(month.slice(0,4)===String(year))legacyUndated+=item.amount;}else add('legacyDated',item.date,item.amount);}
+      }else for(const item of Object.values(state.items))if(item.received){if(item.undated){if(month.slice(0,4)===String(year))legacyUndated+=item.received;}else add('legacyDated',dateISO(item.date,Number(month.slice(0,4))),item.received);}
+    }
+    for(const row of rows)if(row.month>=asOf.slice(0,7)){
+      row.plannedFixed=0;
+      for(const tenant of data.tenants||[]){
+        if(tenant.archived||['공실(정리중)','임대모집중'].includes(tenant.leaseStatus))continue;
+        const start=dateISO(String(tenant.contract||'').split('~')[0]?.trim()),end=contractEndDate(tenant.contract);
+        if(!start||!end){row.plannedUncertain++;continue;}
+        if(start.slice(0,7)>row.month||end.slice(0,7)<row.month)continue;
+        const amounts=charges(tenant,{});row.plannedFixed+=amounts.pay_rent+amounts.pay_mgmt;if(!Number.isSafeInteger(row.plannedFixed))operationError('예정 금액 범위를 확인해주세요.');
+      }
+    }
+    if(!Number.isSafeInteger(legacyUndated))operationError('과거 확인 금액 범위를 확인해주세요.');
+    return {year,asOf,rows,legacyUndated};
+  }
   root.RentalBilling = {won, withVat, floorOf, distribute, calculate, reconcile, charges, payment, quarterlyStatement,
     dateISO, contractEndDate, contractDeadline, period, dueDate, historicalPayment, arrears, itemKeys, naFields,
     materializeGroup, invalidateChangedPayments, freezeBill, effectiveTenant, correctBillBasis, collectionStatus,
     RECEIPT_FORMAT,openReceiptLedger,validateReceiptLedger,appendReceiptEvent,receiptLedgerState,
-    hasReceiptLedgers,validateReceiptBill,assertReceiptDataTransition};
+    hasReceiptLedgers,validateReceiptBill,assertReceiptDataTransition,
+    OPERATIONS_FORMAT,contractTerms,createContractChange,validateOperationsData,hasOperationalRecords,assertOperationsTransition,incomeTrend};
   if (typeof module !== 'undefined') module.exports = root.RentalBilling;
 })(globalThis);

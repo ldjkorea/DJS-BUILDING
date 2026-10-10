@@ -72,6 +72,18 @@ function server(options={}) {
 const receiptBilling=require('../assets/billing.js');
 const receiptProtocol={receiptLedgerProtocol:receiptBilling.RECEIPT_FORMAT};
 const receiptClone=x=>JSON.parse(JSON.stringify(x));
+const operationsProtocol={operationsHistoryProtocol:'rental-operations-v1'};
+function operationsFixture(){return {tenants:[],bills:{},propertyRecords:[{kind:'repair',id:'repair1',location:'공용',occurredOn:'2026-10-01',recordedAt:'2026-10-10T00:00:00.000Z',amount:1000,description:'익명 검증',evidenceUrl:''}]};}
+function operationRequest(s,data){return {protocol:'rental-sync-v2',expectedRevision:s.get(operationsProtocol).revision,requestId:crypto.randomUUID(),...operationsProtocol,data};}
+test('operational server requires capability protocol and stores null-compatible records without normalization',()=>{
+ const s=server(),data=operationsFixture();assert.equal(s.get().capabilities.operationsHistoryStorage,'rental-operations-v1');assert.equal(s.post({...s.request(data)}).status,'unsupported');assert.equal(s.writes(),0);const req=operationRequest(s,data),ack=s.post(req);assert.equal(ack.status,'ok');assert.deepEqual(s.get(operationsProtocol).data,data);assert.equal(s.get().status,'unsupported');assert.equal(s.post(req).duplicate,true);assert.equal(s.writes(),1);
+});
+test('operational server rejects history removal altered prefix and unsafe evidence before DB writes',()=>{
+ const data=operationsFixture(),s=server({raw:JSON.stringify(data)}),raw=s.raw();for(const candidate of [{tenants:[],bills:{}},{...data,propertyRecords:[{...data.propertyRecords[0],amount:999}]},{...data,propertyRecords:[...data.propertyRecords,{...data.propertyRecords[0],id:'repair2',evidenceUrl:'javascript:alert(1)'}]}])assert.equal(s.post(operationRequest(s,candidate)).status,'error');assert.equal(s.raw(),raw);assert.equal(s.writes(),0);
+});
+test('operational append preserves recovery and stale concurrent request never replaces history',()=>{
+ const data=operationsFixture(),s=server({raw:JSON.stringify(data)}),next=receiptClone(data);next.propertyRecords.push({kind:'void',id:'void1',reference:'repair1',reason:'원문 대조',recordedAt:'2026-10-10T01:00:00.000Z'});const a=operationRequest(s,next),other=operationRequest(s,{...data,extension:{value:null}});assert.equal(s.post(a).status,'ok');assert.equal(s.post(other).status,'conflict');assert.equal(s.backupRows.map(row=>row[2]).join(''),JSON.stringify(data));assert.deepEqual(s.get(operationsProtocol).data,next);
+});
 function receiptFixture(adopt=true){
  const tenant={id:'receipt1',name:'원장 서버 검증',unit:'201호',rent:100000,mgmt:10000,elevator:0,payday:'15일'},bill=receiptBilling.freezeBill(tenant,{water:10000,paid:{pay_water:{date:null,na:null,extension:{nullable:null}}}},'2026-10');
  if(adopt)bill.receiptLedger=receiptBilling.openReceiptLedger(tenant,bill,'2026-10:receipt1','2026-10-01T00:00:00.000Z');return {tenants:[tenant],bills:{'2026-10':{receipt1:bill}}};

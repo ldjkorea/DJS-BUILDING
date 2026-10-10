@@ -189,3 +189,16 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 @media(max-width:560px){.receipt-basis-list dl{grid-template-columns:repeat(auto-fit,minmax(min(100%,6rem),1fr));}}
 .receipt-estimate-check{display:flex;align-items:flex-start;gap:9px;line-height:1.6;margin:12px 0;color:var(--text2);}.receipt-estimate-check input{flex:none;accent-color:#4e7850;margin-top:5px;}
 @media(max-width:540px){.receipt-entry{flex-wrap:wrap;}.receipt-entry>div{flex-basis:100%;}}
+.operations-card{margin-top:18px;min-width:0;}
+.operations-help{font-size:12px;line-height:1.7;color:var(--text2);overflow-wrap:anywhere;margin:10px 0;}
+.operations-card .card-header{align-items:flex-start;flex-wrap:wrap;gap:12px;}
+.operations-table-wrap{width:100%;max-width:100%;overflow-x:auto;}
+.operations-table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap;}
+.operations-table th,.operations-table td{padding:10px;border-bottom:1px solid var(--border);text-align:right;}
+.operations-table th:first-child{text-align:left;}.operations-table small{display:block;color:var(--text2);white-space:normal;max-width:180px;}
+.operations-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.operations-card .field{min-width:0;}.operations-card input,.operations-card select,.operations-card textarea{max-width:100%;}.operations-card textarea{width:100%;min-height:110px;resize:vertical;}
+.operations-record{border-top:1px solid var(--border);padding:14px 0;overflow-wrap:anywhere;}
+.operations-record p{white-space:pre-wrap;}.operations-record dl>div{margin:8px 0;}.operations-record dd{margin:4px 0;color:var(--text2);}
+.operations-record details{margin-top:12px;}.operations-card summary{cursor:pointer;font-weight:600;}
+@media(max-width:600px){.operations-form-grid{grid-template-columns:minmax(0,1fr);}}

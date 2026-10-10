@@ -21,12 +21,13 @@
     const raw=storage.getItem(STATE_KEY);let previous;
     if(raw!==null){
       try{previous=JSON.parse(raw);}catch{
-        if(/"receiptLedger"\s*:/.test(raw))fail('입금 원장 원문을 읽지 못해 덮어쓰기를 중단했습니다. 원본을 보관해주세요.');
+        if(/"(?:receiptLedger|contractChanges|propertyRecords)"\s*:/.test(raw))fail('저장 이력 원문을 읽지 못해 덮어쓰기를 중단했습니다. 원본을 보관해주세요.');
       }
     }else{
       const bills=storage.getItem('bills');if(bills!==null){try{previous={bills:JSON.parse(bills)};}catch{if(/"receiptLedger"\s*:/.test(bills))fail('기존 입금 원장 원문을 보관해주세요.');}}
     }
     if(hasReceiptLedgers(previous)||hasReceiptLedgers(data))receiptRules().assertReceiptDataTransition(previous,data);
+    if(['contractChanges','propertyRecords'].some(key=>Object.hasOwn(previous||{},key)||Object.hasOwn(data||{},key)))receiptRules().assertOperationsTransition(previous,data);
   }
   const record = (value, label) => isObject(value) || fail(`${label}: 객체 형식이 필요합니다.`);
   const id = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,100}$/.test(value)
@@ -214,6 +215,7 @@
       data.waterRatio[key] = Number(data.waterRatio[key]);
     }
     if (['r2', 'r3', 'r4'].reduce((sum, key) => sum + data.waterRatio[key], 0) <= 0) fail('수도 비율 합계는 0보다 커야 합니다.');
+    if(['contractChanges','propertyRecords'].some(key=>Object.hasOwn(data,key)))receiptRules().validateOperationsData(data);
     return JSON.parse(JSON.stringify(data));
   }
   function envelope(data) {
