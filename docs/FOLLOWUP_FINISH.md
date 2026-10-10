@@ -59,6 +59,6 @@ GAS 2.2.0 ZIP은 8개 파일과 서버 모의 45개·화면 55개·PDF 18페이�
 
 ## Git와 자동 검사 마무리
 
-[비공개 독립 저장소](https://github.com/ldjkorea/rental-app-independent-private)와 [성공한 자동 검사](https://github.com/ldjkorea/rental-app-independent-private/actions/runs/38015818749)를 연결했다. 원본 로컬 이력과 실제 검토 자료는 유지하고 원격으로 보낼 사본의 사업장명만 익명화했다. Git 연결 폴더는 `../rental-app-independent-github`, [현재 예시 화면](http://127.0.0.1:4290/?demo=1)은 2.2.0이다. 검증 ZIP을 Git 연결 폴더에도 같은 해시로 복사했다.
+[비공개 독립 저장소](https://github.com/ldjkorea/NEW-RENT-STORE)와 [성공한 자동 검사](https://github.com/ldjkorea/NEW-RENT-STORE/actions/runs/38015818749)를 연결했다. 원본 로컬 이력과 실제 검토 자료는 유지하고 원격으로 보낼 사본의 사업장명만 익명화했다. Git 연결 폴더는 `../rental-app-independent-github`, [현재 예시 화면](http://127.0.0.1:4290/?demo=1)은 2.2.0이다. 검증 ZIP을 Git 연결 폴더에도 같은 해시로 복사했다.
 
 현재 남은 실제 완료 조건은 새 검증 Google 권한, 입금 후 청구액 조정 정책 응답, 원래 고지서/계약 자료, 실물 휴대폰·프린터다. 현재 운영 Google 주소는 1.0 배포를 유지한다. 로컬 및 원격 검사 통과를 실제 Google 제품 저장 또는 운영 반영으로 표시하지 않는다.

@@ -1,4 +1,6 @@
-# 임대관리 독립앱 — 웹 2.2.0 검토 후보
+# NEW RENT STORE — 웹 2.2.0 검토 후보
+
+현재 독립 프로젝트의 공식 명칭은 **NEW RENT STORE**이며, GitHub 저장소는 [`ldjkorea/NEW-RENT-STORE`](https://github.com/ldjkorea/NEW-RENT-STORE)입니다. 기존 1.4 앱은 **RENT STORE**, 오래된 앱은 **2025 RENT STORE**로 구분합니다. [저장소 이름과 연결 주소](docs/REPOSITORY_NAMES.md)에 변경 전후 대응 관계와 확인 결과를 기록했습니다.
 
 2026-10-09 원본 Git `ldjkorea/rental-app-v1.4.0-private`의 `2b01a2e`에서 전체 소스와 이력을 복제했습니다. 별도의 Google 시트·문서·GAS 프로젝트·소유자 전용 배포·계약 캘린더를 연결했습니다. 원본 저장소와 원본 Google 파일에는 쓰지 않습니다.
 

@@ -17,8 +17,8 @@
 
 ## 실제 연결과 첫 성공
 
-- [비공개 독립 저장소](https://github.com/ldjkorea/rental-app-independent-private), 기본 브랜치 `work/independent-v2`.
-- [성공한 실행](https://github.com/ldjkorea/rental-app-independent-private/actions/runs/38015818749) — 소스 `3768dd12e239f7ec9a414c5b93366ee78d436de2`, 2026-10-10T02:07:51Z–2026-10-10T02:17:14Z.
+- [비공개 독립 저장소](https://github.com/ldjkorea/NEW-RENT-STORE), 기본 브랜치 `work/independent-v2`.
+- [성공한 실행](https://github.com/ldjkorea/NEW-RENT-STORE/actions/runs/38015818749) — 소스 `3768dd12e239f7ec9a414c5b93366ee78d436de2`, 2026-10-10T02:07:51Z–2026-10-10T02:17:14Z.
 - 단위 **192/192**, 브라우저 **14개 묶음 전체**, PWA **5/5**, PDF **5종·18페이지**, 생성 파일 일치 확인을 모두 통과했다. 원격 Node는 `v24.21.0`다. [실행 증거](../releases/ci-regression-2.2.0.json)를 보관한다.
 
 전체 이력 검사에서 과거 문서의 실제 사업장명 네 개를 발견했다. 원본 로컬 Git 이력은 보존하고, 별도 사본에서 해당 값과 참조 커밋을 변환했다. 이력 71개 커밋·726개 파일 객체를 검사한 뒤 생성물·환경·단위 192개를 다시 통과했다. 제품 파일의 바이트는 로컬 GAS 후보와 같다. 기존 원본 저장소에는 push하지 않는다.

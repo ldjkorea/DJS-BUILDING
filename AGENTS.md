@@ -1,4 +1,6 @@
-# 후속 개발 지침
+# NEW RENT STORE 후속 개발 지침
+
+- 현재 프로젝트는 `ldjkorea/NEW-RENT-STORE`다. 원본 1.4는 `ldjkorea/RENT-STORE`, 오래된 보관본은 `ldjkorea/2025-RENT-STORE`다. 아래의 이전 저장소 이름은 복제 당시의 기록이며, 현재 주소는 `docs/REPOSITORY_NAMES.md`를 따른다.
 
 - 이 저장소는 `ldjkorea/rental-app-v1.4.0-private`의 `a937698`를 복제한 독립앱이다. 연결 대상과 검증 결과는 `docs/INDEPENDENT_APP.md`에 기록했다.
 - 변경 전 계획·영향 범위·예상 결과를 한국어로 간단히 설명한다.
