@@ -4,6 +4,7 @@
 
 - [독립앱 열기](https://script.google.com/macros/s/AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae/exec) — 해당 Google 소유자 계정 로그인 필요
 - [후속 마무리 상태와 남은 확인 조건](docs/FOLLOWUP_FINISH.md)
+- [GAS 2.2.0 ZIP과 압축본 검증](docs/GAS_REVIEW_CANDIDATE_2.2.0.md)
 - [계약 변경 이력·월별 수입·수리 및 증빙](docs/OPERATIONS_2.2.0.md)
 - [자동 회귀검사 설정](docs/CI_REGRESSION.md)
 - [최신 보완 내역과 검증 판정](docs/CONTINUOUS_IMPROVEMENT.md)
@@ -18,7 +19,7 @@
 - 웹 2.1.1은 [분기 고지서 집계](docs/QUARTERLY_STATEMENT.md)를 보완합니다. 고지서가 없는 달의 예정 금액을 더하지 않고, 보관·미등록 임차인의 과거 고지서를 포함하며, 항목별 부가세·오물비·부분입금 잔액을 화면과 CSV에 일치시킵니다.
 - 웹 2.1.2는 [입금 원장 시작 전 청구 기준 대조](docs/RECEIPT_BASIS_REVIEW.md)를 추가합니다. 항목별 청구·확인·잔액, 날짜 미지정과 미래 확인 날짜, 과거 보완 기준을 표시하며 저장 원문 대조가 필요한 경우 입력 전에 안내합니다.
 - 웹 2.1.3은 [과거 청구 기준 정정](docs/BILL_BASIS_CORRECTION.md)을 추가합니다. 원장 시작 전 고정 금액·호실·계약 정보를 전후 대조·사유·원문 이력과 함께 별도로 저장합니다. 현재 임차인과 다른 달의 원문을 유지합니다.
-- 현재 개발 예시 미리보기: `http://127.0.0.1:4288/?demo=1` (웹 2.1.5, 외부 Google 연결 없음, 저장 고지서 CSV·금액별 입금 기록·분기 집계 사용)
+- 현재 개발 예시 미리보기: `http://127.0.0.1:4288/?demo=1` (현재 로컬 소스 2.2.0, 외부 Google 연결 없음, 저장 고지서 CSV·금액별 입금 기록·분기 집계 사용)
 - 로컬 실행: `npm start`, `http://127.0.0.1:4274/`
 - 독립성 검증: `npm run test:independent` (Playwright가 설치된 환경)
 

@@ -1,0 +1,40 @@
+{
+  "appVersion": "2.2.0",
+  "recordedAt": "2026-10-10T01:51:59.490Z",
+  "operatingPreservation": {
+    "checkedAt": "2026-10-10T01:50:53.915Z",
+    "operatingScriptSourceUnchanged": true,
+    "operatingDeploymentsUnchanged": true,
+    "newStagingAuthorizationPending": true,
+    "newStagingProductDeploymentPerformed": false,
+    "operatingSheetValuesUnchanged": true,
+    "operatingReadRows": 3,
+    "stagingDbAColumnEmpty": true
+  },
+  "estimatedBillReview": {
+    "savedBills": 38,
+    "estimatedBills": 30,
+    "confirmedFromOriginalEvidence": 0,
+    "queueIsPrivate": true
+  },
+  "devices": {
+    "physicalPhoneObserved": false,
+    "androidEmulatorObserved": true,
+    "physicalPrinterObserved": false,
+    "virtualPrintersObserved": true
+  },
+  "policy": {
+    "postReceiptChargeAdjustment": "awaiting-user-choice",
+    "existingChargeImmutabilityPreserved": true
+  },
+  "staging": {
+    "newSheetCreated": true,
+    "newDocCreated": true,
+    "newBoundGasCreated": true,
+    "bootstrapOnly": true,
+    "authorizationPending": true,
+    "calendarCreated": false,
+    "productDeployed": false,
+    "actualAnonymousProductWriteTestPassed": false
+  }
+}
