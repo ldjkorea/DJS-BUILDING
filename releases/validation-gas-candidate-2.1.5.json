@@ -1,0 +1,458 @@
+{
+  "version": "2.1.5",
+  "sourceCommit": "f4261904d4738a8a79a4ed8e8b440c97b520218c",
+  "productValidationCommit": "42539480399148687fa519fccc5d88c69e4c122b",
+  "archiveSha256": "7feba52249ecde95ff9d657d8a6b54d6fe331ea01dff3c3528037aa65a3a0c49",
+  "startedAt": "2026-10-10T00:14:05.729Z",
+  "finishedAt": "2026-10-10T00:15:41.852Z",
+  "serverMockTests": 42,
+  "browserCases": {
+    "receipt": 11,
+    "receipt-basis": 8,
+    "bill-basis": 11,
+    "quarter": 8,
+    "restored-data": 6,
+    "print": 5
+  },
+  "restoredData": {
+    "appVersion": "2.1.5",
+    "startedAt": "2026-10-10T00:15:23.029Z",
+    "finishedAt": "2026-10-10T00:15:34.981Z",
+    "inputSha256": "df664dd26e9f86326aa8ad1f24fa506740fb78f6e06ddf9130ad8c0bd4126061",
+    "privateInput": false,
+    "sourceFilePreserved": true,
+    "screenshotsTaken": false,
+    "googleRequestsPerformed": false,
+    "asOf": "2026-10-10",
+    "tenantCount": 3,
+    "billCount": 3,
+    "monthCount": 2,
+    "results": [
+      {
+        "name": "backup preview cancel apply reload and JSON roundtrip preserve every domain field on PC and mobile",
+        "status": "pass"
+      },
+      {
+        "name": "every stored invoice renders exact charges and keeps estimated basis unconfirmed without data writes",
+        "status": "pass"
+      },
+      {
+        "name": "monthly CSV contains only saved invoices including archived and orphan rows and matches exact shared totals",
+        "status": "pass"
+      },
+      {
+        "name": "empty invoice placeholders remain unissued after reload and open an editor without saved-invoice actions",
+        "status": "pass",
+        "coverage": {
+          "unissuedCaseAvailable": true
+        }
+      },
+      {
+        "name": "quarter screen and downloaded CSV match all saved quarter totals after full backup restoration",
+        "status": "pass"
+      },
+      {
+        "name": "restored full data keeps all seven menus within six viewport widths without source changes",
+        "status": "pass"
+      }
+    ]
+  },
+  "printOutput": {
+    "appVersion": "2.1.5",
+    "startedAt": "2026-10-10T00:15:35.591Z",
+    "finishedAt": "2026-10-10T00:15:41.826Z",
+    "anonymous": true,
+    "googleRequestsPerformed": false,
+    "results": [
+      {
+        "name": "legacy",
+        "status": "pass"
+      },
+      {
+        "name": "journal",
+        "status": "pass"
+      },
+      {
+        "name": "journal-mobile",
+        "status": "pass"
+      },
+      {
+        "name": "quarter",
+        "status": "pass"
+      },
+      {
+        "name": "quarter-empty",
+        "status": "pass"
+      }
+    ],
+    "pdfs": [
+      {
+        "name": "legacy",
+        "file": "test-results\\print-pdf-ZjtiEW\\legacy.pdf",
+        "quarter": false,
+        "expected": {
+          "total": 1484516,
+          "received": 55000,
+          "unpaid": 1429516,
+          "tenantRows": 1,
+          "receiptEvents": 0
+        }
+      },
+      {
+        "name": "journal",
+        "file": "test-results\\print-pdf-ZjtiEW\\journal.pdf",
+        "quarter": false,
+        "expected": {
+          "total": 1484516,
+          "received": 78000,
+          "unpaid": 1406516,
+          "tenantRows": 1,
+          "receiptEvents": 25
+        }
+      },
+      {
+        "name": "journal-mobile",
+        "file": "test-results\\print-pdf-ZjtiEW\\journal-mobile.pdf",
+        "quarter": false,
+        "expected": {
+          "total": 1484516,
+          "received": 78000,
+          "unpaid": 1406516,
+          "tenantRows": 1,
+          "receiptEvents": 25
+        }
+      },
+      {
+        "name": "quarter",
+        "file": "test-results\\print-pdf-ZjtiEW\\quarter.pdf",
+        "quarter": true,
+        "expected": {
+          "total": 160327728,
+          "received": 0,
+          "unpaid": 160327728,
+          "tenantRows": 36,
+          "receiptEvents": 0
+        }
+      },
+      {
+        "name": "quarter-empty",
+        "file": "test-results\\print-pdf-ZjtiEW\\quarter-empty.pdf",
+        "quarter": true,
+        "expected": {
+          "total": 0,
+          "received": 0,
+          "unpaid": 0,
+          "tenantRows": 0,
+          "receiptEvents": 0
+        }
+      }
+    ]
+  },
+  "extractedAppHtmlSha256": "a0853e63ca3a453cc7696aa413a97f3d34d927ccba62a8399ef7a2513b58da39",
+  "readFromZip": true,
+  "realGoogleWrites": false,
+  "productionDeployed": false,
+  "results": [
+    {
+      "file": "server.test.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "receipt-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "receipt-basis-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "bill-basis-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "quarter-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "restored-data-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "print-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ],
+  "recordedAt": "2026-10-10T00:16:21.081Z",
+  "reviewCandidate": true,
+  "productionReady": false,
+  "verificationToolCommit": "f4261904d4738a8a79a4ed8e8b440c97b520218c",
+  "verificationToolSha256": "c035635ad79f5dbb983eb389950193bff3ab72d61b70f505823becc5a44258b8",
+  "package": {
+    "archive": {
+      "file": "rental-independent-gas-2.1.5.zip",
+      "bytes": 1704320,
+      "sha256": "7feba52249ecde95ff9d657d8a6b54d6fe331ea01dff3c3528037aa65a3a0c49"
+    },
+    "files": [
+      {
+        "name": "App.html",
+        "bytes": 2625863,
+        "sha256": "a0853e63ca3a453cc7696aa413a97f3d34d927ccba62a8399ef7a2513b58da39"
+      },
+      {
+        "name": "AuthorizeDocs.gs",
+        "bytes": 265,
+        "sha256": "5512c7b1828320898d8c86fc78163c2860bc9b63d9317ec98f81a4bac838efbb"
+      },
+      {
+        "name": "Billing.gs",
+        "bytes": 41951,
+        "sha256": "a20d4072e65d8bc129d1b5e9c5e0a2d171595ba623d4d8fc9c080a5d9dab20fc"
+      },
+      {
+        "name": "CalendarSync.gs",
+        "bytes": 6694,
+        "sha256": "501747cb87a69dd4f61cf26e86960d45e4bc156f788188805a551738a4c39a6c"
+      },
+      {
+        "name": "Code.gs",
+        "bytes": 17100,
+        "sha256": "ae1b44c77a92ccd3b8da9011c73fc89de44279befec996e5685c6c847e62550d"
+      },
+      {
+        "name": "CurrentStatus.gs",
+        "bytes": 7801,
+        "sha256": "8dcf4fc79d5d8f388797b0ca0babe93e0b6bcec3ea3bd543803b75ea3a9cff7f"
+      },
+      {
+        "name": "IndependentApp.gs",
+        "bytes": 1136,
+        "sha256": "c97eb66869f7c898b09763710e6d8fa5b370c468f924ef77ee9b01b5f2550f41"
+      },
+      {
+        "name": "appsscript.json",
+        "bytes": 353,
+        "sha256": "a6954c274b74d412d9ff0968b40641931869fcc31f5a0eb622a54575ca8d1247"
+      }
+    ]
+  },
+  "packagingTests": {
+    "total": 8,
+    "passed": 8,
+    "command": "node --test tests/package-gas.test.cjs"
+  },
+  "pdfReadback": {
+    "appVersion": "2.1.5",
+    "anonymous": true,
+    "pdfCount": 5,
+    "checks": [
+      {
+        "name": "legacy",
+        "file": "test-results\\print-pdf-ZjtiEW\\legacy.pdf",
+        "pages": 1,
+        "sha256": "3147e0c04444b7196f2db74b1a80c588b565402a98b1fb8e24d34c63ea6c2e02",
+        "portrait": true,
+        "noBlankPages": true,
+        "noInteractiveControls": true,
+        "amountsMatched": true,
+        "noOutsidePageText": true,
+        "completeReceiptNotesOnSinglePages": false,
+        "status": "pass"
+      },
+      {
+        "name": "journal",
+        "file": "test-results\\print-pdf-ZjtiEW\\journal.pdf",
+        "pages": 5,
+        "sha256": "90c2937bc54cf37f18c6d936d81580316227cf5f013230886e29fe6709f1fdba",
+        "portrait": true,
+        "noBlankPages": true,
+        "noInteractiveControls": true,
+        "amountsMatched": true,
+        "noOutsidePageText": true,
+        "completeReceiptNotesOnSinglePages": true,
+        "status": "pass"
+      },
+      {
+        "name": "journal-mobile",
+        "file": "test-results\\print-pdf-ZjtiEW\\journal-mobile.pdf",
+        "pages": 5,
+        "sha256": "3d6217351fece3de8cc0ebd7d52249a1ea8f5b061baf6874c54294f791d1218e",
+        "portrait": true,
+        "noBlankPages": true,
+        "noInteractiveControls": true,
+        "amountsMatched": true,
+        "noOutsidePageText": true,
+        "completeReceiptNotesOnSinglePages": true,
+        "status": "pass"
+      },
+      {
+        "name": "quarter",
+        "file": "test-results\\print-pdf-ZjtiEW\\quarter.pdf",
+        "pages": 6,
+        "sha256": "7a378c0607f592e7b86ba18bb08f57a586d87fb0cdcb8d132d3154ac6cc69e77",
+        "portrait": false,
+        "noBlankPages": true,
+        "noInteractiveControls": true,
+        "amountsMatched": true,
+        "noOutsidePageText": true,
+        "completeReceiptNotesOnSinglePages": false,
+        "status": "pass"
+      },
+      {
+        "name": "quarter-empty",
+        "file": "test-results\\print-pdf-ZjtiEW\\quarter-empty.pdf",
+        "pages": 1,
+        "sha256": "74732df24830bbc17518e8c9c23feccca3d1a66e8c68589039c7d23e47b648d7",
+        "portrait": false,
+        "noBlankPages": true,
+        "noInteractiveControls": true,
+        "amountsMatched": true,
+        "noOutsidePageText": true,
+        "completeReceiptNotesOnSinglePages": false,
+        "status": "pass"
+      }
+    ],
+    "scope": "Edge-generated PDF text, page dimensions and bounds. Visual rendering reviewed separately; no physical printer or Google execution."
+  },
+  "visualInspection": {
+    "pages": 18,
+    "allRenderedArchivePagesMatchPreviouslyReviewedProductPages": true,
+    "images": [
+      {
+        "file": "journal-1.png",
+        "sha256": "5186d5205864e0b1be63899fb21e35546ed6dd45538d0458cc5509db6604752f"
+      },
+      {
+        "file": "journal-2.png",
+        "sha256": "de144d916ac8b1a2945709db41f2dff82ecdf686cc79c6f49db3a03253342760"
+      },
+      {
+        "file": "journal-3.png",
+        "sha256": "54d26dd4aa8d072b0d9bd7eee5bdec5d10b8b03429b2bfaa5ba90700dda550d5"
+      },
+      {
+        "file": "journal-4.png",
+        "sha256": "1ad744f434743508fa2a804bc7a708dab985f93b1cd1dc3f222e6d30f6eea26f"
+      },
+      {
+        "file": "journal-5.png",
+        "sha256": "02d96f450d1059ece8c0c709c01b35fdcbdb7dad2a63634b757c90e388a4a6e7"
+      },
+      {
+        "file": "journal-mobile-1.png",
+        "sha256": "5186d5205864e0b1be63899fb21e35546ed6dd45538d0458cc5509db6604752f"
+      },
+      {
+        "file": "journal-mobile-2.png",
+        "sha256": "de144d916ac8b1a2945709db41f2dff82ecdf686cc79c6f49db3a03253342760"
+      },
+      {
+        "file": "journal-mobile-3.png",
+        "sha256": "54d26dd4aa8d072b0d9bd7eee5bdec5d10b8b03429b2bfaa5ba90700dda550d5"
+      },
+      {
+        "file": "journal-mobile-4.png",
+        "sha256": "1ad744f434743508fa2a804bc7a708dab985f93b1cd1dc3f222e6d30f6eea26f"
+      },
+      {
+        "file": "journal-mobile-5.png",
+        "sha256": "02d96f450d1059ece8c0c709c01b35fdcbdb7dad2a63634b757c90e388a4a6e7"
+      },
+      {
+        "file": "legacy-1.png",
+        "sha256": "7248813d46916f0f9779b7afcc192785c77e534ced2e02a5d879727df59d1dfd"
+      },
+      {
+        "file": "quarter-1.png",
+        "sha256": "3c264e43009c89e8116a0d259b56693170caf6db24e0d077c383d6ef4b957589"
+      },
+      {
+        "file": "quarter-2.png",
+        "sha256": "5193a24c90d8f1ae3ded5cdd647a415fb82a7936fb6ceb1fcd5347728b8e0170"
+      },
+      {
+        "file": "quarter-3.png",
+        "sha256": "e3a53291b7bfcfe99480f97778cfb79377cfdc0356e5f48b5d4c5a2677768eda"
+      },
+      {
+        "file": "quarter-4.png",
+        "sha256": "f63d4103e39f548a1c7dfd99b84a8dee43259170a5aaa0c9444baaef7a9b963e"
+      },
+      {
+        "file": "quarter-5.png",
+        "sha256": "b2e1922548fa44c532307d9ca76f3f739d66ca3c72b9961e422afff8b11787dc"
+      },
+      {
+        "file": "quarter-6.png",
+        "sha256": "d20ede59b349212d482c1dfe5901cc1638e14e7806979fe469816e5e2c820842"
+      },
+      {
+        "file": "quarter-empty-1.png",
+        "sha256": "c16b121c0424a24081f7e218c142faf3d87c370f11e2e005e36d0f0deaad8999"
+      }
+    ]
+  },
+  "productValidation": {
+    "record": "development-2.1.5.json",
+    "sourceCommit": "42539480399148687fa519fccc5d88c69e4c122b",
+    "unit": {
+      "total": 178,
+      "passed": 178
+    },
+    "browserSuiteCount": 13,
+    "startedAt": "2026-10-10T00:03:15.025Z",
+    "finishedAt": "2026-10-10T00:08:37.643Z",
+    "sameProductSourceVerified": true,
+    "rerunInThisPhase": false
+  },
+  "privacy": {
+    "explicitRestoreInputEnvironmentDiscarded": true,
+    "anonymousFixturesOnly": true,
+    "realDataIncludedInArchive": false,
+    "archiveInspection": {
+      "checkedAt": "2026-10-10T00:19:30.780Z",
+      "entriesChecked": 8,
+      "exactStoredTenantValuesDetected": false,
+      "fieldsChecked": [
+        "name",
+        "biz",
+        "phone",
+        "tel",
+        "email",
+        "account",
+        "bankAccount"
+      ],
+      "privatePathsIncluded": false
+    }
+  },
+  "preservedCandidates": [
+    {
+      "version": "2.0.6",
+      "file": "rental-independent-gas-2.0.6.zip",
+      "sha256": "fc03fdf04b43da7e9870e6c0e37ccf3ef5fd5cfadb82d318d8ebefecf1aeadd7",
+      "preserved": true
+    },
+    {
+      "version": "2.1.3",
+      "file": "rental-independent-gas-2.1.3.zip",
+      "bytes": 1704106,
+      "sha256": "46e4f65eab6cbf69344aae34d3ac245c1bc5c66cea3b7392b8ce8c87d0648e10",
+      "preserved": true
+    },
+    {
+      "version": "2.1.4",
+      "file": "rental-independent-gas-2.1.4.zip",
+      "bytes": 1704221,
+      "sha256": "c151f751859517a307dfe0d44dcffeec7b618c0f77d8440d1610ccb997c87020",
+      "preserved": true
+    }
+  ],
+  "scope": "ZIP readback executed in local VM and isolated Edge, including actual PDFs from packaged HTML. Google services mocked. No GAS iframe or real Google write; no phone, physical printer or packaged PWA proof."
+}
