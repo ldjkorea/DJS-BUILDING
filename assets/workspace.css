@@ -168,6 +168,14 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 .bill-basis-modal table{width:100%;table-layout:fixed;}
 .basis-contract-fields{padding-top:12px;}
 .basis-audit-original{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.75rem;max-height:320px;overflow:auto;}
+@media print{
+  html,body{height:auto!important;min-height:0!important;}
+  .skip-link{display:none!important;}
+  body.printing-bill .bill-document button,
+  body.printing-bill .legacy-payment-tools,
+  body.printing-bill .legacy-payment-help{display:none!important;}
+  body.printing-bill .receipt-list li{break-inside:avoid;}
+}
 .receipt-actions{display:flex;gap:8px;flex-wrap:wrap;}.receipt-modal [hidden]{display:none!important;}
 .receipt-basis{margin:12px 0;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);}
 .receipt-basis summary{cursor:pointer;font-weight:700;line-height:1.7;min-height:44px;display:list-item;}

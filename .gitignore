@@ -13,3 +13,4 @@ android/**/build/
 *.keystore
 releases/*.apk
 releases/*.zip
+output/pdf/

@@ -123,7 +123,7 @@ function doGet(e) {
     var state = read_(source_().sheet);
     if(RentalBilling.hasReceiptLedgers(state.data)&&e.parameter.receiptLedgerProtocol!==RentalBilling.RECEIPT_FORMAT)
       return {status:'unsupported',message:'입금 원장 자료는 이를 지원하는 최신 앱에서 불러와주세요.',capabilities:capabilities_()};
-    return {status:'ok', data:state.data, revision:state.revision, appVersion:'2.1.4', capabilities:capabilities_(), protocol:'rental-sync-v2'};
+    return {status:'ok', data:state.data, revision:state.revision, appVersion:'2.1.5', capabilities:capabilities_(), protocol:'rental-sync-v2'};
   });
 }
 function ensureRows_(sheet, count) {

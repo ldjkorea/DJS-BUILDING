@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="application-version" content="2.1.4">
+<meta name="application-version" content="2.1.5">
 <title>임대관리 독립앱 · Property Management</title>
 
 <meta name="theme-color" content="#f7f8fa">
@@ -749,6 +749,14 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 .bill-basis-modal table{width:100%;table-layout:fixed;}
 .basis-contract-fields{padding-top:12px;}
 .basis-audit-original{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.75rem;max-height:320px;overflow:auto;}
+@media print{
+  html,body{height:auto!important;min-height:0!important;}
+  .skip-link{display:none!important;}
+  body.printing-bill .bill-document button,
+  body.printing-bill .legacy-payment-tools,
+  body.printing-bill .legacy-payment-help{display:none!important;}
+  body.printing-bill .receipt-list li{break-inside:avoid;}
+}
 .receipt-actions{display:flex;gap:8px;flex-wrap:wrap;}.receipt-modal [hidden]{display:none!important;}
 .receipt-basis{margin:12px 0;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);}
 .receipt-basis summary{cursor:pointer;font-weight:700;line-height:1.7;min-height:44px;display:list-item;}
@@ -993,7 +1001,7 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 
 </main><!-- /content -->
 
-<aside class="workspace-sidebar"><a href="#" class="workspace-brand" onclick="switchTab('home');return false;"><span class="brand-mark">P<span>·</span></span><span>Property<small>임대관리 독립앱</small></span></a><span class="nav-caption">임대 업무</span><nav class="pill-nav" aria-label="주요 메뉴"><div class="nav-group primary"><button type="button" class="pill-item" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="pi-label">대시보드</span></button><button type="button" class="pill-item" id="nav-history" onclick="switchTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span class="pi-label">고지서</span></button><button type="button" class="pill-item" id="nav-settlement" onclick="switchTab('settlement')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg><span class="pi-label">정산</span></button><button type="button" class="pill-item" id="nav-tenants" onclick="switchTab('tenants')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0112 0v3M16 4a3 3 0 010 6M18 14a5 5 0 013 4v3"/></svg><span class="pi-label">세입자</span></button></div><div class="nav-group secondary" id="secondary-nav" aria-label="보조 메뉴"><button type="button" class="pill-item" id="nav-building" onclick="switchTab('building')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V3h11v18M15 9h5v12M8 7h3M8 11h3M8 15h3M8 19h3M18 13v2M18 18v1"/></svg><span class="pi-label">운영현황</span></button><button type="button" class="pill-item" id="nav-tax" onclick="switchTab('tax')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 7h6M9 11h6M9 15h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg><span class="pi-label">세무집계</span></button><button type="button" class="pill-item" id="nav-settings" onclick="switchTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg><span class="pi-label">설정</span></button></div><button class="pill-item" id="nav-more" onclick="toggleMoreNav()" aria-expanded="false" aria-controls="secondary-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span class="pi-label">더보기</span></button></nav><div class="sidebar-bottom"><span class="live-dot"></span>원본과 분리된 독립앱<small>오늘의 업무를 정확하고 간결하게.</small><span class="version-label">INDEPENDENT 2.1.4</span></div></aside>
+<aside class="workspace-sidebar"><a href="#" class="workspace-brand" onclick="switchTab('home');return false;"><span class="brand-mark">P<span>·</span></span><span>Property<small>임대관리 독립앱</small></span></a><span class="nav-caption">임대 업무</span><nav class="pill-nav" aria-label="주요 메뉴"><div class="nav-group primary"><button type="button" class="pill-item" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="pi-label">대시보드</span></button><button type="button" class="pill-item" id="nav-history" onclick="switchTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span class="pi-label">고지서</span></button><button type="button" class="pill-item" id="nav-settlement" onclick="switchTab('settlement')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg><span class="pi-label">정산</span></button><button type="button" class="pill-item" id="nav-tenants" onclick="switchTab('tenants')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0112 0v3M16 4a3 3 0 010 6M18 14a5 5 0 013 4v3"/></svg><span class="pi-label">세입자</span></button></div><div class="nav-group secondary" id="secondary-nav" aria-label="보조 메뉴"><button type="button" class="pill-item" id="nav-building" onclick="switchTab('building')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V3h11v18M15 9h5v12M8 7h3M8 11h3M8 15h3M8 19h3M18 13v2M18 18v1"/></svg><span class="pi-label">운영현황</span></button><button type="button" class="pill-item" id="nav-tax" onclick="switchTab('tax')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 7h6M9 11h6M9 15h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg><span class="pi-label">세무집계</span></button><button type="button" class="pill-item" id="nav-settings" onclick="switchTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg><span class="pi-label">설정</span></button></div><button class="pill-item" id="nav-more" onclick="toggleMoreNav()" aria-expanded="false" aria-controls="secondary-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span class="pi-label">더보기</span></button></nav><div class="sidebar-bottom"><span class="live-dot"></span>원본과 분리된 독립앱<small>오늘의 업무를 정확하고 간결하게.</small><span class="version-label">INDEPENDENT 2.1.5</span></div></aside>
 <!-- ══ 모달들 ══ -->
 <!-- 세입자 추가/수정 -->
 <div class="modal-overlay" id="modal-tenant">
@@ -4229,7 +4237,7 @@ function renderHistContent() {
       <details class="mgmt-detail"><summary>고정 관리비 세부 항목</summary>${buildMgmtBreakdownHtml(billTenant(tenant,bill))}</details>
       <div class="payment-grid">${stamp('rent','월세')}${stamp('mgmt',bill.receiptLedger?'관리비·공과금':'관리비 전체 (일괄 완납)')}</div>
 
-      ${bill.receiptLedger?renderReceiptPanel(tenant,bill):`<div style="margin-top:14px;padding:12px 14px;background:var(--surface);border-radius:10px;border:1px solid var(--border2);">
+      ${bill.receiptLedger?renderReceiptPanel(tenant,bill):`<div class="legacy-payment-tools" style="margin-top:14px;padding:12px 14px;background:var(--surface);border-radius:10px;border:1px solid var(--border2);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;flex-wrap:wrap;gap:4px;">
           <strong style="font-size:12.5px;color:var(--gold);display:flex;align-items:center;gap:5px;">
             <span>⚡</span> 관리비 항목별 분할·부분 완납
@@ -4244,7 +4252,7 @@ function renderHistContent() {
         </div>
       </div>
 
-      <p class="card-sub" style="margin-top:10px;">관리비 전체 도장은 관리비·전기·수도·엘리베이터 전체를 완납 처리합니다. 세입자가 일부 항목만 입금한 경우 위의 항목별 분할 완납을 이용해 주세요.</p><button class="btn btn-secondary" data-focus-key="receipt-add" onclick="openReceiptDialog()">금액별 입금 기록 시작</button><p class="card-sub">여러 번 나누어 입금한 금액을 기록할 수 있습니다. 시작 후 이 고지서의 청구 기준과 기존 납부 근거는 고정됩니다.</p>`}
+      <p class="card-sub legacy-payment-help" style="margin-top:10px;">관리비 전체 도장은 관리비·전기·수도·엘리베이터 전체를 완납 처리합니다. 세입자가 일부 항목만 입금한 경우 위의 항목별 분할 완납을 이용해 주세요.</p><button class="btn btn-secondary" data-focus-key="receipt-add" onclick="openReceiptDialog()">금액별 입금 기록 시작</button><p class="card-sub legacy-payment-help">여러 번 나누어 입금한 금액을 기록할 수 있습니다. 시작 후 이 고지서의 청구 기준과 기존 납부 근거는 고정됩니다.</p>`}
       <label class="invoice-check"><input type="checkbox" ${bill.invoiceIssued?'checked':''} onchange="setInvoiceIssued(this.checked)"> 세금계산서 발급 완료 · 안내 메시지에 반영</label>
       <div class="bill-actions bill-actions-modern"><button class="btn-kakao-primary" onclick="previewKakao()">💬 카카오톡 / 문자 청구서 발송</button><button class="btn btn-secondary" onclick="editThisMonth()">✏️ 고지서 수정</button>${!bill.receiptLedger?'<button class="btn btn-secondary" data-focus-key="basis-correction" onclick="openBillBasisCorrection()">청구 기준 정정</button>':''}<button class="btn btn-secondary" onclick="printCurrentBill()">🖨️ 인쇄 / PDF</button></div>
       ${(bill.audit||[]).length?`<details class="audit-details"><summary>변경 이력 ${(bill.audit||[]).length}건</summary>${[...bill.audit].reverse().map(entry=>`<p><time>${esc(new Date(entry.at).toLocaleString('ko-KR'))}</time> ${esc(entry.action)} · ${esc(entry.detail)}</p>${entry.action==='청구 기준 정정'&&entry.changes?'<details><summary>정정 전 원문과 저장 결과</summary><pre class="basis-audit-original">'+esc(JSON.stringify(entry.changes,null,2))+'</pre></details>':''}`).join('')}</details>`:''}
@@ -6569,7 +6577,7 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.1.4';
+const APPLICATION_VERSION='2.1.5';
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
   const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';

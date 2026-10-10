@@ -2112,7 +2112,7 @@ function renderHistContent() {
       <details class="mgmt-detail"><summary>고정 관리비 세부 항목</summary>${buildMgmtBreakdownHtml(billTenant(tenant,bill))}</details>
       <div class="payment-grid">${stamp('rent','월세')}${stamp('mgmt',bill.receiptLedger?'관리비·공과금':'관리비 전체 (일괄 완납)')}</div>
 
-      ${bill.receiptLedger?renderReceiptPanel(tenant,bill):`<div style="margin-top:14px;padding:12px 14px;background:var(--surface);border-radius:10px;border:1px solid var(--border2);">
+      ${bill.receiptLedger?renderReceiptPanel(tenant,bill):`<div class="legacy-payment-tools" style="margin-top:14px;padding:12px 14px;background:var(--surface);border-radius:10px;border:1px solid var(--border2);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;flex-wrap:wrap;gap:4px;">
           <strong style="font-size:12.5px;color:var(--gold);display:flex;align-items:center;gap:5px;">
             <span>⚡</span> 관리비 항목별 분할·부분 완납
@@ -2127,7 +2127,7 @@ function renderHistContent() {
         </div>
       </div>
 
-      <p class="card-sub" style="margin-top:10px;">관리비 전체 도장은 관리비·전기·수도·엘리베이터 전체를 완납 처리합니다. 세입자가 일부 항목만 입금한 경우 위의 항목별 분할 완납을 이용해 주세요.</p><button class="btn btn-secondary" data-focus-key="receipt-add" onclick="openReceiptDialog()">금액별 입금 기록 시작</button><p class="card-sub">여러 번 나누어 입금한 금액을 기록할 수 있습니다. 시작 후 이 고지서의 청구 기준과 기존 납부 근거는 고정됩니다.</p>`}
+      <p class="card-sub legacy-payment-help" style="margin-top:10px;">관리비 전체 도장은 관리비·전기·수도·엘리베이터 전체를 완납 처리합니다. 세입자가 일부 항목만 입금한 경우 위의 항목별 분할 완납을 이용해 주세요.</p><button class="btn btn-secondary" data-focus-key="receipt-add" onclick="openReceiptDialog()">금액별 입금 기록 시작</button><p class="card-sub legacy-payment-help">여러 번 나누어 입금한 금액을 기록할 수 있습니다. 시작 후 이 고지서의 청구 기준과 기존 납부 근거는 고정됩니다.</p>`}
       <label class="invoice-check"><input type="checkbox" ${bill.invoiceIssued?'checked':''} onchange="setInvoiceIssued(this.checked)"> 세금계산서 발급 완료 · 안내 메시지에 반영</label>
       <div class="bill-actions bill-actions-modern"><button class="btn-kakao-primary" onclick="previewKakao()">💬 카카오톡 / 문자 청구서 발송</button><button class="btn btn-secondary" onclick="editThisMonth()">✏️ 고지서 수정</button>${!bill.receiptLedger?'<button class="btn btn-secondary" data-focus-key="basis-correction" onclick="openBillBasisCorrection()">청구 기준 정정</button>':''}<button class="btn btn-secondary" onclick="printCurrentBill()">🖨️ 인쇄 / PDF</button></div>
       ${(bill.audit||[]).length?`<details class="audit-details"><summary>변경 이력 ${(bill.audit||[]).length}건</summary>${[...bill.audit].reverse().map(entry=>`<p><time>${esc(new Date(entry.at).toLocaleString('ko-KR'))}</time> ${esc(entry.action)} · ${esc(entry.detail)}</p>${entry.action==='청구 기준 정정'&&entry.changes?'<details><summary>정정 전 원문과 저장 결과</summary><pre class="basis-audit-original">'+esc(JSON.stringify(entry.changes,null,2))+'</pre></details>':''}`).join('')}</details>`:''}
