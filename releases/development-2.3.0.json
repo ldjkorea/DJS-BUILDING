@@ -1,0 +1,293 @@
+{
+  "appVersion": "2.3.0",
+  "phase": "authorized-web-apk-update",
+  "sourceCommit": "058be683f1dfa9309e691bdda0b1846e18d2422b",
+  "recordedAt": "2026-10-10T06:41:52.121Z",
+  "validation": {
+    "command": "npm run build + check + npm test + test:browser + PDF validation",
+    "unit": {
+      "total": 193,
+      "passed": 193
+    },
+    "browser": {
+      "startedAt": "2026-10-10T06:34:18.283Z",
+      "finishedAt": "2026-10-10T06:40:12.058Z",
+      "url": "http://127.0.0.1:8588/",
+      "node": "v24.20.0",
+      "results": [
+        {
+          "suite": "browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "audit-browser.cjs",
+          "exitCode": 0,
+          "status": "pass",
+          "shards": [
+            {
+              "suite": "audit-browser.cjs",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "suite": "audit-browser.cjs",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "suite": "audit-browser.cjs",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "suite": "audit-browser.cjs",
+              "exitCode": 0,
+              "status": "pass"
+            }
+          ]
+        },
+        {
+          "suite": "receipt-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "bill-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "quarter-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "restored-data-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "print-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "pwa-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "single-file-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "integrity-v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "independent-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "operations-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "update-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        }
+      ]
+    },
+    "pdf": {
+      "appVersion": "2.3.0",
+      "anonymous": true,
+      "pdfCount": 5,
+      "checks": [
+        {
+          "name": "legacy",
+          "file": "test-results\\print-pdf-Nij8SL\\legacy.pdf",
+          "pages": 1,
+          "sha256": "6f6e5de438d2c06e5d5faccfdcdfb7eed2257e9d7618003e8cd4633d55a213d2",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        },
+        {
+          "name": "journal",
+          "file": "test-results\\print-pdf-Nij8SL\\journal.pdf",
+          "pages": 5,
+          "sha256": "ee48fd1928ba9b5f8595c05b36911ee0337819585930570d8bb0354983bb1787",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": true,
+          "status": "pass"
+        },
+        {
+          "name": "journal-mobile",
+          "file": "test-results\\print-pdf-Nij8SL\\journal-mobile.pdf",
+          "pages": 5,
+          "sha256": "b2f4060db9f050607aef10084945012ac68c7c80a124a35793fbb54ef94a6b06",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": true,
+          "status": "pass"
+        },
+        {
+          "name": "quarter",
+          "file": "test-results\\print-pdf-Nij8SL\\quarter.pdf",
+          "pages": 6,
+          "sha256": "b20d81c0c60606161df00af8cfc23bd4aea4f93c84ccd67dd6924dc5fb8700b9",
+          "portrait": false,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        },
+        {
+          "name": "quarter-empty",
+          "file": "test-results\\print-pdf-Nij8SL\\quarter-empty.pdf",
+          "pages": 1,
+          "sha256": "a4633dba1c06a4f7bbc95c5a7c9432fd88510e286b37a26ab4012b85e470674d",
+          "portrait": false,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        }
+      ],
+      "scope": "Edge-generated PDF text, page dimensions and bounds. Visual rendering reviewed separately; no physical printer or Google execution."
+    },
+    "updates": {
+      "appVersion": "2.3.0",
+      "results": [
+        {
+          "name": "1366px latest version check does not read or write rental data",
+          "status": "pass"
+        },
+        {
+          "name": "1366px new version displays an explicit apply action without navigation",
+          "status": "pass"
+        },
+        {
+          "name": "1366px update blocks busy, unsaved, conflicting and unconfirmed cloud states",
+          "status": "pass"
+        },
+        {
+          "name": "1366px failed and offline checks remain retryable without data changes",
+          "status": "pass"
+        },
+        {
+          "name": "390px latest version check does not read or write rental data",
+          "status": "pass"
+        },
+        {
+          "name": "390px new version displays an explicit apply action without navigation",
+          "status": "pass"
+        },
+        {
+          "name": "390px update blocks busy, unsaved, conflicting and unconfirmed cloud states",
+          "status": "pass"
+        },
+        {
+          "name": "390px failed and offline checks remain retryable without data changes",
+          "status": "pass"
+        }
+      ],
+      "errors": [],
+      "external": []
+    },
+    "pwa": [
+      {
+        "name": "PWA installs all application assets and gains control after reload",
+        "status": "pass"
+      },
+      {
+        "name": "offline query navigation, edit, save and reload retain local data",
+        "status": "pass"
+      },
+      {
+        "name": "PWA update waits for open windows and keeps unsaved drafts",
+        "status": "pass"
+      },
+      {
+        "name": "closing all app windows activates update and only removes related old caches",
+        "status": "pass"
+      },
+      {
+        "name": "updated PWA remains usable offline with no application errors or cloud requests",
+        "status": "pass"
+      },
+      {
+        "name": "update button checks, protects other windows and applies in one click with drafts retained",
+        "status": "pass"
+      }
+    ]
+  },
+  "sourceHashes": {
+    "package.json": "fd513edfac7673836ab231900d3fad9542fb0967f22c28df31049d4a786fc0a4",
+    "index.html": "2514b319650e3dae89a8e9315dddea1fc1d6f39830d26e4f60ff718bc84f120f",
+    "src/index.template.html": "45c37e3c82508401a74d22fef4a43b09bc433c0248a87d571d76ce004dd279ac",
+    "assets/core.js": "77060e2e92bd2a83182b3646bcaae1439bdb1ce988e0c5ad5fb6235ca34f163a",
+    "assets/billing.js": "e5ced471b3af3079a5f2e08028dbf6d071cca763e7606ddfa4c42d36ce9511ba",
+    "assets/app.js": "3ade28688816cb36dc0a656f9bd5796f59668122767e829d98cd5c5b8c95cd32",
+    "assets/enhancements.js": "c2242feca49dd257ade0f0b04c5e46446ead786214d17ecf8cfb599fe1e434fe",
+    "assets/workspace.css": "27eeb13fd028104cc611ec584a4e7a610332a7c3d959e3b2928a725e23a5ed93",
+    "sw.js": "b7fa690da902eb7bcbc1b5313b70d5bf8ea6aeb67234e20042dbaecfc7ec811a",
+    "scripts/build.cjs": "6ef69fe84ddd8c9bd76389b845200f2fab370b4243f3e43a90ae3d945c0d40aa",
+    "scripts/test-browser.cjs": "77c4467e575b8f5d70d94256f96be978424f0969f3a33aee000755108ea96636",
+    "scripts/test-gas-candidate.cjs": "fd2873cf10a2e41e07199b9eeac15682980e3476aacb09ea66927b43760a9dae",
+    "tests/single-file-browser.cjs": "87315dc719ee20b163818d9fe882757cfc2908bf0bbaf78d0d69e7988eeed327",
+    "server/appsscript.json": "a6954c274b74d412d9ff0968b40641931869fcc31f5a0eb622a54575ca8d1247",
+    "server/AuthorizeDocs.gs": "5512c7b1828320898d8c86fc78163c2860bc9b63d9317ec98f81a4bac838efbb",
+    "server/Billing.gs": "8fba0a59d41e7089b3b5ad75f7441715c138cb323d852619d8f8ffabd64a10dd",
+    "server/CalendarSync.gs": "ee6fe4c1ce07fc932ff91522ceb782793798bff17341b00d6df8fc277900e4d3",
+    "server/Code.gs": "7f17be5d035176501bd143263f6988de3262a3a8e79138fcc43b06c2d1a1d3b6",
+    "server/CurrentStatus.gs": "2645981b706d0aa04b920da18030216725520ace895477e0112fd46676ac69bf",
+    "server/IndependentApp.gs": "d3fd375e0d0f8cf5b5edb983dc5f3258cb2056e2897c27ec598947b9205cb7cb",
+    "tests/operations.test.cjs": "b3335bae51d6b13bb4efba1ba9af9459f1cfef8acafb851a81a5b641d3684418",
+    "tests/operations-browser.cjs": "afa78bbed0a113dce86fffa554e6f2d43899d9c6d70bfcafb1e2ecfa8edbf68a",
+    "tests/basis-review.test.cjs": "aaf98fbb5629d49fc9a681c9ba39b6548139e21650ff26471f32c4f03fc64a95",
+    "tests/server.test.cjs": "89cb07b2e491bb8c9c876734479e0eb1309cd47f6d81f18a8b77b097015a00a1",
+    "scripts/prepare-basis-review.cjs": "ea320362adc6eab8760fe25498afa80f43febdc347f951745c8c3c65e558fbb0",
+    ".github/workflows/regression.yml": "c1fdc385a02b800684acb5213b6a4182b5cfbc8f966168c5e43055a7d9340a84",
+    "tests/audit-browser.cjs": "14305419824b573c9778609db03d1e8e329e2c6aa96897d2712763f1ed84d119",
+    "manifest.json": "2fa2e7168658975e65ccfe75e867fe83d974a8cc999096f2a1885d5cbd75eccf",
+    "tests/update.test.cjs": "3c75a7984f2eed191f93f5a121905d6dcd51929ec406426cfb0e0caf3196317f",
+    "tests/update-browser.cjs": "ee6d8b18c90f3ae009189c386f4da6901dafaf34084552f41ce1a6309e404e98"
+  },
+  "external": {
+    "operatingDeploymentPending": true,
+    "operatingDataWrites": false
+  },
+  "scope": "Full regression passed locally; GitHub CI and actual operating deployment are recorded separately."
+}
