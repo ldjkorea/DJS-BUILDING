@@ -117,6 +117,7 @@ function read_(sheet) {
   return {raw:raw, data:data, revision:revision, receipts:envelope ? stored.receipts : []};
 }
 function doGet(e) {
+  if (e && e.parameter && e.parameter.nativePair) return nativePairPage_(e.parameter.nativePair);
   if (!e || !e.parameter || e.parameter.api !== '1') {
     return HtmlService.createHtmlOutputFromFile('App').setTitle('NEW RENT STORE');
   }

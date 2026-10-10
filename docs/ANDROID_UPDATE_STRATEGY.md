@@ -1,6 +1,6 @@
 # Android와 업데이트 전략
 
-현재 운영은 **NEW RENT STORE 2.3.0 / GAS 버전 7**, Android 설치본은 **2.3.0 / versionCode 2**다. 웹 버전 확인·적용 버튼과 비공개 GitHub 최신 APK 다운로드를 제공한다. [현재 업데이트 안내](ANDROID_WEB_UPDATE_2.3.0.md)를 따른다. 아래 2.0.0 기록은 최초 실행기 제작 당시의 근거다.
+현재 운영은 **웹 2.3.0 / GAS 버전 8**, Android 설치본은 **네이티브 3.0.0 / versionCode 3**다. [현재 설치·업데이트·연결 안내](ANDROID_NATIVE_3.0.0.md)를 따른다. 아래 2.x 실행기 구조는 과거 기록이며 현재 Android 화면은 Kotlin 네이티브 Views로 대체했다. 웹 버전 확인·적용 버튼과 비공개 GitHub 최신 APK 다운로드는 유지한다.
 
 ## 선택한 구조
 

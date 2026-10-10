@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-10",
+  "webVersion": "2.3.0",
+  "androidVersion": "3.0.0",
+  "unitTests": {
+    "pass": 203,
+    "fail": 0
+  },
+  "browserSuites": {
+    "pass": 15,
+    "fail": 0
+  },
+  "nativeInstrumentation": {
+    "pass": 3,
+    "fail": 0
+  },
+  "nativeMockServerCases": 10,
+  "googlePermissionGrant": "DONE; Sheets Docs Calendar as declared",
+  "liveApi": {
+    "publicMetadata": "PASS Android 3.0.0 code 3",
+    "anonymousRentalData": "DENIED",
+    "ownerPairReadDisconnect": {
+      "pair": "ok",
+      "read": "ok",
+      "protocol": "rental-native-v1",
+      "tenants": 4,
+      "bills": 0,
+      "updates": {
+        "appVersion": "2.3.0",
+        "androidVersion": "3.0.0",
+        "androidVersionCode": 3,
+        "androidReleaseUrl": "https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest"
+      },
+      "disconnect": "ok",
+      "revokedRead": "unauthorized"
+    }
+  },
+  "deployments": {
+    "webGasVersion": 8,
+    "webAccess": "MYSELF",
+    "nativeGatewayVersion": 1,
+    "nativeApiLibraryVersion": 8,
+    "nativeGatewayAccess": "ANYONE_ANONYMOUS JSON only; rental data requires device token"
+  },
+  "operatingData": {
+    "unchanged": true,
+    "range": "시트1!A1:A1000",
+    "valueArraySha256": "e7f9ee1cc867ebe82a755a7fb8c63601f8114f3d4548006044411f2b52723e36"
+  },
+  "originalRepositoryHeads": {
+    "RENT-STORE": "2b01a2ead927221a27322bba5290754b5db18969",
+    "2025-RENT-STORE": "dd6800f418f45482453fa2bc7fe42ac16e60a53d"
+  },
+  "untested": [
+    "physical phone install and Google return",
+    "live rental write",
+    "live Docs regeneration",
+    "live Calendar sync"
+  ],
+  "apkSha256": "e8253512239d815d13ab239ee78c1d3e974a1f7bb9529ae1a2324e7ddf4b13c7"
+}
