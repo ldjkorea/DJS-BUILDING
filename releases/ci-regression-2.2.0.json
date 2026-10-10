@@ -1,0 +1,215 @@
+{
+  "appVersion": "2.2.0",
+  "recordedAt": "2026-10-10T02:32:34.756Z",
+  "repository": {
+    "url": "https://github.com/ldjkorea/rental-app-independent-private",
+    "isPrivate": true,
+    "defaultBranch": "work/independent-v2"
+  },
+  "successfulRun": {
+    "url": "https://github.com/ldjkorea/rental-app-independent-private/actions/runs/38015818749",
+    "runId": 38015818749,
+    "sourceCommit": "3768dd12e239f7ec9a414c5b93366ee78d436de2",
+    "startedAt": "2026-10-10T02:07:51Z",
+    "completedAt": "2026-10-10T02:17:14Z",
+    "conclusion": "success"
+  },
+  "earlierRun": {
+    "url": "https://github.com/ldjkorea/rental-app-independent-private/actions/runs/38014915466",
+    "conclusion": "failure",
+    "failure": "PWA reopen navigation exceeded its load-event timeout",
+    "resolution": "Observe activated worker outside app scope before reopening; verify restored section readiness; keep cache and draft assertions; no sleep or increased timeout"
+  },
+  "validation": {
+    "node": "v24.21.0",
+    "unit": {
+      "passed": 192,
+      "total": 192
+    },
+    "browser": {
+      "startedAt": "2026-10-10T02:08:41.675Z",
+      "finishedAt": "2026-10-10T02:17:06.491Z",
+      "url": "http://127.0.0.1:60030/",
+      "node": "v24.21.0",
+      "results": [
+        {
+          "suite": "browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "audit-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "bill-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "quarter-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "restored-data-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "print-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "pwa-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "single-file-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "integrity-v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "independent-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "operations-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        }
+      ]
+    },
+    "pwa": [
+      {
+        "name": "PWA installs all application assets and gains control after reload",
+        "status": "pass"
+      },
+      {
+        "name": "offline query navigation, edit, save and reload retain local data",
+        "status": "pass"
+      },
+      {
+        "name": "PWA update waits for open windows and keeps unsaved drafts",
+        "status": "pass"
+      },
+      {
+        "name": "closing all app windows activates update and only removes related old caches",
+        "status": "pass"
+      },
+      {
+        "name": "updated PWA remains usable offline with no application errors or cloud requests",
+        "status": "pass"
+      }
+    ],
+    "pdf": {
+      "appVersion": "2.2.0",
+      "anonymous": true,
+      "pdfCount": 5,
+      "checks": [
+        {
+          "name": "legacy",
+          "file": "test-results\\print-pdf-EVC6yg\\legacy.pdf",
+          "pages": 1,
+          "sha256": "2a20adcd3452ed42acaef7c9aaf21c1fcade0f4876c8f4d5290ed605ba7502e8",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        },
+        {
+          "name": "journal",
+          "file": "test-results\\print-pdf-EVC6yg\\journal.pdf",
+          "pages": 5,
+          "sha256": "4bb53fe6ee64d8214e2a1f42252480e5b7ead1cf5195421866fdb8d9b1d5c717",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": true,
+          "status": "pass"
+        },
+        {
+          "name": "journal-mobile",
+          "file": "test-results\\print-pdf-EVC6yg\\journal-mobile.pdf",
+          "pages": 5,
+          "sha256": "717fc3662224b74aead92966c9c1ac597b7d9be3e8daa0167a9a2a4f3941abaf",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": true,
+          "status": "pass"
+        },
+        {
+          "name": "quarter",
+          "file": "test-results\\print-pdf-EVC6yg\\quarter.pdf",
+          "pages": 6,
+          "sha256": "79644c54e7de19554c954fd92880ff780c041ef7fdd0a3ee6b6a35b8d76e0537",
+          "portrait": false,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        },
+        {
+          "name": "quarter-empty",
+          "file": "test-results\\print-pdf-EVC6yg\\quarter-empty.pdf",
+          "pages": 1,
+          "sha256": "539ef5d01fff7a884328c01d32712d6690b5a0810b6bc353e8453d6f91d46981",
+          "portrait": false,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        }
+      ],
+      "scope": "Edge-generated PDF text, page dimensions and bounds. Visual rendering reviewed separately; no physical printer or Google execution."
+    },
+    "generatedSourcesUnchanged": true
+  },
+  "privacy": {
+    "exportedCommitsAudited": 71,
+    "blobsAudited": 726,
+    "recognizableOriginalTenantValuesAbsent": true,
+    "credentialsAndPrivateFilesAbsent": true,
+    "originalLocalHistoryPreserved": true,
+    "anonymousFixturesOnly": true
+  },
+  "productionDeployed": false,
+  "actualGoogleExecutionVerified": false,
+  "evidenceCommitWillOnlyChangeDocuments": true
+}
