@@ -1,0 +1,198 @@
+{
+  "version": "2.3.0",
+  "sourceCommit": "70d874e283c1418e478d0a5d1e65351660759a17",
+  "productValidationCommit": "058be683f1dfa9309e691bdda0b1846e18d2422b",
+  "archiveSha256": "3c87949c2f9002b0e9f78625e9249220b33615f175a58c7e902b8394f55095fc",
+  "startedAt": "2026-10-10T06:42:56.020Z",
+  "finishedAt": "2026-10-10T06:45:07.998Z",
+  "serverMockTests": 45,
+  "browserCases": {
+    "receipt": 11,
+    "receipt-basis": 8,
+    "bill-basis": 11,
+    "quarter": 8,
+    "operations": 6,
+    "restored-data": 6,
+    "print": 5
+  },
+  "restoredData": {
+    "appVersion": "2.3.0",
+    "startedAt": "2026-10-10T06:44:35.803Z",
+    "finishedAt": "2026-10-10T06:44:48.633Z",
+    "inputSha256": "df664dd26e9f86326aa8ad1f24fa506740fb78f6e06ddf9130ad8c0bd4126061",
+    "privateInput": false,
+    "sourceFilePreserved": true,
+    "screenshotsTaken": false,
+    "googleRequestsPerformed": false,
+    "asOf": "2026-10-10",
+    "tenantCount": 3,
+    "billCount": 3,
+    "monthCount": 2,
+    "results": [
+      {
+        "name": "backup preview cancel apply reload and JSON roundtrip preserve every domain field on PC and mobile",
+        "status": "pass"
+      },
+      {
+        "name": "every stored invoice renders exact charges and keeps estimated basis unconfirmed without data writes",
+        "status": "pass"
+      },
+      {
+        "name": "monthly CSV contains only saved invoices including archived and orphan rows and matches exact shared totals",
+        "status": "pass"
+      },
+      {
+        "name": "empty invoice placeholders remain unissued after reload and open an editor without saved-invoice actions",
+        "status": "pass",
+        "coverage": {
+          "unissuedCaseAvailable": true
+        }
+      },
+      {
+        "name": "quarter screen and downloaded CSV match all saved quarter totals after full backup restoration",
+        "status": "pass"
+      },
+      {
+        "name": "restored full data keeps all seven menus within six viewport widths without source changes",
+        "status": "pass"
+      }
+    ]
+  },
+  "printOutput": {
+    "appVersion": "2.3.0",
+    "startedAt": "2026-10-10T06:44:49.441Z",
+    "finishedAt": "2026-10-10T06:44:56.533Z",
+    "anonymous": true,
+    "googleRequestsPerformed": false,
+    "results": [
+      {
+        "name": "legacy",
+        "status": "pass"
+      },
+      {
+        "name": "journal",
+        "status": "pass"
+      },
+      {
+        "name": "journal-mobile",
+        "status": "pass"
+      },
+      {
+        "name": "quarter",
+        "status": "pass"
+      },
+      {
+        "name": "quarter-empty",
+        "status": "pass"
+      }
+    ],
+    "pdfs": [
+      {
+        "name": "legacy",
+        "file": "test-results\\print-pdf-JqNov8\\legacy.pdf",
+        "quarter": false,
+        "expected": {
+          "total": 1484516,
+          "received": 55000,
+          "unpaid": 1429516,
+          "tenantRows": 1,
+          "receiptEvents": 0
+        }
+      },
+      {
+        "name": "journal",
+        "file": "test-results\\print-pdf-JqNov8\\journal.pdf",
+        "quarter": false,
+        "expected": {
+          "total": 1484516,
+          "received": 78000,
+          "unpaid": 1406516,
+          "tenantRows": 1,
+          "receiptEvents": 25
+        }
+      },
+      {
+        "name": "journal-mobile",
+        "file": "test-results\\print-pdf-JqNov8\\journal-mobile.pdf",
+        "quarter": false,
+        "expected": {
+          "total": 1484516,
+          "received": 78000,
+          "unpaid": 1406516,
+          "tenantRows": 1,
+          "receiptEvents": 25
+        }
+      },
+      {
+        "name": "quarter",
+        "file": "test-results\\print-pdf-JqNov8\\quarter.pdf",
+        "quarter": true,
+        "expected": {
+          "total": 160327728,
+          "received": 0,
+          "unpaid": 160327728,
+          "tenantRows": 36,
+          "receiptEvents": 0
+        }
+      },
+      {
+        "name": "quarter-empty",
+        "file": "test-results\\print-pdf-JqNov8\\quarter-empty.pdf",
+        "quarter": true,
+        "expected": {
+          "total": 0,
+          "received": 0,
+          "unpaid": 0,
+          "tenantRows": 0,
+          "receiptEvents": 0
+        }
+      }
+    ]
+  },
+  "extractedAppHtmlSha256": "2514b319650e3dae89a8e9315dddea1fc1d6f39830d26e4f60ff718bc84f120f",
+  "readFromZip": true,
+  "realGoogleWrites": false,
+  "productionDeployed": false,
+  "results": [
+    {
+      "file": "server.test.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "receipt-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "receipt-basis-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "bill-basis-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "quarter-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "restored-data-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "print-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    },
+    {
+      "file": "operations-browser.cjs",
+      "exitCode": 0,
+      "status": "pass"
+    }
+  ]
+}

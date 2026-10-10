@@ -1,0 +1,63 @@
+{
+  "version": "2.3.0",
+  "sourceCommit": "70d874e283c1418e478d0a5d1e65351660759a17",
+  "productValidationCommit": "058be683f1dfa9309e691bdda0b1846e18d2422b",
+  "createdAt": "2026-10-10T06:41:57.235Z",
+  "deploymentPerformed": false,
+  "reviewCandidate": true,
+  "productionReady": false,
+  "receiptLedgerProtocol": "rental-receipts-v1",
+  "archive": {
+    "file": "rental-independent-gas-2.3.0.zip",
+    "bytes": 1715528,
+    "sha256": "3c87949c2f9002b0e9f78625e9249220b33615f175a58c7e902b8394f55095fc"
+  },
+  "files": [
+    {
+      "name": "App.html",
+      "bytes": 2657513,
+      "sha256": "2514b319650e3dae89a8e9315dddea1fc1d6f39830d26e4f60ff718bc84f120f"
+    },
+    {
+      "name": "AuthorizeDocs.gs",
+      "bytes": 265,
+      "sha256": "5512c7b1828320898d8c86fc78163c2860bc9b63d9317ec98f81a4bac838efbb"
+    },
+    {
+      "name": "Billing.gs",
+      "bytes": 51445,
+      "sha256": "8fba0a59d41e7089b3b5ad75f7441715c138cb323d852619d8f8ffabd64a10dd"
+    },
+    {
+      "name": "CalendarSync.gs",
+      "bytes": 6593,
+      "sha256": "ee6fe4c1ce07fc932ff91522ceb782793798bff17341b00d6df8fc277900e4d3"
+    },
+    {
+      "name": "Code.gs",
+      "bytes": 17703,
+      "sha256": "7f17be5d035176501bd143263f6988de3262a3a8e79138fcc43b06c2d1a1d3b6"
+    },
+    {
+      "name": "CurrentStatus.gs",
+      "bytes": 7690,
+      "sha256": "2645981b706d0aa04b920da18030216725520ace895477e0112fd46676ac69bf"
+    },
+    {
+      "name": "IndependentApp.gs",
+      "bytes": 1467,
+      "sha256": "d3fd375e0d0f8cf5b5edb983dc5f3258cb2056e2897c27ec598947b9205cb7cb"
+    },
+    {
+      "name": "appsscript.json",
+      "bytes": 353,
+      "sha256": "a6954c274b74d412d9ff0968b40641931869fcc31f5a0eb622a54575ca8d1247"
+    }
+  ],
+  "remaining": [
+    "Opened-journal basis migration policy",
+    "Actual operating data reconciliation",
+    "Authorized Google write/readback Docs and Calendar verification",
+    "Physical phone offline update printing and screen reader checks"
+  ]
+}

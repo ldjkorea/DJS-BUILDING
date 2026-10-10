@@ -289,5 +289,12 @@
     "operatingDeploymentPending": true,
     "operatingDataWrites": false
   },
-  "scope": "Full regression passed locally; GitHub CI and actual operating deployment are recorded separately."
+  "scope": "Full regression passed locally; GitHub CI and actual operating deployment are recorded separately.",
+  "ci": {
+    "runId": 38031660718,
+    "sourceCommit": "058be683f1dfa9309e691bdda0b1846e18d2422b",
+    "conclusion": "success",
+    "url": "https://github.com/ldjkorea/NEW-RENT-STORE/actions/runs/38031660718",
+    "unitCountsVerifiedFromLog": true
+  }
 }

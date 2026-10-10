@@ -21,7 +21,7 @@
   },
   "webApp": {
     "version": "2.3.0",
-    "deployment": "pending; recorded separately",
+    "deployment": "GAS version 7; source and actual browser readback verified",
     "url": "https://script.google.com/macros/s/AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae/exec"
   },
   "validation": {

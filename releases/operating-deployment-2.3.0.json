@@ -1,0 +1,90 @@
+{
+  "at": "2026-10-10T06:46:52.605Z",
+  "appVersion": "2.3.0",
+  "oldDeploymentVersion": 6,
+  "deploymentVersion": 7,
+  "scriptId": "1n9IWX9Mzu30fZtm_DcMW5SRR69RqxH6BqOo8ydC4jcbPeTLP00UT-EQ4",
+  "deploymentId": "AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae",
+  "url": "https://script.google.com/macros/s/AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae/exec",
+  "zipSha256": "3c87949c2f9002b0e9f78625e9249220b33615f175a58c7e902b8394f55095fc",
+  "sourceCommit": "058be683f1dfa9309e691bdda0b1846e18d2422b",
+  "sourceAndImmutableVersionReadBack": true,
+  "connectionsAndPermissionsUnchanged": true,
+  "appDataWrites": false,
+  "verificationNote": "Immediate deployment GET briefly returned version 6; subsequent fresh read confirmed requested version 7. No repeated upload, version creation, or deployment write.",
+  "deploymentPerformed": true,
+  "browserReadBack": {
+    "version": "2.3.0",
+    "manualVersionCheck": true,
+    "topLevelReopenVerified": true,
+    "status": "최신 웹 버전입니다 · 2.3.0",
+    "zeroLocalEdits": true,
+    "googleReadRevision": "sha256-853e1a2afffccccc31063782058ec4d302d79c7f8e7686dc4763baeb7ccbeb45",
+    "apkLatestReleaseLink": "https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest"
+  },
+  "nativeSheetVerification": {
+    "spreadsheetId": "1E9YcSQSNTLTC41fqWBYHMNpSRKQrDlvAXeF9AxdDFb8",
+    "sheetName": "시트1",
+    "range": "A1:A1000",
+    "beforeImmediateDeploymentMatched": true,
+    "afterDeploymentAndTopLevelReopenMatched": true,
+    "comparison": "Exact plain cell value arrays via native Google Sheets connector",
+    "rawSha256": "853e1a2afffccccc31063782058ec4d302d79c7f8e7686dc4763baeb7ccbeb45",
+    "dataWritesPerformed": false
+  },
+  "android": {
+    "appName": "NEW RENT STORE",
+    "versionName": "2.3.0",
+    "versionCode": 2,
+    "packageName": "kr.henry.rental.independent",
+    "minSdk": 23,
+    "targetSdk": 37,
+    "apkFile": "NEW-RENT-STORE-2.3.0.apk",
+    "apkBytes": 1954717,
+    "apkSha256": "5d25a0e1a93dd1aee68451be06d097f10a5ad221ae7eda7fd942584854dba3c6",
+    "signingCertificateSha256": "b25160850067d115c493fe51aca9bdce1956d999ed45cee0950bd86d33c5a2a0",
+    "signatureVerification": "PASS v1 and v2; same certificate as 2.0.0",
+    "downloadUrl": "https://github.com/ldjkorea/NEW-RENT-STORE/releases/download/v2.3.0/NEW-RENT-STORE-2.3.0.apk",
+    "latestReleaseUrl": "https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest",
+    "distribution": "private GitHub Release; browser-authenticated download and Android installation confirmation",
+    "deviceEvidence": {
+      "emulator": "rental-independent-v2 / API 35 / emulator-5556",
+      "signedReleaseUpgrade": "PASS installed 2.0.0 versionCode 1 -> 2.3.0 versionCode 2 without uninstall; firstInstallTime retained",
+      "googleOwnerLogin": "NOT TESTED",
+      "physicalPhone": "NOT TESTED"
+    },
+    "webApp": {
+      "version": "2.3.0",
+      "deployment": "GAS version 7; source and actual browser readback verified",
+      "url": "https://script.google.com/macros/s/AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae/exec"
+    },
+    "validation": {
+      "gradle": "assembleRelease lintRelease testDebugUnitTest PASS",
+      "lintErrors": 0,
+      "lintWarnings": 1,
+      "warning": "existing UI Automator test dependency update suggestion; no dependency changed"
+    }
+  },
+  "zipValidation": {
+    "serverMockTests": 45,
+    "browserCases": {
+      "receipt": 11,
+      "receipt-basis": 8,
+      "bill-basis": 11,
+      "quarter": 8,
+      "operations": 6,
+      "restored-data": 6,
+      "print": 5
+    },
+    "readFromZip": true
+  },
+  "originalProjectsWritten": false,
+  "physicalPhoneVerified": false,
+  "ci": {
+    "runId": 38031660718,
+    "sourceCommit": "058be683f1dfa9309e691bdda0b1846e18d2422b",
+    "conclusion": "success",
+    "url": "https://github.com/ldjkorea/NEW-RENT-STORE/actions/runs/38031660718",
+    "unitCountsVerifiedFromLog": true
+  }
+}

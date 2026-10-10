@@ -1,5 +1,7 @@
 # Android와 업데이트 전략
 
+현재 운영은 **NEW RENT STORE 2.3.0 / GAS 버전 7**, Android 설치본은 **2.3.0 / versionCode 2**다. 웹 버전 확인·적용 버튼과 비공개 GitHub 최신 APK 다운로드를 제공한다. [현재 업데이트 안내](ANDROID_WEB_UPDATE_2.3.0.md)를 따른다. 아래 2.0.0 기록은 최초 실행기 제작 당시의 근거다.
+
 ## 선택한 구조
 
 Android 앱은 Kotlin/AndroidX Custom Tabs를 사용하는 경량 실행기다. 고유 패키지는 **kr.henry.rental.independent**, 앱 이름은 **임대관리 독립앱**, 버전은 **2.0.0 / versionCode 1**, 최소 지원은 Android 6(API 23), target/compile SDK는 37이다. 아이콘은 밝은 배경의 파란 건물 벡터다.
