@@ -1,0 +1,342 @@
+{
+  "appVersion": "2.2.0",
+  "phase": "protected-operations-and-followup",
+  "sourceCommit": "a5701262b7986bbd93ea30976d23faf190151c2d",
+  "recordedAt": "2026-10-10T01:48:35.764Z",
+  "reviewCandidate": true,
+  "productionReady": false,
+  "validation": {
+    "command": "npm run test:all",
+    "unit": {
+      "total": 192,
+      "passed": 192
+    },
+    "browser": {
+      "startedAt": "2026-10-10T01:41:07.678Z",
+      "finishedAt": "2026-10-10T01:47:15.933Z",
+      "url": "http://127.0.0.1:8049/",
+      "node": "v24.18.0",
+      "results": [
+        {
+          "suite": "browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "audit-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "bill-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "quarter-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "restored-data-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "print-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "pwa-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "single-file-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "integrity-v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "independent-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "operations-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        }
+      ]
+    },
+    "operationsFocused": [
+      {
+        "name": "repair PC mobile saves once preserves expense source reloads evidence and appends reasoned cancellation",
+        "status": "pass"
+      },
+      {
+        "name": "repair invalid future unsafe links and failed save retain original plus retry input without duplication",
+        "status": "pass"
+      },
+      {
+        "name": "contract condition save keeps issued historical bill and stores application date before after and audit",
+        "status": "pass"
+      },
+      {
+        "name": "contract future date rejects before modifying tenants snapshots or raw storage",
+        "status": "pass"
+      },
+      {
+        "name": "operational source cannot be removed by restore and older Google server never receives its history",
+        "status": "pass"
+      },
+      {
+        "name": "operational panel mobile PC large text keeps draft keyboard actions and annual income usable",
+        "status": "pass"
+      }
+    ],
+    "printPdf": {
+      "appVersion": "2.2.0",
+      "anonymous": true,
+      "pdfCount": 5,
+      "checks": [
+        {
+          "name": "legacy",
+          "file": "test-results\\print-pdf-2FtI2W\\legacy.pdf",
+          "pages": 1,
+          "sha256": "a6a48437dc5e5b4b9523025886e021dd1e9d8a45e181f3cb730c4bb48ad0593e",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        },
+        {
+          "name": "journal",
+          "file": "test-results\\print-pdf-2FtI2W\\journal.pdf",
+          "pages": 5,
+          "sha256": "079034fb7a2223ccfa085291b58c31b59c6dfe1c48316b3927b237cf87138e0c",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": true,
+          "status": "pass"
+        },
+        {
+          "name": "journal-mobile",
+          "file": "test-results\\print-pdf-2FtI2W\\journal-mobile.pdf",
+          "pages": 5,
+          "sha256": "5629a1b0082e4a3b70df4d5fd7acb48677a9f1f0d75dd6c2fa57e98b91d79aeb",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": true,
+          "status": "pass"
+        },
+        {
+          "name": "quarter",
+          "file": "test-results\\print-pdf-2FtI2W\\quarter.pdf",
+          "pages": 6,
+          "sha256": "1fd8b0df17534dfe86d390e1e2c23d4c1dc8448ecd318458b42f71c3b616277e",
+          "portrait": false,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        },
+        {
+          "name": "quarter-empty",
+          "file": "test-results\\print-pdf-2FtI2W\\quarter-empty.pdf",
+          "pages": 1,
+          "sha256": "0c0d6cac3711d4ae4a339725d9119f54158d9bb7d21d1cd9efa23015c65715f7",
+          "portrait": false,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        }
+      ],
+      "scope": "Edge-generated PDF text, page dimensions and bounds. Visual rendering reviewed separately; no physical printer or Google execution."
+    },
+    "normalization": {
+      "checkedAt": "2026-10-10T01:47:36.094Z",
+      "normalizedSourcePreserved": true,
+      "filesNormalized": [
+        "index.html",
+        "assets/enhancements.js",
+        "server/CalendarSync.gs",
+        "server/Code.gs",
+        "server/CurrentStatus.gs"
+      ]
+    },
+    "sourceCanonicalHashes": {
+      "package.json": {
+        "raw": "ef456fb1f071a477e06b763b027f84fdecffc917cf6d7bd35b29764b9b120443",
+        "normalized": "ef456fb1f071a477e06b763b027f84fdecffc917cf6d7bd35b29764b9b120443"
+      },
+      "index.html": {
+        "raw": "3b3a8c22d01e95a4b576f7732251d82aba43eb1727922abac322a67eb14b0c5c",
+        "normalized": "ad8d35885e81d563bc71652cde68d0c5a20e6a79c4613b357826a7bf219b8af2"
+      },
+      "src/index.template.html": {
+        "raw": "a4a49e3e739892a1af29b11658f9189200af4b6e9fa5f99fb70587097edcfcd4",
+        "normalized": "a4a49e3e739892a1af29b11658f9189200af4b6e9fa5f99fb70587097edcfcd4"
+      },
+      "assets/core.js": {
+        "raw": "77060e2e92bd2a83182b3646bcaae1439bdb1ce988e0c5ad5fb6235ca34f163a",
+        "normalized": "77060e2e92bd2a83182b3646bcaae1439bdb1ce988e0c5ad5fb6235ca34f163a"
+      },
+      "assets/billing.js": {
+        "raw": "e5ced471b3af3079a5f2e08028dbf6d071cca763e7606ddfa4c42d36ce9511ba",
+        "normalized": "e5ced471b3af3079a5f2e08028dbf6d071cca763e7606ddfa4c42d36ce9511ba"
+      },
+      "assets/app.js": {
+        "raw": "0c69b773dd1274feed16e5a273a1f525d1bd5c66a46c3a417da51cc60e6fe20b",
+        "normalized": "0c69b773dd1274feed16e5a273a1f525d1bd5c66a46c3a417da51cc60e6fe20b"
+      },
+      "assets/enhancements.js": {
+        "raw": "679b2caaecda2fe36bd2d24b757cb001a0521696677caf13c437ff98134610d9",
+        "normalized": "8699ba2f0c6d0ed9176816804fc7c0b5826ae8da5372ff8da67311ed6850aff2"
+      },
+      "assets/workspace.css": {
+        "raw": "8e82f9dd9f5c6043d3d93607f53f6a3d5cb652a7774aa8cf2b9173f17458caa1",
+        "normalized": "8e82f9dd9f5c6043d3d93607f53f6a3d5cb652a7774aa8cf2b9173f17458caa1"
+      },
+      "sw.js": {
+        "raw": "1e0d2539a7b2e55b0f8a367c5e401186e362c829f6dcf304c1d0d1bb8e0428bf",
+        "normalized": "1e0d2539a7b2e55b0f8a367c5e401186e362c829f6dcf304c1d0d1bb8e0428bf"
+      },
+      "scripts/build.cjs": {
+        "raw": "87c271bd5d87e1d611363539bf6e643d20c90a7d8d2fe8bf23a08128def14b6b",
+        "normalized": "87c271bd5d87e1d611363539bf6e643d20c90a7d8d2fe8bf23a08128def14b6b"
+      },
+      "scripts/test-browser.cjs": {
+        "raw": "04ef87bae90dfa4a47ed823d6570ce18138000ebeca618c2896bb7d100dda742",
+        "normalized": "04ef87bae90dfa4a47ed823d6570ce18138000ebeca618c2896bb7d100dda742"
+      },
+      "scripts/test-gas-candidate.cjs": {
+        "raw": "fd2873cf10a2e41e07199b9eeac15682980e3476aacb09ea66927b43760a9dae",
+        "normalized": "fd2873cf10a2e41e07199b9eeac15682980e3476aacb09ea66927b43760a9dae"
+      },
+      "tests/single-file-browser.cjs": {
+        "raw": "87315dc719ee20b163818d9fe882757cfc2908bf0bbaf78d0d69e7988eeed327",
+        "normalized": "87315dc719ee20b163818d9fe882757cfc2908bf0bbaf78d0d69e7988eeed327"
+      },
+      "server/appsscript.json": {
+        "raw": "a6954c274b74d412d9ff0968b40641931869fcc31f5a0eb622a54575ca8d1247",
+        "normalized": "a6954c274b74d412d9ff0968b40641931869fcc31f5a0eb622a54575ca8d1247"
+      },
+      "server/AuthorizeDocs.gs": {
+        "raw": "5512c7b1828320898d8c86fc78163c2860bc9b63d9317ec98f81a4bac838efbb",
+        "normalized": "5512c7b1828320898d8c86fc78163c2860bc9b63d9317ec98f81a4bac838efbb"
+      },
+      "server/Billing.gs": {
+        "raw": "8fba0a59d41e7089b3b5ad75f7441715c138cb323d852619d8f8ffabd64a10dd",
+        "normalized": "8fba0a59d41e7089b3b5ad75f7441715c138cb323d852619d8f8ffabd64a10dd"
+      },
+      "server/CalendarSync.gs": {
+        "raw": "501747cb87a69dd4f61cf26e86960d45e4bc156f788188805a551738a4c39a6c",
+        "normalized": "ee6fe4c1ce07fc932ff91522ceb782793798bff17341b00d6df8fc277900e4d3"
+      },
+      "server/Code.gs": {
+        "raw": "184d793cdabddb39fb7c8a88d5a007ea28d9ebd7d172a498024cbe39ac7319c4",
+        "normalized": "9ebad1535c2202390f70976d8a7d2e128eee740dacd2335424b0b0be6e6896fe"
+      },
+      "server/CurrentStatus.gs": {
+        "raw": "8dcf4fc79d5d8f388797b0ca0babe93e0b6bcec3ea3bd543803b75ea3a9cff7f",
+        "normalized": "2645981b706d0aa04b920da18030216725520ace895477e0112fd46676ac69bf"
+      },
+      "server/IndependentApp.gs": {
+        "raw": "d2b412e49cccd073547744a474f9517a79880b5f87bc1bd886b9940b26e88b49",
+        "normalized": "d2b412e49cccd073547744a474f9517a79880b5f87bc1bd886b9940b26e88b49"
+      }
+    }
+  },
+  "behavior": {
+    "contractHistory": "append-only; recorded application date; no future automatic application",
+    "income": "separate planned fixed charge, tax invoice marking, receivedOn cash and legacy confirmation",
+    "repair": "append-only; reasoned void; HTTPS evidence; no automatic expense posting",
+    "operationsHistoryProtocol": "rental-operations-v1",
+    "historicalBillsPreserved": true,
+    "schemaVersion": 1
+  },
+  "sourceHashes": {
+    "package.json": "ef456fb1f071a477e06b763b027f84fdecffc917cf6d7bd35b29764b9b120443",
+    "index.html": "ad8d35885e81d563bc71652cde68d0c5a20e6a79c4613b357826a7bf219b8af2",
+    "src/index.template.html": "a4a49e3e739892a1af29b11658f9189200af4b6e9fa5f99fb70587097edcfcd4",
+    "assets/core.js": "77060e2e92bd2a83182b3646bcaae1439bdb1ce988e0c5ad5fb6235ca34f163a",
+    "assets/billing.js": "e5ced471b3af3079a5f2e08028dbf6d071cca763e7606ddfa4c42d36ce9511ba",
+    "assets/app.js": "0c69b773dd1274feed16e5a273a1f525d1bd5c66a46c3a417da51cc60e6fe20b",
+    "assets/enhancements.js": "8699ba2f0c6d0ed9176816804fc7c0b5826ae8da5372ff8da67311ed6850aff2",
+    "assets/workspace.css": "8e82f9dd9f5c6043d3d93607f53f6a3d5cb652a7774aa8cf2b9173f17458caa1",
+    "sw.js": "1e0d2539a7b2e55b0f8a367c5e401186e362c829f6dcf304c1d0d1bb8e0428bf",
+    "scripts/build.cjs": "87c271bd5d87e1d611363539bf6e643d20c90a7d8d2fe8bf23a08128def14b6b",
+    "scripts/test-browser.cjs": "04ef87bae90dfa4a47ed823d6570ce18138000ebeca618c2896bb7d100dda742",
+    "scripts/test-gas-candidate.cjs": "fd2873cf10a2e41e07199b9eeac15682980e3476aacb09ea66927b43760a9dae",
+    "tests/single-file-browser.cjs": "87315dc719ee20b163818d9fe882757cfc2908bf0bbaf78d0d69e7988eeed327",
+    "server/appsscript.json": "a6954c274b74d412d9ff0968b40641931869fcc31f5a0eb622a54575ca8d1247",
+    "server/AuthorizeDocs.gs": "5512c7b1828320898d8c86fc78163c2860bc9b63d9317ec98f81a4bac838efbb",
+    "server/Billing.gs": "8fba0a59d41e7089b3b5ad75f7441715c138cb323d852619d8f8ffabd64a10dd",
+    "server/CalendarSync.gs": "ee6fe4c1ce07fc932ff91522ceb782793798bff17341b00d6df8fc277900e4d3",
+    "server/Code.gs": "9ebad1535c2202390f70976d8a7d2e128eee740dacd2335424b0b0be6e6896fe",
+    "server/CurrentStatus.gs": "2645981b706d0aa04b920da18030216725520ace895477e0112fd46676ac69bf",
+    "server/IndependentApp.gs": "d2b412e49cccd073547744a474f9517a79880b5f87bc1bd886b9940b26e88b49",
+    "tests/operations.test.cjs": "b3335bae51d6b13bb4efba1ba9af9459f1cfef8acafb851a81a5b641d3684418",
+    "tests/operations-browser.cjs": "afa78bbed0a113dce86fffa554e6f2d43899d9c6d70bfcafb1e2ecfa8edbf68a",
+    "tests/basis-review.test.cjs": "aaf98fbb5629d49fc9a681c9ba39b6548139e21650ff26471f32c4f03fc64a95",
+    "tests/server.test.cjs": "c393bd19b2daefeb4fd0d17edb41758a6389a21d859a69c182d09529fbb634f1",
+    "scripts/prepare-basis-review.cjs": "ea320362adc6eab8760fe25498afa80f43febdc347f951745c8c3c65e558fbb0",
+    "scripts/check-ci-environment.cjs": "ad90a1620d389e11d43db4807ea2750c1af1bec137c00896497a1543048a49b2",
+    ".github/workflows/regression.yml": "523fb2eff7f7ae5edd72ac881958a7fe19da0e5430262b5f76156d27c70002bf"
+  },
+  "external": {
+    "newStagingSheetCreated": true,
+    "newStagingDocumentCreated": true,
+    "newStagingGasBootstrapUploaded": true,
+    "stagingAuthorizationPending": true,
+    "stagingCalendarCreated": false,
+    "stagingAppDeployed": false,
+    "actualGoogleProductWriteTestPerformed": false,
+    "operatingAppDeployed": false,
+    "actualSourceBillsConfirmed": 0,
+    "estimatedBillsPending": 30,
+    "physicalPhoneVerified": false,
+    "physicalPrinterVerified": false
+  },
+  "remaining": [
+    "First authorization of the new Google staging project and actual anonymous write/readback Docs Calendar tests",
+    "Post-receipt charge adjustment policy response",
+    "Original issued bill and contract evidence for 30 estimates",
+    "Physical phone and physical printer verification"
+  ]
+}
