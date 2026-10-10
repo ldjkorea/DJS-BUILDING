@@ -126,7 +126,7 @@ function doGet(e) {
       return {status:'unsupported',message:'입금 원장 자료는 이를 지원하는 최신 앱에서 불러와주세요.',capabilities:capabilities_()};
     if(RentalBilling.hasOperationalRecords(state.data)&&e.parameter.operationsHistoryProtocol!==RentalBilling.OPERATIONS_FORMAT)
       return {status:'unsupported',message:'계약·수리 이력은 이를 지원하는 최신 앱에서 불러와주세요.',capabilities:capabilities_()};
-    return {status:'ok', data:state.data, revision:state.revision, appVersion:'2.2.2', capabilities:capabilities_(), protocol:'rental-sync-v2'};
+    return {status:'ok', data:state.data, revision:state.revision, appVersion:'2.3.0', capabilities:capabilities_(), protocol:'rental-sync-v2'};
   });
 }
 function ensureRows_(sheet, count) {

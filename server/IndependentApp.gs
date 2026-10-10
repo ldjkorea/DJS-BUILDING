@@ -1,4 +1,10 @@
 /* Called through google.script.run inside the owner-only web app. */
+function getAppUpdateInfo() {
+  // Release metadata only: do not open the spreadsheet, document or calendar.
+  return {appVersion:'2.3.0',androidVersion:'2.3.0',androidVersionCode:2,
+    androidReleaseUrl:'https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest'};
+}
+
 function independentRequest(request) {
   if (!request || ['GET','POST'].indexOf(request.method) < 0) throw new Error('지원하지 않는 요청입니다.');
   var output = request.method === 'POST'

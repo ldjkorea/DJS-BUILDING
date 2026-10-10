@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="application-version" content="2.2.2">
+<meta name="application-version" content="2.3.0">
 <title>NEW RENT STORE</title>
 
 <meta name="theme-color" content="#f7f8fa">
@@ -786,6 +786,8 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 .operations-record details{margin-top:12px;}.operations-card summary{cursor:pointer;font-weight:600;}
 @media(max-width:600px){.operations-form-grid{grid-template-columns:minmax(0,1fr);}}
 
+.application-update-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.application-update-actions a{text-decoration:none}#app-update-notice{display:flex;align-items:center;flex-wrap:wrap;gap:12px}#app-update-notice[hidden]{display:none}#app-update-notice>span{flex:1 1 220px}#app-update-notice .btn{white-space:normal}
+
 </style>
 <style data-source="assets/mobile.css">
 /* Same workflow DOM, five mobile destinations, safe-area-aware panels. */
@@ -935,7 +937,7 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 
   <section id="section-settlement" class="section"><div id="settings-sett-embed"></div></section>
   <!-- ======= 설정 탭 (정산 포함) ======= -->
-  <div id="section-settings" class="section"><section class="card" id="sync-center" tabindex="-1" aria-labelledby="sync-center-title"><h2 id="sync-center-title">저장 · 연동 상태</h2><p class="card-sub">이 기기 저장과 Google 저장, 문서·일정 갱신을 따로 확인합니다.</p><dl class="sync-state-grid" id="sync-state-grid"></dl><button class="btn btn-secondary" id="inspect-cloud-recovery" onclick="inspectCloudRecovery()">최근 서버 복구점 점검</button></section>
+  <div id="section-settings" class="section"><section class="card" id="application-update-card" aria-labelledby="application-update-title"><h2 id="application-update-title">앱 · 업데이트</h2><p class="card-sub">현재 웹 버전 2.3.0 · 웹 화면은 APK 재설치 없이 갱신됩니다.</p><p id="application-update-status" role="status" aria-live="polite">새 버전을 확인할 수 있습니다.</p><div class="application-update-actions"><button type="button" id="check-application-update" class="btn btn-primary">업데이트 확인</button><a id="open-application-update" class="btn btn-secondary" target="_top">최신 버전으로 열기</a><a id="android-release-link" class="btn btn-secondary" target="_blank" rel="noopener noreferrer">Android APK · 업데이트</a></div><p class="card-sub">APK는 비공개 GitHub 릴리스에서 받습니다. 저장소 접근 권한이 있는 계정으로 로그인해주세요. 새 APK 설치는 휴대전화의 확인 절차를 따릅니다.</p></section><section class="card" id="sync-center" tabindex="-1" aria-labelledby="sync-center-title"><h2 id="sync-center-title">저장 · 연동 상태</h2><p class="card-sub">이 기기 저장과 Google 저장, 문서·일정 갱신을 따로 확인합니다.</p><dl class="sync-state-grid" id="sync-state-grid"></dl><button class="btn btn-secondary" id="inspect-cloud-recovery" onclick="inspectCloudRecovery()">최근 서버 복구점 점검</button></section>
 
     <!-- 정산 (설정 탭 상단 배치) -->
 
@@ -1017,7 +1019,7 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 
 </main><!-- /content -->
 
-<aside class="workspace-sidebar"><a href="#" class="workspace-brand" onclick="switchTab('home');return false;"><span class="brand-mark">N<span>·</span></span><span>NEW RENT STORE<small>임대관리</small></span></a><span class="nav-caption">임대 업무</span><nav class="pill-nav" aria-label="주요 메뉴"><div class="nav-group primary"><button type="button" class="pill-item" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="pi-label">대시보드</span></button><button type="button" class="pill-item" id="nav-history" onclick="switchTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span class="pi-label">고지서</span></button><button type="button" class="pill-item" id="nav-settlement" onclick="switchTab('settlement')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg><span class="pi-label">정산</span></button><button type="button" class="pill-item" id="nav-tenants" onclick="switchTab('tenants')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0112 0v3M16 4a3 3 0 010 6M18 14a5 5 0 013 4v3"/></svg><span class="pi-label">세입자</span></button></div><div class="nav-group secondary" id="secondary-nav" aria-label="보조 메뉴"><button type="button" class="pill-item" id="nav-building" onclick="switchTab('building')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V3h11v18M15 9h5v12M8 7h3M8 11h3M8 15h3M8 19h3M18 13v2M18 18v1"/></svg><span class="pi-label">운영현황</span></button><button type="button" class="pill-item" id="nav-tax" onclick="switchTab('tax')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 7h6M9 11h6M9 15h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg><span class="pi-label">세무집계</span></button><button type="button" class="pill-item" id="nav-settings" onclick="switchTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg><span class="pi-label">설정</span></button></div><button class="pill-item" id="nav-more" onclick="toggleMoreNav()" aria-expanded="false" aria-controls="secondary-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span class="pi-label">더보기</span></button></nav><div class="sidebar-bottom"><span class="live-dot"></span>원본과 분리된 독립앱<small>오늘의 업무를 정확하고 간결하게.</small><span class="version-label">NEW RENT STORE 2.2.2</span></div></aside>
+<aside class="workspace-sidebar"><a href="#" class="workspace-brand" onclick="switchTab('home');return false;"><span class="brand-mark">N<span>·</span></span><span>NEW RENT STORE<small>임대관리</small></span></a><span class="nav-caption">임대 업무</span><nav class="pill-nav" aria-label="주요 메뉴"><div class="nav-group primary"><button type="button" class="pill-item" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="pi-label">대시보드</span></button><button type="button" class="pill-item" id="nav-history" onclick="switchTab('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg><span class="pi-label">고지서</span></button><button type="button" class="pill-item" id="nav-settlement" onclick="switchTab('settlement')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M8 6h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg><span class="pi-label">정산</span></button><button type="button" class="pill-item" id="nav-tenants" onclick="switchTab('tenants')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0112 0v3M16 4a3 3 0 010 6M18 14a5 5 0 013 4v3"/></svg><span class="pi-label">세입자</span></button></div><div class="nav-group secondary" id="secondary-nav" aria-label="보조 메뉴"><button type="button" class="pill-item" id="nav-building" onclick="switchTab('building')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 21V3h11v18M15 9h5v12M8 7h3M8 11h3M8 15h3M8 19h3M18 13v2M18 18v1"/></svg><span class="pi-label">운영현황</span></button><button type="button" class="pill-item" id="nav-tax" onclick="switchTab('tax')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 7h6M9 11h6M9 15h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg><span class="pi-label">세무집계</span></button><button type="button" class="pill-item" id="nav-settings" onclick="switchTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg><span class="pi-label">설정</span></button></div><button class="pill-item" id="nav-more" onclick="toggleMoreNav()" aria-expanded="false" aria-controls="secondary-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span class="pi-label">더보기</span></button></nav><div class="sidebar-bottom"><span class="live-dot"></span>원본과 분리된 독립앱<small>오늘의 업무를 정확하고 간결하게.</small><span class="version-label">NEW RENT STORE 2.3.0</span></div></aside>
 <!-- ══ 모달들 ══ -->
 <!-- 세입자 추가/수정 -->
 <div class="modal-overlay" id="modal-tenant">
@@ -6149,7 +6151,8 @@ if(!hostedInGas && (location.protocol==='http:' || location.protocol==='https:')
 if(!hostedInGas && 'serviceWorker'in navigator && (location.protocol==='https:'||(location.protocol==='http:'&&['localhost','127.0.0.1'].includes(location.hostname)))) {
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{
-      const notice=()=>{const el=document.getElementById('app-update-notice');if(el){el.hidden=false;el.textContent='새 버전이 준비됐습니다. 작업을 저장하고 이 앱의 모든 창을 닫은 뒤 다시 열면 적용됩니다.';}};
+      pwaUpdateRegistration=reg;
+      const notice=()=>showApplicationUpdateNotice('새 버전이 준비됐습니다. 입력 내용을 보관하고 최신 버전으로 열 수 있습니다.');
       if(reg.waiting)notice();
       reg.addEventListener('updatefound',()=>reg.installing?.addEventListener('statechange',()=>{if(reg.waiting&&navigator.serviceWorker.controller)notice();}));
     }).catch(()=>{const el=document.getElementById('app-update-notice');if(el){el.hidden=false;el.textContent='오프라인 앱 준비에 실패했습니다. 온라인 상태에서 다시 열어주세요.';}});
@@ -6691,11 +6694,107 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.2.2';
+const APPLICATION_VERSION='2.3.0';
+const ANDROID_RELEASE_URL='https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest';
+let applicationUpdateBusy=false,applicationRemoteVersion=null,pwaUpdateRegistration=null;
+function setApplicationUpdateStatus(text){
+  const el=document.getElementById('application-update-status');if(el)el.textContent=text;
+}
+function showApplicationUpdateNotice(text){
+  const el=document.getElementById('app-update-notice');if(!el)return;
+  el.hidden=false;el.replaceChildren();
+  const message=document.createElement('span');message.textContent=text;el.append(message);
+  const action=hostedInGas?document.createElement('a'):document.createElement('button');
+  action.className='btn btn-secondary';action.textContent='최신 버전으로 열기';
+  if(hostedInGas){action.href=applicationUpdateUrl();action.target='_top';action.onclick=()=>prepareApplicationUpdate();}
+  else {action.type='button';action.onclick=applyPwaUpdate;}
+  el.append(action);
+}
+function applicationUpdateUrl(){
+  const url=new URL(SHEET_URL);url.search='';url.searchParams.set('appUpdate',Date.now());return url.href;
+}
+function prepareApplicationUpdate(){
+  if(syncBusy||persistenceBusy||syncController){showToast('저장·조회가 끝난 뒤 업데이트해주세요.');return false;}
+  if(storageFault||conflictingTab||failedSaveData){showToast('자료 저장 상태를 확인하고 백업한 뒤 업데이트해주세요.');return false;}
+  if(cloudEnabled&&(cloudDirty||appStorage.getItem('rentalApp.pendingCloudRequest.v2'))){showToast('Google 저장을 완료한 뒤 업데이트해주세요.');return false;}
+  if(document.querySelector('.modal-overlay.open')){showToast('열린 입력 창을 저장하거나 닫은 뒤 업데이트해주세요.');return false;}
+  const repair=document.getElementById('repair-form');
+  if(repair&&repair.closest('.section.active')&&Array.from(repair.querySelectorAll('input,textarea')).some(el=>el.value!==el.defaultValue)){
+    showToast('작성 중인 수리 기록을 저장한 뒤 업데이트해주세요.');return false;
+  }
+  if(JSON.stringify(currentData())!==JSON.stringify(lastCommitted)){showToast('변경한 내용을 저장한 뒤 업데이트해주세요.');return false;}
+  flushBillDraft();captureSettlementDraft();rememberWorkspace();
+  if(pendingBillDraft||settlementDraftError){showToast('초안을 보관하지 못했습니다. 백업 후 다시 시도해주세요.');return false;}
+  return true;
+}
+async function requestApplicationUpdateInfo(){
+  return new Promise((resolve,reject)=>{
+    let settled=false;const timer=setTimeout(()=>finish(reject,new Error('버전 확인 시간이 초과됐습니다. 다시 시도해주세요.')),15000);
+    function finish(callback,value){if(settled)return;settled=true;clearTimeout(timer);callback(value);}
+    google.script.run.withSuccessHandler(value=>finish(resolve,value)).withFailureHandler(error=>finish(reject,new Error(error.message||'버전 확인에 실패했습니다.'))).getAppUpdateInfo();
+  });
+}
+async function checkApplicationUpdate(automatic=false){
+  if(applicationUpdateBusy)return;
+  if(isDemo&&hostedInGas){setApplicationUpdateStatus('예시 모드에서는 운영 서버에 연결하지 않습니다.');return;}
+  applicationUpdateBusy=true;const button=document.getElementById('check-application-update');if(button)button.disabled=true;
+  setApplicationUpdateStatus('새 버전을 확인하고 있습니다…');
+  try{
+    if(!navigator.onLine)throw new Error('인터넷에 연결한 뒤 업데이트를 확인해주세요.');
+    if(hostedInGas){
+      const info=await requestApplicationUpdateInfo();
+      if(!info||!/^\d+\.\d+\.\d+$/.test(info.appVersion))throw new Error('서버의 버전 정보를 확인하지 못했습니다.');
+      applicationRemoteVersion=info.appVersion;observeApplicationVersion(info.appVersion);
+      setApplicationUpdateStatus(info.appVersion===APPLICATION_VERSION?'최신 웹 버전입니다 · '+APPLICATION_VERSION:'서버 '+info.appVersion+' · 현재 화면 '+APPLICATION_VERSION);
+    }else if('serviceWorker'in navigator){
+      const reg=pwaUpdateRegistration||await navigator.serviceWorker.getRegistration();
+      if(!reg)throw new Error('설치형 웹앱 준비가 끝난 뒤 다시 확인해주세요.');
+      await reg.update();
+      if(reg.installing)await new Promise((resolve,reject)=>{
+        const worker=reg.installing,timer=setTimeout(()=>reject(new Error('새 버전 다운로드 시간이 초과됐습니다.')),15000);
+        const done=()=>{if(worker.state==='installed'||worker.state==='redundant'){clearTimeout(timer);resolve();}};
+        worker.addEventListener('statechange',done);done();
+      });
+      if(reg.waiting){showApplicationUpdateNotice('새 웹 버전이 준비됐습니다. 입력 내용을 보관하고 적용할 수 있습니다.');setApplicationUpdateStatus('새 버전 다운로드 완료 · 적용할 수 있습니다.');}
+      else setApplicationUpdateStatus('최신 웹 버전입니다 · '+APPLICATION_VERSION);
+    }else throw new Error('이 환경에서는 설치형 웹앱 업데이트를 확인할 수 없습니다.');
+  }catch(error){setApplicationUpdateStatus(error.message);if(!automatic)showToast(error.message);}
+  finally{applicationUpdateBusy=false;if(button)button.disabled=false;}
+}
+async function applyPwaUpdate(){
+  if(!prepareApplicationUpdate())return;
+  const reg=pwaUpdateRegistration||await navigator.serviceWorker.getRegistration();
+  if(!reg?.waiting){showToast('먼저 업데이트 확인을 눌러주세요.');return;}
+  let activationTimer;
+  const activated=new Promise(resolve=>{
+    const changed=()=>{clearTimeout(activationTimer);resolve(true);};
+    navigator.serviceWorker.addEventListener('controllerchange',changed,{once:true});
+    activationTimer=setTimeout(()=>{navigator.serviceWorker.removeEventListener('controllerchange',changed);resolve(false);},10000);
+  });
+  const channel=new MessageChannel();
+  const result=await new Promise(resolve=>{
+    const timer=setTimeout(()=>{channel.port1.close();resolve({status:'timeout'});},5000);
+    channel.port1.onmessage=event=>{clearTimeout(timer);channel.port1.close();resolve(event.data);};
+    reg.waiting.postMessage({type:'APPLY_APP_UPDATE'},[channel.port2]);
+  });
+  if(result.status==='ready'&&await activated)location.reload();
+  else showToast(result.status==='other-windows'?'이 앱의 다른 창을 닫고 다시 적용해주세요.':'업데이트를 적용하지 못했습니다. 다시 확인해주세요.');
+}
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
-  const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';
+  applicationRemoteVersion=remoteVersion;
+  showApplicationUpdateNotice('서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 저장 상태를 확인한 뒤 최신 화면을 열어주세요.');
 }
+document.addEventListener('DOMContentLoaded',()=>{
+  const check=document.getElementById('check-application-update');if(check)check.onclick=()=>checkApplicationUpdate();
+  const latest=document.getElementById('open-application-update');if(latest){latest.href=applicationUpdateUrl();latest.onclick=()=>prepareApplicationUpdate();if(!hostedInGas){latest.hidden=true;}}
+  const apk=document.getElementById('android-release-link');if(apk)apk.href=ANDROID_RELEASE_URL;
+  if(hostedInGas&&!isDemo)setTimeout(()=>checkApplicationUpdate(true),1200);
+});
+let lastApplicationUpdateCheck=0;
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&hostedInGas&&!isDemo&&Date.now()-lastApplicationUpdateCheck>60000){lastApplicationUpdateCheck=Date.now();checkApplicationUpdate(true);}
+});
 document.addEventListener('DOMContentLoaded',()=>{
   if(initialWorkspace&&Number.isInteger(initialWorkspace.year)&&initialWorkspace.year>=1900&&initialWorkspace.year<=2200&&Number.isInteger(initialWorkspace.month)&&initialWorkspace.month>=1&&initialWorkspace.month<=12){
     cY=initialWorkspace.year;cM=initialWorkspace.month;histY=cY;histM=cM;updateMonthLabel();renderAll();

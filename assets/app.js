@@ -3922,7 +3922,8 @@ if(!hostedInGas && (location.protocol==='http:' || location.protocol==='https:')
 if(!hostedInGas && 'serviceWorker'in navigator && (location.protocol==='https:'||(location.protocol==='http:'&&['localhost','127.0.0.1'].includes(location.hostname)))) {
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{
-      const notice=()=>{const el=document.getElementById('app-update-notice');if(el){el.hidden=false;el.textContent='새 버전이 준비됐습니다. 작업을 저장하고 이 앱의 모든 창을 닫은 뒤 다시 열면 적용됩니다.';}};
+      pwaUpdateRegistration=reg;
+      const notice=()=>showApplicationUpdateNotice('새 버전이 준비됐습니다. 입력 내용을 보관하고 최신 버전으로 열 수 있습니다.');
       if(reg.waiting)notice();
       reg.addEventListener('updatefound',()=>reg.installing?.addEventListener('statechange',()=>{if(reg.waiting&&navigator.serviceWorker.controller)notice();}));
     }).catch(()=>{const el=document.getElementById('app-update-notice');if(el){el.hidden=false;el.textContent='오프라인 앱 준비에 실패했습니다. 온라인 상태에서 다시 열어주세요.';}});

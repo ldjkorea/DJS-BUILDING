@@ -1,8 +1,20 @@
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg', './assets/styles.css', './assets/core.js', './assets/app.js', './assets/billing.js', './assets/enhancements.js', './assets/workspace.css', './assets/mobile.css', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png'];
 const scope = new URL(self.registration.scope);
 const CACHE_PREFIX = 'rental-independent-20261009-'+encodeURIComponent(scope.pathname)+'-';
-const CACHE_NAME = CACHE_PREFIX+'2.2.2';
+const CACHE_NAME = CACHE_PREFIX+'2.3.0';
 const allowedPaths = new Set(ASSETS.map(path => new URL(path, scope).pathname));
+
+self.addEventListener('message', e => {
+  if(e.data?.type !== 'APPLY_APP_UPDATE' || !e.ports?.[0])return;
+  e.waitUntil((async()=>{
+    const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    const own=windows.filter(client=>client.url.startsWith(self.registration.scope));
+    if(own.length!==1||own[0].id!==e.source?.id){e.ports[0].postMessage({status:'other-windows'});return;}
+    await self.skipWaiting();
+    // The page waits for controllerchange before navigating to the new cache.
+    e.ports[0].postMessage({status:'ready'});
+  })());
+});
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));

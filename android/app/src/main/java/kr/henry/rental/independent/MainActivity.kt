@@ -44,6 +44,7 @@ class MainActivity : Activity() {
         }
         button(R.string.open_app) { openApp(false) }
         button(R.string.open_browser) { openApp(true) }
+        button(R.string.apk_updates) { openRelease() }
         button(R.string.updates) { AlertDialog.Builder(this).setTitle(R.string.updates).setMessage(R.string.update_info).setPositiveButton(android.R.string.ok,null).show() }
         layout.addView(text(R.string.version_label,13f))
         val scroll=ScrollView(this).apply { addView(layout) }
@@ -73,6 +74,12 @@ class MainActivity : Activity() {
                 tab.launchUrl(this,Uri.parse(AppDestination.WEB_APP))
             }
             status.setText(R.string.return_message)
+        } catch (_: ActivityNotFoundException) { status.setText(R.string.browser_missing) }
+    }
+    private fun openRelease() {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(AppDestination.RELEASE_URL)))
+            status.setText(R.string.apk_updates_hint)
         } catch (_: ActivityNotFoundException) { status.setText(R.string.browser_missing) }
     }
     override fun onSaveInstanceState(outState: Bundle) { outState.putBoolean("launched",launched);super.onSaveInstanceState(outState) }

@@ -531,11 +531,107 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.2.2';
+const APPLICATION_VERSION='2.3.0';
+const ANDROID_RELEASE_URL='https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest';
+let applicationUpdateBusy=false,applicationRemoteVersion=null,pwaUpdateRegistration=null;
+function setApplicationUpdateStatus(text){
+  const el=document.getElementById('application-update-status');if(el)el.textContent=text;
+}
+function showApplicationUpdateNotice(text){
+  const el=document.getElementById('app-update-notice');if(!el)return;
+  el.hidden=false;el.replaceChildren();
+  const message=document.createElement('span');message.textContent=text;el.append(message);
+  const action=hostedInGas?document.createElement('a'):document.createElement('button');
+  action.className='btn btn-secondary';action.textContent='최신 버전으로 열기';
+  if(hostedInGas){action.href=applicationUpdateUrl();action.target='_top';action.onclick=()=>prepareApplicationUpdate();}
+  else {action.type='button';action.onclick=applyPwaUpdate;}
+  el.append(action);
+}
+function applicationUpdateUrl(){
+  const url=new URL(SHEET_URL);url.search='';url.searchParams.set('appUpdate',Date.now());return url.href;
+}
+function prepareApplicationUpdate(){
+  if(syncBusy||persistenceBusy||syncController){showToast('저장·조회가 끝난 뒤 업데이트해주세요.');return false;}
+  if(storageFault||conflictingTab||failedSaveData){showToast('자료 저장 상태를 확인하고 백업한 뒤 업데이트해주세요.');return false;}
+  if(cloudEnabled&&(cloudDirty||appStorage.getItem('rentalApp.pendingCloudRequest.v2'))){showToast('Google 저장을 완료한 뒤 업데이트해주세요.');return false;}
+  if(document.querySelector('.modal-overlay.open')){showToast('열린 입력 창을 저장하거나 닫은 뒤 업데이트해주세요.');return false;}
+  const repair=document.getElementById('repair-form');
+  if(repair&&repair.closest('.section.active')&&Array.from(repair.querySelectorAll('input,textarea')).some(el=>el.value!==el.defaultValue)){
+    showToast('작성 중인 수리 기록을 저장한 뒤 업데이트해주세요.');return false;
+  }
+  if(JSON.stringify(currentData())!==JSON.stringify(lastCommitted)){showToast('변경한 내용을 저장한 뒤 업데이트해주세요.');return false;}
+  flushBillDraft();captureSettlementDraft();rememberWorkspace();
+  if(pendingBillDraft||settlementDraftError){showToast('초안을 보관하지 못했습니다. 백업 후 다시 시도해주세요.');return false;}
+  return true;
+}
+async function requestApplicationUpdateInfo(){
+  return new Promise((resolve,reject)=>{
+    let settled=false;const timer=setTimeout(()=>finish(reject,new Error('버전 확인 시간이 초과됐습니다. 다시 시도해주세요.')),15000);
+    function finish(callback,value){if(settled)return;settled=true;clearTimeout(timer);callback(value);}
+    google.script.run.withSuccessHandler(value=>finish(resolve,value)).withFailureHandler(error=>finish(reject,new Error(error.message||'버전 확인에 실패했습니다.'))).getAppUpdateInfo();
+  });
+}
+async function checkApplicationUpdate(automatic=false){
+  if(applicationUpdateBusy)return;
+  if(isDemo&&hostedInGas){setApplicationUpdateStatus('예시 모드에서는 운영 서버에 연결하지 않습니다.');return;}
+  applicationUpdateBusy=true;const button=document.getElementById('check-application-update');if(button)button.disabled=true;
+  setApplicationUpdateStatus('새 버전을 확인하고 있습니다…');
+  try{
+    if(!navigator.onLine)throw new Error('인터넷에 연결한 뒤 업데이트를 확인해주세요.');
+    if(hostedInGas){
+      const info=await requestApplicationUpdateInfo();
+      if(!info||!/^\d+\.\d+\.\d+$/.test(info.appVersion))throw new Error('서버의 버전 정보를 확인하지 못했습니다.');
+      applicationRemoteVersion=info.appVersion;observeApplicationVersion(info.appVersion);
+      setApplicationUpdateStatus(info.appVersion===APPLICATION_VERSION?'최신 웹 버전입니다 · '+APPLICATION_VERSION:'서버 '+info.appVersion+' · 현재 화면 '+APPLICATION_VERSION);
+    }else if('serviceWorker'in navigator){
+      const reg=pwaUpdateRegistration||await navigator.serviceWorker.getRegistration();
+      if(!reg)throw new Error('설치형 웹앱 준비가 끝난 뒤 다시 확인해주세요.');
+      await reg.update();
+      if(reg.installing)await new Promise((resolve,reject)=>{
+        const worker=reg.installing,timer=setTimeout(()=>reject(new Error('새 버전 다운로드 시간이 초과됐습니다.')),15000);
+        const done=()=>{if(worker.state==='installed'||worker.state==='redundant'){clearTimeout(timer);resolve();}};
+        worker.addEventListener('statechange',done);done();
+      });
+      if(reg.waiting){showApplicationUpdateNotice('새 웹 버전이 준비됐습니다. 입력 내용을 보관하고 적용할 수 있습니다.');setApplicationUpdateStatus('새 버전 다운로드 완료 · 적용할 수 있습니다.');}
+      else setApplicationUpdateStatus('최신 웹 버전입니다 · '+APPLICATION_VERSION);
+    }else throw new Error('이 환경에서는 설치형 웹앱 업데이트를 확인할 수 없습니다.');
+  }catch(error){setApplicationUpdateStatus(error.message);if(!automatic)showToast(error.message);}
+  finally{applicationUpdateBusy=false;if(button)button.disabled=false;}
+}
+async function applyPwaUpdate(){
+  if(!prepareApplicationUpdate())return;
+  const reg=pwaUpdateRegistration||await navigator.serviceWorker.getRegistration();
+  if(!reg?.waiting){showToast('먼저 업데이트 확인을 눌러주세요.');return;}
+  let activationTimer;
+  const activated=new Promise(resolve=>{
+    const changed=()=>{clearTimeout(activationTimer);resolve(true);};
+    navigator.serviceWorker.addEventListener('controllerchange',changed,{once:true});
+    activationTimer=setTimeout(()=>{navigator.serviceWorker.removeEventListener('controllerchange',changed);resolve(false);},10000);
+  });
+  const channel=new MessageChannel();
+  const result=await new Promise(resolve=>{
+    const timer=setTimeout(()=>{channel.port1.close();resolve({status:'timeout'});},5000);
+    channel.port1.onmessage=event=>{clearTimeout(timer);channel.port1.close();resolve(event.data);};
+    reg.waiting.postMessage({type:'APPLY_APP_UPDATE'},[channel.port2]);
+  });
+  if(result.status==='ready'&&await activated)location.reload();
+  else showToast(result.status==='other-windows'?'이 앱의 다른 창을 닫고 다시 적용해주세요.':'업데이트를 적용하지 못했습니다. 다시 확인해주세요.');
+}
 function observeApplicationVersion(remoteVersion){
   if(!remoteVersion||remoteVersion===APPLICATION_VERSION||!/^\d+\.\d+\.\d+$/.test(remoteVersion))return;
-  const notice=document.getElementById('app-update-notice');notice.hidden=false;notice.textContent='서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 입력 중인 내용을 저장하거나 백업하고 다시 열어주세요. 자동으로 새로고침하지 않습니다.';
+  applicationRemoteVersion=remoteVersion;
+  showApplicationUpdateNotice('서버 버전 '+remoteVersion+' · 이 화면 '+APPLICATION_VERSION+'. 저장 상태를 확인한 뒤 최신 화면을 열어주세요.');
 }
+document.addEventListener('DOMContentLoaded',()=>{
+  const check=document.getElementById('check-application-update');if(check)check.onclick=()=>checkApplicationUpdate();
+  const latest=document.getElementById('open-application-update');if(latest){latest.href=applicationUpdateUrl();latest.onclick=()=>prepareApplicationUpdate();if(!hostedInGas){latest.hidden=true;}}
+  const apk=document.getElementById('android-release-link');if(apk)apk.href=ANDROID_RELEASE_URL;
+  if(hostedInGas&&!isDemo)setTimeout(()=>checkApplicationUpdate(true),1200);
+});
+let lastApplicationUpdateCheck=0;
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&hostedInGas&&!isDemo&&Date.now()-lastApplicationUpdateCheck>60000){lastApplicationUpdateCheck=Date.now();checkApplicationUpdate(true);}
+});
 document.addEventListener('DOMContentLoaded',()=>{
   if(initialWorkspace&&Number.isInteger(initialWorkspace.year)&&initialWorkspace.year>=1900&&initialWorkspace.year<=2200&&Number.isInteger(initialWorkspace.month)&&initialWorkspace.month>=1&&initialWorkspace.month<=12){
     cY=initialWorkspace.year;cM=initialWorkspace.month;histY=cY;histM=cM;updateMonthLabel();renderAll();

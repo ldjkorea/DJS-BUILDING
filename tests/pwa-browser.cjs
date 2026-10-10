@@ -26,7 +26,7 @@ async function test(name,action){
     const file=pathname.slice('/rental-app/'.length)||'index.html';
     if(!assets.has(file))return res.writeHead(404).end();
     let body=fs.readFileSync(path.join(root,file));
-    if(file==='sw.js'&&update)body=Buffer.from(body.toString().replace(`CACHE_PREFIX+'${version}'`,`CACHE_PREFIX+'${version}-test-update'`));
+    if(file==='sw.js'&&update)body=Buffer.from(body.toString().replace(`CACHE_PREFIX+'${version}'`,`CACHE_PREFIX+'${version}-test-update-${update}'`));
     res.writeHead(200,{'Content-Type':types[path.extname(file)],'Cache-Control':'no-store'});res.end(body);
   });
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -66,7 +66,7 @@ async function test(name,action){
     await page.evaluate(()=>goToHistory('demo2'));await page.waitForTimeout(80);await page.evaluate(()=>editThisMonth());
     await page.locator('#bill-electricity').fill('87654');await page.evaluate(()=>flushBillDraft());
     await page.evaluate(async()=>{await caches.open('unrelated-app-cache');await caches.open('rental-app-%2Fother%2F-1.0');await caches.open('rental-foundation-v3');});
-    update=true;await page.evaluate(async()=>{const registration=await navigator.serviceWorker.getRegistration();await registration.update();});
+    update=1;await page.evaluate(async()=>{const registration=await navigator.serviceWorker.getRegistration();await registration.update();});
     await page.waitForFunction(async()=>!!(await navigator.serviceWorker.getRegistration()).waiting);
     await page.locator('#app-update-notice').waitFor({state:'visible'});
     await page.screenshot({path:path.join(out,'verified-update.png'),fullPage:true});
@@ -85,7 +85,7 @@ async function test(name,action){
     await page.locator('.section.active').waitFor();
     await page.waitForFunction(async()=>!!navigator.serviceWorker.controller&&!(await navigator.serviceWorker.getRegistration()).waiting);
     const names=await page.evaluate(()=>caches.keys());
-    assert.ok(names.includes('rental-independent-20261009-%2Frental-app%2F-'+version+'-test-update'));
+    assert.ok(names.includes('rental-independent-20261009-%2Frental-app%2F-'+version+'-test-update-1'));
     assert.ok(!names.includes('rental-independent-20261009-%2Frental-app%2F-'+version));
     assert.ok(names.includes('rental-foundation-v3'));
     assert.ok(names.includes('unrelated-app-cache'));assert.ok(names.includes('rental-app-%2Fother%2F-1.0'));
@@ -96,6 +96,23 @@ async function test(name,action){
     await context.setOffline(true);await page.reload();await navigateV2(page,'home');
     assert.equal(await page.locator('#home-bill-list .t-item').count(),4);
     assert.deepEqual(errors,[]);assert.equal(external.filter(u=>u.includes('script.google')).length,0);
+  });
+  await test('update button checks, protects other windows and applies in one click with drafts retained',async()=>{
+    await context.setOffline(false);await page.evaluate(()=>goToHistory('demo2'));await page.waitForTimeout(80);await page.evaluate(()=>editThisMonth());
+    await page.locator('#bill-electricity').fill('98765');await page.evaluate(()=>flushBillDraft());
+    const other=await context.newPage();await other.goto(url);await other.waitForFunction(()=>!!navigator.serviceWorker.controller);
+    update=2;await navigateV2(page,'settings');await page.getByRole('button',{name:'업데이트 확인',exact:true}).click();
+    await page.waitForFunction(async()=>!!(await navigator.serviceWorker.getRegistration()).waiting);
+    await page.locator('#app-update-notice button').click();
+    await page.waitForFunction(()=>document.getElementById('toast').textContent.includes('다른 창'));
+    assert.ok(await page.evaluate(async()=>!!(await navigator.serviceWorker.getRegistration()).waiting));
+    await other.close();
+    await page.locator('#app-update-notice button').click();
+    await page.waitForFunction(async version=>(await caches.keys()).some(key=>key.endsWith(version+'-test-update-2')),version);
+    await page.waitForFunction(()=>typeof renderAll==='function'&&!!document.querySelector('.section.active'));
+    await page.evaluate(()=>goToHistory('demo2'));await page.waitForTimeout(80);await page.evaluate(()=>editThisMonth());
+    assert.equal(await page.locator('#bill-electricity').inputValue(),'98765');
+    assert.ok((await page.evaluate(()=>caches.keys())).includes('unrelated-app-cache'));assert.deepEqual(errors,[]);
   });
 })().catch(e=>{console.error(e.message);process.exitCode=1;}).finally(async()=>{
   if(results.some(row=>row.status==='fail')&&context){

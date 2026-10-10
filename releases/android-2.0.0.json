@@ -1,0 +1,32 @@
+{
+  "appName": "임대관리 독립앱",
+  "versionName": "2.0.0",
+  "versionCode": 1,
+  "packageName": "kr.henry.rental.independent",
+  "minSdk": 23,
+  "targetSdk": 37,
+  "apkFile": "rental-independent-2.0.0.apk",
+  "apkBytes": 1952983,
+  "apkSha256": "f0f9715c31cb32b27cf129e8a4810aa936859d33446626f1c9ed090ce5dd5624",
+  "signingCertificateSha256": "b25160850067d115c493fe51aca9bdce1956d999ed45cee0950bd86d33c5a2a0",
+  "signatureVerification": "PASS v1 and v2",
+  "downloadUrl": null,
+  "distribution": "private local handoff; manual user-approved install",
+  "deviceEvidence": {
+    "emulator": "rental-independent-v2 / API 35 / emulator-5556",
+    "nativeBrowserBoundary": "PASS",
+    "signedReleaseInstall": "PASS",
+    "sameVersionReinstall": "PASS",
+    "googleOwnerLogin": "NOT TESTED",
+    "newVersionUpgrade": "NOT TESTED",
+    "physicalPhone": "NOT TESTED"
+  },
+  "webApp": {
+    "version": "current approved 1.0 deployment version 4",
+    "candidate": "2.0.0 not deployed",
+    "url": "https://script.google.com/macros/s/AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae/exec"
+  },
+  "sourceCommit": "d4c01a5",
+  "androidCommit": "8bc9c37",
+  "baselineCommit": "5978818"
+}

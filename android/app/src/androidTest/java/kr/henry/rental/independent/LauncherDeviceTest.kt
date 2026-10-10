@@ -22,7 +22,7 @@ class LauncherDeviceTest {
             assertTrue("Back must return to independent launcher",device.wait(Until.hasObject(By.pkg(AppDestination.PACKAGE)),10000))
             scenario.recreate()
             assertTrue("Rotation/recreation must not open a duplicate tab", device.wait(Until.hasObject(By.pkg(AppDestination.PACKAGE)),5000))
-            assertNotNull(device.findObject(By.text("임대관리 열기")))
+            assertNotNull(device.findObject(By.text("NEW RENT STORE 열기")))
             device.findObject(By.text("기본 브라우저로 열기")).click()
             assertTrue(device.wait(Until.hasObject(By.pkg("com.android.chrome")),10000))
             device.pressBack()
