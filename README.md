@@ -1,4 +1,4 @@
-# NEW RENT STORE — 웹 2.2.0 검토 후보
+# NEW RENT STORE — 웹 2.2.1 개발 소스
 
 현재 독립 프로젝트의 공식 명칭은 **NEW RENT STORE**이며, GitHub 저장소는 [`ldjkorea/NEW-RENT-STORE`](https://github.com/ldjkorea/NEW-RENT-STORE)입니다. 기존 1.4 앱은 **RENT STORE**, 오래된 앱은 **2025 RENT STORE**로 구분합니다. [저장소 이름과 연결 주소](docs/REPOSITORY_NAMES.md)에 변경 전후 대응 관계와 확인 결과를 기록했습니다.
 

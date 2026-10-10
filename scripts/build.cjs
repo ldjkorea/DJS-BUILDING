@@ -17,7 +17,7 @@ function build() {
   for (const [label, actual] of Object.entries(releaseVersions)) {
     if (actual !== version) throw new Error(label + ' 버전 ' + actual + '이 package.json ' + version + '과 다릅니다.');
   }
-  if (!html.includes('INDEPENDENT ' + version)) throw new Error('내비게이션 버전 표시가 오래되었습니다.');
+  if (!html.includes('NEW RENT STORE ' + version)) throw new Error('내비게이션 버전 표시가 오래되었습니다.');
   const icon = fs.readFileSync(path.join(root, 'icon.svg')).toString('base64');
   html = html.replace(/href="icon.svg"/g, 'href="data:image/svg+xml;base64,' + icon + '"');
   if (fs.existsSync(path.join(root, 'icons/icon-180.png'))) {

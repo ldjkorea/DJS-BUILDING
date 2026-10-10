@@ -1,7 +1,7 @@
 {
-  "name": "임대관리 독립앱",
-  "short_name": "임대 독립앱",
-  "description": "별도 GAS와 DB를 사용하는 임대관리 독립앱",
+  "name": "NEW RENT STORE",
+  "short_name": "NEW RENT STORE",
+  "description": "NEW RENT STORE — 별도 GAS와 DB를 사용하는 임대관리 앱",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f7f8fa",
