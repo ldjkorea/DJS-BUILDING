@@ -81,7 +81,7 @@ class MainActivity : Activity() {
     }
     private fun welcome(){card(content){add(it,text("내 자료와 연결하세요",21f,ink,true),0,12);add(it,text("처음 한 번 Google 소유자 계정으로 기기를 승인하면, 다음부터는 이 앱에서 바로 관리할 수 있어요.",15f,muted),0,20);add(it,button("Google 계정으로 연결",true){startPair()},0,10);add(it,button("연결 코드 입력"){manualPair()})};add(content,button("예시 화면 둘러보기"){demo=true;snapshot=NativeDemo.snapshot(month);notice="";render()})}
     private fun home(){
-        heading("오늘도, 한눈에","내 건물의 수납과 계약을 차분하게 확인하세요.");if(snapshot==null){welcome();return};monthPicker()
+        heading("오늘도, 한눈에","수납과 계약을 한눈에 확인하세요.");if(snapshot==null){welcome();return};monthPicker()
         val s=snapshot!!.getJSONObject("summary")
         card(content,blue){add(it,text("이번 달 수납",13f,Color.rgb(214,230,255)),0,10);add(it,text(money(s.optLong("received")),30f,Color.WHITE,true),0,18)
             val ratio=if(s.optLong("total")>0)(100*s.optLong("received")/s.optLong("total")).toInt()else 0
