@@ -1,7 +1,7 @@
 {
   "version": "2.1.2",
   "phase": "receipt-opening-basis-review",
-  "sourceCommit": "1db025d8204bc735327f956df0ae9a53850dba1a",
+  "sourceCommit": "a4f0769ca8f314f885774767c0887e800b843d7d",
   "checkedAt": "2026-10-09T22:18:15.997Z",
   "releaseCandidate": false,
   "behavior": {

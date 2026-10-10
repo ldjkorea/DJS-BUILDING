@@ -3,7 +3,7 @@
   "stage": "receipt journal foundation only",
   "releaseCandidate": false,
   "partialPaymentFeatureComplete": false,
-  "sourceCommit": "da275ab3ea0d91c318db1620704cc70888590283",
+  "sourceCommit": "0a268926614dee0748c3bc95b0e913d63b3c1274",
   "baseline": "18237dc",
   "validatedAt": "2026-10-09T20:43:03.915Z",
   "unit": {

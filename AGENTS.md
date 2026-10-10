@@ -1,6 +1,6 @@
 # 후속 개발 지침
 
-- 이 저장소는 `ldjkorea/rental-app-v1.4.0-private`의 `2b01a2e`를 복제한 독립앱이다. 연결 대상과 검증 결과는 `docs/INDEPENDENT_APP.md`에 기록했다.
+- 이 저장소는 `ldjkorea/rental-app-v1.4.0-private`의 `a937698`를 복제한 독립앱이다. 연결 대상과 검증 결과는 `docs/INDEPENDENT_APP.md`에 기록했다.
 - 변경 전 계획·영향 범위·예상 결과를 한국어로 간단히 설명한다.
 - 기존 기능과 JSON 백업 호환성을 유지하며 작은 단위로 개선한다.
 - `assets/core.js`는 DOM 없는 데이터 검증·저장 기능, `assets/app.js`는 기존 전역 함수를 사용하는 UI·동기화 코드다.

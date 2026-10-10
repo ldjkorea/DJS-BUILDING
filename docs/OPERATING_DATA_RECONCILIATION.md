@@ -6,7 +6,7 @@
 
 2026-10-10 독립 Google 시트의 sheetId 0과 표시 이름을 metadata로 확인하고, JSON이 저장된 A열만 읽었다. 20행의 초기 범위를 확인한 뒤 metadata의 1,000행 범위에서 전체 원문을 확보했다. 저장 원문은 35,000자 단위의 3개 행이다. 재조회에서도 원문이 같았다. 개인정보가 있는 입력과 상세 결과는 Git 제외 `.private`에 보관한다.
 
-운영 GAS의 Billing 소스를 GET으로 조회해, 생성 주석 한 줄과 줄바꿈만 제외하면 복제 기준 `2b01a2e`의 `assets/billing.js`와 같음을 확인했다. 이 기준으로 새 로컬 공유 계산과 생성된 GAS 계산을 비교했다.
+운영 GAS의 Billing 소스를 GET으로 조회해, 생성 주석 한 줄과 줄바꿈만 제외하면 복제 기준 `a937698`의 `assets/billing.js`와 같음을 확인했다. 이 기준으로 새 로컬 공유 계산과 생성된 GAS 계산을 비교했다.
 
 | 검사 | 결과 |
 |---|---|
@@ -31,7 +31,7 @@
 입력은 기존 JSON 백업, `rental-sync-storage-v2` 저장 envelope, 또는 Sheets A열의 `values` 응답을 지원한다. 다음 명령의 입력 파일과 결과 파일은 본인 컴퓨터의 `.private`에 둔다. 기준일은 YYYY-MM-DD로 명시하고 Git 기준 ref는 신뢰할 수 있는 해당 운영 계산 소스로 지정한다.
 
 ```powershell
-npm run reconcile:data -- .private/input.json 2026-10-10 2b01a2e .private/report-new.json
+npm run reconcile:data -- .private/input.json 2026-10-10 a937698 .private/report-new.json
 ```
 
 - 입력은 메모리에서 복제하며 원본 파일·브라우저 저장소·Google 서비스에 쓰지 않는다. 이 명령에는 인증·네트워크 호출이 없다.

@@ -1,7 +1,7 @@
 {
   "appVersion": "2.1.4",
   "phase": "saved-invoice-csv-and-unissued-restoration",
-  "sourceCommit": "9ab701ff997ae9fba42b824d2c5d886a89f0621d",
+  "sourceCommit": "c662897026c1e159f648920da54a1ac2bf106494",
   "recordedAt": "2026-10-09T23:47:21.127Z",
   "reviewCandidate": true,
   "productionReady": false,
@@ -176,7 +176,7 @@
       ]
     },
     "monthlyCsvComparison": {
-      "baselineCommit": "e08f91527eb3389e5a5b0917b9baeb73fedbb151",
+      "baselineCommit": "b6281dc3021b7f89a86c5d16de2b21ffa7f6f20d",
       "before": {
         "months": 11,
         "savedRows": 38,

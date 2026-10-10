@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),{execFileSync}=require('node:child_process');
 const r=require('../scripts/reconcile-data.cjs'),b=require('../assets/billing.js'),core=require('../assets/core.js');
-const root=path.resolve(__dirname,'..'),legacySource=execFileSync('git',['show','2b01a2e:assets/billing.js'],{cwd:root,encoding:'utf8'}),legacy=r.rulesFromSource(legacySource);
+const root=path.resolve(__dirname,'..'),legacySource=execFileSync('git',['show','a937698:assets/billing.js'],{cwd:root,encoding:'utf8'}),legacy=r.rulesFromSource(legacySource);
 const clone=value=>JSON.parse(JSON.stringify(value));
 function fixture(){const data=core.empty();data.tenants=[{id:'a',name:'Anonymous',unit:'201호',rent:100000,mgmt:10000,elevator:0,payday:'15일'}];data.bills={'2026-09':{a:{rent:100000,mgmt:10000,electricity:35000,water:10000,waste:1000,stampedRent:true,stampedRentDate:'2026.09.15',paid:{pay_water:{na:true,date:'',note:null}},extension:{value:null}}}};b.freezeBill(data.tenants[0],data.bills['2026-09'].a,'2026-09');data.extension={history:[null,{original:'kept'}]};return data;}
 test('reconciliation decodes backup storage envelope and multirow JSON without dropping null extensions',()=>{
@@ -51,6 +51,6 @@ test('reconciliation checks generated GAS parity and independent saved-invoice q
 });
 test('reconciliation CLI enforces private new reports and never overwrites or changes input',()=>{
  const folder=fs.mkdtempSync(path.join(os.tmpdir(),'rental-reconcile-')),input=path.join(folder,'input.json');fs.writeFileSync(input,JSON.stringify(fixture()));const original=fs.readFileSync(input);
- assert.throws(()=>r.main([input,'2026-10-10','2b01a2e',path.join(folder,'public.json')]),/private/);
- const out=path.join(root,'.private','reconcile-test-'+path.basename(folder)+'.json');assert.equal(r.main([input,'2026-10-10','2b01a2e',out]),0);const first=fs.readFileSync(out);assert.throws(()=>r.main([input,'2026-10-10','2b01a2e',out]),/preserved/);assert.deepEqual(fs.readFileSync(input),original);assert.deepEqual(fs.readFileSync(out),first);
+ assert.throws(()=>r.main([input,'2026-10-10','a937698',path.join(folder,'public.json')]),/private/);
+ const out=path.join(root,'.private','reconcile-test-'+path.basename(folder)+'.json');assert.equal(r.main([input,'2026-10-10','a937698',out]),0);const first=fs.readFileSync(out);assert.throws(()=>r.main([input,'2026-10-10','a937698',out]),/preserved/);assert.deepEqual(fs.readFileSync(input),original);assert.deepEqual(fs.readFileSync(out),first);
 });

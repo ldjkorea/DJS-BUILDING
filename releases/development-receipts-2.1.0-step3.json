@@ -1,7 +1,7 @@
 {
   "version": "2.1.0",
   "phase": "receipt-ui-projections-step3",
-  "sourceCommit": "7efc2ddad6ef959fff12f97c45b8d227605e8d7c",
+  "sourceCommit": "01f4a6d0c641e10cc8e03435f514723ed6e6c30f",
   "checkedAt": "2026-10-09T21:32:05.098Z",
   "releaseCandidate": false,
   "fullPartialPaymentFeatureComplete": false,

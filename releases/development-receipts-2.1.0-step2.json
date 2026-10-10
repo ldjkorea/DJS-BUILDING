@@ -1,7 +1,7 @@
 {
   "version": "2.1.0",
   "phase": "receipt-storage-step2",
-  "sourceCommit": "731dbbb404eec6c42524c986be31ea1bd2c6f218",
+  "sourceCommit": "c5eaf4f69a862f418a7f1aa836b11385ae5f92f4",
   "checkedAt": "2026-10-09T20:59:02.274Z",
   "releaseCandidate": false,
   "fullPartialPaymentFeatureComplete": false,

@@ -1,7 +1,7 @@
 {
   "version": "2.1.4",
-  "sourceCommit": "03a05e2b86172aff4f5bf37f29ce30cbde056a58",
-  "productValidationCommit": "9ab701ff997ae9fba42b824d2c5d886a89f0621d",
+  "sourceCommit": "a7fa3aeac8e7e8abc990bf9d5684d25485c81296",
+  "productValidationCommit": "c662897026c1e159f648920da54a1ac2bf106494",
   "archiveSha256": "c151f751859517a307dfe0d44dcffeec7b618c0f77d8440d1610ccb997c87020",
   "startedAt": "2026-10-09T23:50:25.482Z",
   "finishedAt": "2026-10-09T23:51:55.092Z",
@@ -95,7 +95,7 @@
   "recordedAt": "2026-10-09T23:52:56.595Z",
   "reviewCandidate": true,
   "productionReady": false,
-  "verificationToolCommit": "03a05e2b86172aff4f5bf37f29ce30cbde056a58",
+  "verificationToolCommit": "a7fa3aeac8e7e8abc990bf9d5684d25485c81296",
   "verificationToolSha256": "d55b91135bdb4ad4f15e64aca3546cb030b167bfb5c5f92de7365f5242a8b158",
   "package": {
     "archive": {
@@ -153,7 +153,7 @@
   },
   "productValidation": {
     "record": "development-2.1.4.json",
-    "sourceCommit": "9ab701ff997ae9fba42b824d2c5d886a89f0621d",
+    "sourceCommit": "c662897026c1e159f648920da54a1ac2bf106494",
     "unit": {
       "total": 178,
       "passed": 178

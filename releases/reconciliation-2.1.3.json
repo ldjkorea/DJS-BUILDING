@@ -1,9 +1,9 @@
 {
   "appVersion": "2.1.3",
   "recordedAt": "2026-10-09T23:22:41.547Z",
-  "sourceCommit": "20f8e98239f1752cd2915697e08cf1614bf68f19",
-  "productValidationCommit": "e08f91527eb3389e5a5b0917b9baeb73fedbb151",
-  "baselineCommit": "2b01a2ead927221a27322bba5290754b5db18969",
+  "sourceCommit": "b8e5a2db9d3b30afe2bafcdbc5cab17ca4e7ebc0",
+  "productValidationCommit": "b6281dc3021b7f89a86c5d16de2b21ffa7f6f20d",
+  "baselineCommit": "a937698e2d39c86ecd553d3d45f1cc7ef1b97252",
   "asOf": "2026-10-10",
   "sourceHashes": {
     "scripts/reconcile-data.cjs": "12f5c613c3602362944dab8733c06fcbbe1119117124576172ccf35133a0e2b8",
@@ -61,7 +61,7 @@
     "operatingBaseline": {
       "checkedAt": "2026-10-09T23:17:09.162Z",
       "operatingBillingMatchesClone": true,
-      "baselineRef": "2b01a2e",
+      "baselineRef": "a937698",
       "normalizedBillingSha256": "471d439e46ba27d63e86ab1f815ac1b3dd7e19ea3a31bf718067e2b956bddd4a",
       "removedGeneratedHeaderOnly": true,
       "readOnly": true

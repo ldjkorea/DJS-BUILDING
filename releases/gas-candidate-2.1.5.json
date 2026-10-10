@@ -1,7 +1,7 @@
 {
   "version": "2.1.5",
-  "sourceCommit": "f4261904d4738a8a79a4ed8e8b440c97b520218c",
-  "productValidationCommit": "42539480399148687fa519fccc5d88c69e4c122b",
+  "sourceCommit": "8f30f387d10b6ac8b2b4da1591e857082327abe8",
+  "productValidationCommit": "4eab08d58334a9254ac1a1d1df1c4d9ea1b7ecf1",
   "createdAt": "2026-10-10T00:13:54.063Z",
   "deploymentPerformed": false,
   "reviewCandidate": true,

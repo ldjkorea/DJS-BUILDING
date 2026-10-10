@@ -1,7 +1,7 @@
 {
   "appVersion": "2.1.5",
   "phase": "invoice-and-quarter-print-output",
-  "sourceCommit": "42539480399148687fa519fccc5d88c69e4c122b",
+  "sourceCommit": "4eab08d58334a9254ac1a1d1df1c4d9ea1b7ecf1",
   "recordedAt": "2026-10-10T00:08:43.283Z",
   "reviewCandidate": true,
   "productionReady": false,

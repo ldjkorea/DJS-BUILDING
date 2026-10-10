@@ -1,6 +1,6 @@
 # 임대관리 독립앱 — 웹 2.2.0 검토 후보
 
-2026-10-09 원본 Git `ldjkorea/rental-app-v1.4.0-private`의 `2b01a2e`에서 전체 소스와 이력을 복제했습니다. 별도의 Google 시트·문서·GAS 프로젝트·소유자 전용 배포·계약 캘린더를 연결했습니다. 원본 저장소와 원본 Google 파일에는 쓰지 않습니다.
+2026-10-09 원본 Git `ldjkorea/rental-app-v1.4.0-private`의 `a937698`에서 전체 소스와 이력을 복제했습니다. 별도의 Google 시트·문서·GAS 프로젝트·소유자 전용 배포·계약 캘린더를 연결했습니다. 원본 저장소와 원본 Google 파일에는 쓰지 않습니다.
 
 - [독립앱 열기](https://script.google.com/macros/s/AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae/exec) — 해당 Google 소유자 계정 로그인 필요
 - [후속 마무리 상태와 남은 확인 조건](docs/FOLLOWUP_FINISH.md)

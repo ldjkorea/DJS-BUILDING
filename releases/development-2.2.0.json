@@ -1,7 +1,7 @@
 {
   "appVersion": "2.2.0",
   "phase": "protected-operations-and-followup",
-  "sourceCommit": "a5701262b7986bbd93ea30976d23faf190151c2d",
+  "sourceCommit": "d274016c5c9f84b35fb25f04acbbfe804a858bec",
   "recordedAt": "2026-10-10T01:48:35.764Z",
   "reviewCandidate": true,
   "productionReady": false,
@@ -314,10 +314,10 @@
     "tests/operations.test.cjs": "b3335bae51d6b13bb4efba1ba9af9459f1cfef8acafb851a81a5b641d3684418",
     "tests/operations-browser.cjs": "afa78bbed0a113dce86fffa554e6f2d43899d9c6d70bfcafb1e2ecfa8edbf68a",
     "tests/basis-review.test.cjs": "aaf98fbb5629d49fc9a681c9ba39b6548139e21650ff26471f32c4f03fc64a95",
-    "tests/server.test.cjs": "c393bd19b2daefeb4fd0d17edb41758a6389a21d859a69c182d09529fbb634f1",
+    "tests/server.test.cjs": "89cb07b2e491bb8c9c876734479e0eb1309cd47f6d81f18a8b77b097015a00a1",
     "scripts/prepare-basis-review.cjs": "ea320362adc6eab8760fe25498afa80f43febdc347f951745c8c3c65e558fbb0",
-    "scripts/check-ci-environment.cjs": "ad90a1620d389e11d43db4807ea2750c1af1bec137c00896497a1543048a49b2",
-    ".github/workflows/regression.yml": "523fb2eff7f7ae5edd72ac881958a7fe19da0e5430262b5f76156d27c70002bf"
+    "scripts/check-ci-environment.cjs": "3760919a91f44e4ecaa8b4a7dfc8ab71d35e8779e95ee32a5dd79f41f08ad0d0",
+    ".github/workflows/regression.yml": "7db772e099f4e5f2b469eb42ff6eba64158e00300d0f9e5251354537e55434c4"
   },
   "external": {
     "newStagingSheetCreated": true,
@@ -338,5 +338,7 @@
     "Post-receipt charge adjustment policy response",
     "Original issued bill and contract evidence for 30 estimates",
     "Physical phone and physical printer verification"
-  ]
+  ],
+  "exportedFromLocalCommit": "e4cdab49dd0c98cc761eae15eff91b8248dffdc7",
+  "historyPrivacy": "Historical tenant values anonymized in a separate export; local history retained."
 }
