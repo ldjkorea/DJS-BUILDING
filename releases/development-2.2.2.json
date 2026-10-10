@@ -1,0 +1,227 @@
+{
+  "appVersion": "2.2.2",
+  "phase": "authorized-operating-upgrade",
+  "sourceCommit": "216ed176f52832252eaa5abe00ec1afd3adaf619",
+  "recordedAt": "2026-10-10T05:11:54.218Z",
+  "validation": {
+    "command": "GitHub Actions npm run test:all + PDF validation",
+    "unit": {
+      "total": 192,
+      "passed": 192
+    },
+    "browser": {
+      "startedAt": "2026-10-10T04:56:35.765Z",
+      "finishedAt": "2026-10-10T05:05:59.000Z",
+      "url": "http://127.0.0.1:53274/",
+      "node": "v24.21.0",
+      "results": [
+        {
+          "suite": "browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "audit-browser.cjs",
+          "exitCode": 0,
+          "status": "pass",
+          "shards": [
+            {
+              "suite": "audit-browser.cjs",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "suite": "audit-browser.cjs",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "suite": "audit-browser.cjs",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "suite": "audit-browser.cjs",
+              "exitCode": 0,
+              "status": "pass"
+            }
+          ]
+        },
+        {
+          "suite": "receipt-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "bill-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "quarter-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "restored-data-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "print-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "pwa-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "single-file-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "integrity-v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "independent-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "operations-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        }
+      ]
+    },
+    "pdf": {
+      "appVersion": "2.2.2",
+      "anonymous": true,
+      "pdfCount": 5,
+      "checks": [
+        {
+          "name": "legacy",
+          "file": "test-results\\print-pdf-z1zskR\\legacy.pdf",
+          "pages": 1,
+          "sha256": "e0a1c23fab301b3eabd50b7c48114e0ff6ab16fc1bf066765de08407eb85f82e",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        },
+        {
+          "name": "journal",
+          "file": "test-results\\print-pdf-z1zskR\\journal.pdf",
+          "pages": 5,
+          "sha256": "92124e6b67432e7be40c6b70cc6199d6a5dff40cb824855bdd8a2452f950493f",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": true,
+          "status": "pass"
+        },
+        {
+          "name": "journal-mobile",
+          "file": "test-results\\print-pdf-z1zskR\\journal-mobile.pdf",
+          "pages": 5,
+          "sha256": "3f428265bdb53fe3cdb76f5cb93ff8e418eb02c86878d2c30fe4e15fa326e509",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": true,
+          "status": "pass"
+        },
+        {
+          "name": "quarter",
+          "file": "test-results\\print-pdf-z1zskR\\quarter.pdf",
+          "pages": 6,
+          "sha256": "6dbc35911bccd5079df69e7095b1435ee9876cb638af5746a2df866817a6d066",
+          "portrait": false,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        },
+        {
+          "name": "quarter-empty",
+          "file": "test-results\\print-pdf-z1zskR\\quarter-empty.pdf",
+          "pages": 1,
+          "sha256": "dc6e190e1afcafe34fad24af83e9962fa2415c769a55332ffbfd2e5c56b2a1b8",
+          "portrait": false,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        }
+      ],
+      "scope": "Edge-generated PDF text, page dimensions and bounds. Visual rendering reviewed separately; no physical printer or Google execution."
+    }
+  },
+  "sourceHashes": {
+    "package.json": "a4ba7fbf300206eca32d6384011020c8b8ce004714db4c02dc44c2c3f73c6599",
+    "index.html": "14fbab2643f875b1211c55464f78e52b9f2dd8007362c83d8cc37227353a76bd",
+    "src/index.template.html": "b8182e8e1b9737b54c76334dbe98986f01e3a643c8cfa2abd5b9a01d8439b95b",
+    "assets/core.js": "77060e2e92bd2a83182b3646bcaae1439bdb1ce988e0c5ad5fb6235ca34f163a",
+    "assets/billing.js": "e5ced471b3af3079a5f2e08028dbf6d071cca763e7606ddfa4c42d36ce9511ba",
+    "assets/app.js": "0c69b773dd1274feed16e5a273a1f525d1bd5c66a46c3a417da51cc60e6fe20b",
+    "assets/enhancements.js": "e85e58abb6bb4eae543d2aff9e0bc3f76a5fb6a747093ef264f09c6c5f1003d7",
+    "assets/workspace.css": "ca92e691e4291a7a5f1c301cef2ef97283f75df0db826fd3800a31121411fbe2",
+    "sw.js": "386677b9a092487af139a5b1c20f1ef3256672059d5428b9a566018aedac7208",
+    "scripts/build.cjs": "6ef69fe84ddd8c9bd76389b845200f2fab370b4243f3e43a90ae3d945c0d40aa",
+    "scripts/test-browser.cjs": "e903c72da7c93d11700a4b8c341a56d7aee4811c95859504b9849218a1da2d03",
+    "scripts/test-gas-candidate.cjs": "fd2873cf10a2e41e07199b9eeac15682980e3476aacb09ea66927b43760a9dae",
+    "tests/single-file-browser.cjs": "87315dc719ee20b163818d9fe882757cfc2908bf0bbaf78d0d69e7988eeed327",
+    "server/appsscript.json": "a6954c274b74d412d9ff0968b40641931869fcc31f5a0eb622a54575ca8d1247",
+    "server/AuthorizeDocs.gs": "5512c7b1828320898d8c86fc78163c2860bc9b63d9317ec98f81a4bac838efbb",
+    "server/Billing.gs": "8fba0a59d41e7089b3b5ad75f7441715c138cb323d852619d8f8ffabd64a10dd",
+    "server/CalendarSync.gs": "ee6fe4c1ce07fc932ff91522ceb782793798bff17341b00d6df8fc277900e4d3",
+    "server/Code.gs": "1273a586e98a598f9c85acee5ed9dfe2abecd6b1d7fd25eaee39ef4f04c79ba2",
+    "server/CurrentStatus.gs": "2645981b706d0aa04b920da18030216725520ace895477e0112fd46676ac69bf",
+    "server/IndependentApp.gs": "d2b412e49cccd073547744a474f9517a79880b5f87bc1bd886b9940b26e88b49",
+    "tests/operations.test.cjs": "b3335bae51d6b13bb4efba1ba9af9459f1cfef8acafb851a81a5b641d3684418",
+    "tests/operations-browser.cjs": "afa78bbed0a113dce86fffa554e6f2d43899d9c6d70bfcafb1e2ecfa8edbf68a",
+    "tests/basis-review.test.cjs": "aaf98fbb5629d49fc9a681c9ba39b6548139e21650ff26471f32c4f03fc64a95",
+    "tests/server.test.cjs": "89cb07b2e491bb8c9c876734479e0eb1309cd47f6d81f18a8b77b097015a00a1",
+    "scripts/prepare-basis-review.cjs": "ea320362adc6eab8760fe25498afa80f43febdc347f951745c8c3c65e558fbb0",
+    "scripts/check-ci-environment.cjs": "3760919a91f44e4ecaa8b4a7dfc8ab71d35e8779e95ee32a5dd79f41f08ad0d0",
+    ".github/workflows/regression.yml": "c1fdc385a02b800684acb5213b6a4182b5cfbc8f966168c5e43055a7d9340a84",
+    "tests/audit-browser.cjs": "14305419824b573c9778609db03d1e8e329e2c6aa96897d2712763f1ed84d119",
+    "manifest.json": "2fa2e7168658975e65ccfe75e867fe83d974a8cc999096f2a1885d5cbd75eccf"
+  },
+  "ci": {
+    "runId": 38025746326,
+    "conclusion": "success",
+    "artifactVerified": true
+  },
+  "external": {
+    "operatingDeploymentPending": true,
+    "operatingDataWrites": false
+  },
+  "scope": "Verified full product source; Google deployment and readback will be recorded separately."
+}
