@@ -17,6 +17,8 @@
 - 오래된 웹앱: [2025 RENT STORE](https://ldjkorea.github.io/2025-RENT-STORE/).
 - 최신 독립앱의 기존 Google Apps Script 운영 주소와 실제 Google 파일은 이름 변경으로 수정하지 않았다. 최신 Git 저장소와 실제 운영 GAS 버전의 구분은 [후속 마무리 상태](FOLLOWUP_FINISH.md)를 따른다.
 
+후속 앱 이름 통일에서는 연결된 GAS 프로젝트를 **NEW RENT STORE - GAS**로 변경하고 기존 운영 웹앱의 표시 이름을 배포 버전 5로 반영했다. 운영 주소와 연결 ID는 그대로다. 이 후속 변경의 범위와 검증은 [이름 통일 기록](BRANDING_2.2.2.md)을 따른다.
+
 GitHub 저장소의 이전 주소는 현재 저장소로 연결되는 것을 API에서 확인했다. GitHub Pages의 이전 경로는 자동 리디렉션을 보장하지 않으므로 위의 새 웹 주소를 사용한다. 근거는 [GitHub 저장소 이름 변경 안내](https://docs.github.com/en/repositories/creating-and-managing-repositories/renaming-a-repository)다.
 
 ## 로컬 작업과 검증

@@ -1,6 +1,6 @@
 {
   "format": "rental-branding-v1",
-  "at": "2026-10-10T04:24:03.3515975Z",
+  "at": "2026-10-10T05:07:02.5317249Z",
   "appVersion": "2.2.2",
   "local": {
     "unitPassed": 192,
@@ -16,13 +16,14 @@
     "storageKeysPreserved": true,
     "auditPassed": 69,
     "auditShardCases": [
-      35,
-      34
+      18,
+      17,
+      17,
+      17
     ],
-    "auditShardSeconds": [
-      72.94,
-      87.95
-    ]
+    "browserSuitesPassed": 14,
+    "pdfCount": 5,
+    "pdfPages": 18
   },
   "operating": {
     "projectTitle": "NEW RENT STORE - GAS",
@@ -40,16 +41,46 @@
     "appDataWrites": false
   },
   "ci": {
-    "runId": 38023739148,
-    "url": "https://github.com/ldjkorea/NEW-RENT-STORE/actions/runs/38023739148",
+    "runId": 38025746326,
+    "url": "https://github.com/ldjkorea/NEW-RENT-STORE/actions/runs/38025746326",
+    "sourceCommit": "216ed176f52832252eaa5abe00ec1afd3adaf619",
     "lastObservedStatus": "completed",
-    "successNotYetConfirmed": true,
-    "conclusion": "failure"
+    "conclusion": "success",
+    "successNotYetConfirmed": false,
+    "unitPassed": 192,
+    "unitCancelled": 0,
+    "browserSuitesPassed": 14,
+    "auditPassed": 69,
+    "auditUniqueCases": 69,
+    "auditShardCases": [
+      18,
+      17,
+      17,
+      17
+    ],
+    "pwaPassed": 5,
+    "pdfCount": 5,
+    "pdfPages": 18,
+    "generatedSourcesUnchanged": true,
+    "artifactReadBackVerified": true
   },
   "previousGasCandidate": {
     "sha256": "c19a1d248ec81ec06398bcc0212f2d0512635258ebf109edb7da9a5129f8e64a",
     "preserved": true,
     "version": "2.2.0"
   },
-  "initialBrandingSourceCommit": "3aadfeb458c62a56af49d130d04eacc33451a078"
+  "initialBrandingSourceCommit": "3aadfeb458c62a56af49d130d04eacc33451a078",
+  "failedCiAttempts": [
+    {
+      "conclusion": "failure",
+      "runId": 38023739148,
+      "reason": "audit worker cumulative timeout"
+    },
+    {
+      "conclusion": "failure",
+      "runId": 38025070400,
+      "reason": "audit worker timeout and suspended mock fetch transport mismatch"
+    }
+  ],
+  "finalDevelopmentSourceCommit": "216ed176f52832252eaa5abe00ec1afd3adaf619"
 }
