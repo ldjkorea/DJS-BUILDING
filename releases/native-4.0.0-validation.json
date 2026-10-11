@@ -3,7 +3,7 @@
   "webVersion": "2.3.0",
   "androidVersion": "4.0.0",
   "unitTests": {
-    "pass": 217,
+    "pass": 218,
     "fail": 0
   },
   "browserSuites": {
@@ -14,7 +14,7 @@
     "pass": 7,
     "fail": 0
   },
-  "nativeMockServerCases": 24,
+  "nativeMockServerCases": 25,
   "nativePdf": {
     "pages": 6,
     "all140RowsPresent": true,
@@ -42,7 +42,7 @@
     },
     "backup": {
       "status": "ok",
-      "bytes": 93743,
+      "bytes": 93757,
       "integrityPresent": true
     },
     "restorePreview": {
@@ -57,6 +57,7 @@
     "quarterReport": "ok",
     "monthlyReport": "ok",
     "revisionUnchanged": true,
+    "webRoundtripRestorePreview": "ok",
     "disconnect": "ok",
     "revokedRead": "unauthorized"
   },

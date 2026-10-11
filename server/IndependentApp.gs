@@ -255,7 +255,7 @@ function nativeAdvancedWrite_(req,state,month,data) {
     if(!req.reason||typeof req.reason!=='string'||req.reason.length>500)throw new Error('변경 사유를 입력해주세요.');
     var oldEnd=RentalBilling.contractEndDate(tenant.contract);if(req.renew===true&&(!oldEnd||dates[1]<=oldEnd))throw new Error('재계약 종료일은 기존 종료일 이후여야 합니다.');
     var record=RentalBilling.createContractChange(tenant,next,{id:req.requestId,effectiveOn:req.effectiveOn,recordedAt:new Date().toISOString(),reason:req.reason});if(!record)throw new Error('변경된 계약 조건이 없습니다.');
-    Object.keys(data.bills).forEach(function(m){if(data.bills[m][tenant.id])nativeFreeze_(tenant,data.bills[m][tenant.id],m,true);});
+    Object.keys(data.bills).forEach(function(m){var bill=data.bills[m][tenant.id];if(bill&&Object.keys(bill).length)nativeFreeze_(tenant,bill,m,true);});
     var changes={};allowed.forEach(function(k){if(nativeCanonical_(tenant[k]===undefined?null:tenant[k])!==nativeCanonical_(next[k]===undefined?null:next[k]))changes[k]={from:tenant[k]===undefined?null:tenant[k],to:next[k]===undefined?null:next[k]};});
     Object.assign(tenant,next);nativeAudit_(tenant,req.renew===true?'재계약 완료':'계약 조건 변경',req.effectiveOn+' · '+req.reason,changes);
     data.contractChanges=(data.contractChanges||[]).concat([record]);if(req.renew===true){data.renewalDone=data.renewalDone||{};data.renewalDone[tenant.id]=oldEnd;}return data;
@@ -264,7 +264,7 @@ function nativeAdvancedWrite_(req,state,month,data) {
     var preview=nativeSettlement_(req,state,month);if(!preview.balanced||req.previewHash!==preview.previewHash||req.confirm!==true)throw new Error('배분 합계와 최신 미리보기를 확인해주세요.');
     data.bills[month]=data.bills[month]||{};
     if(preview.rows.some(function(r){return data.bills[month][r.id]&&data.bills[month][r.id].receiptLedger;}))throw new Error('입금 원장이 개시된 고지서는 재정산할 수 없습니다.');
-    preview.rows.forEach(function(row){var tenant=data.tenants.filter(function(t){return t.id===row.id;})[0],existing=data.bills[month][row.id],bill=existing||{};nativeFreeze_(tenant,bill,month,!!existing);var before=JSON.parse(JSON.stringify(bill));
+    preview.rows.forEach(function(row){var tenant=data.tenants.filter(function(t){return t.id===row.id;})[0],existing=data.bills[month][row.id],bill=existing||{};nativeFreeze_(tenant,bill,month,!!existing&&Object.keys(existing).length>0);var before=JSON.parse(JSON.stringify(bill));
       if(row.elec!==null){bill.electricity=row.elec;bill.electricityNA=false;if(bill.paid&&bill.paid.pay_elec)bill.paid.pay_elec.na=false;}
       if(row.water!==null){bill.water=row.water;bill.waterNA=false;if(bill.paid&&bill.paid.pay_water)bill.paid.pay_water.na=false;
         var wf=preview.inputs.waterFloors[row.floor];if(wf&&wf.curMeter!=='') {bill.waterMeter=wf.curMeter;bill.waterMeterDate=preview.usagePeriods.water.end.slice(5).replace('-','/');tenant.waterHistory=(tenant.waterHistory||[]).filter(function(w){return w.mk!==month;}).concat([{mk:month,date:bill.waterMeterDate,val:wf.curMeter}]).sort(function(a,b){return a.mk.localeCompare(b.mk);});}
