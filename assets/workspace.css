@@ -206,3 +206,5 @@ html{height:auto;min-height:100%;scroll-padding-bottom:100px}body{height:auto;mi
 @media(max-width:600px){.operations-form-grid{grid-template-columns:minmax(0,1fr);}}
 
 .application-update-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.application-update-actions a{text-decoration:none}#app-update-notice{display:flex;align-items:center;flex-wrap:wrap;gap:12px}#app-update-notice[hidden]{display:none}#app-update-notice>span{flex:1 1 220px}#app-update-notice .btn{white-space:normal}
+
+.workspace-brand .brand-mark{width:40px;height:40px;object-fit:cover;border:0;border-radius:10px}

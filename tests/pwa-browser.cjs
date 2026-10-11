@@ -84,6 +84,9 @@ async function test(name,action){
     await page.waitForFunction(()=>typeof renderAll==='function'&&!!document.querySelector('.section.active'));
     await page.locator('.section.active').waitFor();
     await page.waitForFunction(async()=>!!navigator.serviceWorker.controller&&!(await navigator.serviceWorker.getRegistration()).waiting);
+    // Activation also waits for asynchronous cache deletion. Observe its
+    // completion before asserting the obsolete release was removed.
+    await page.waitForFunction(async version=>!(await caches.keys()).includes('rental-independent-20261009-%2Frental-app%2F-'+version),version);
     const names=await page.evaluate(()=>caches.keys());
     assert.ok(names.includes('rental-independent-20261009-%2Frental-app%2F-'+version+'-test-update-1'));
     assert.ok(!names.includes('rental-independent-20261009-%2Frental-app%2F-'+version));

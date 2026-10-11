@@ -1,6 +1,6 @@
 {
   "name": "rental-app-independent",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "private": true,
   "description": "NEW RENT STORE — 별도 GAS·DB·문서·Calendar를 사용하는 임대관리 앱",
   "scripts": {

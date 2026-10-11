@@ -1,0 +1,112 @@
+{
+  "date": "2026-10-11",
+  "androidVersion": "4.1.2",
+  "webVersion": "2.3.1",
+  "nodeUnitTests": {
+    "pass": 225,
+    "fail": 0
+  },
+  "pwaTests": {
+    "pass": 6,
+    "fail": 0
+  },
+  "androidUnitTests": {
+    "pass": 1,
+    "fail": 0
+  },
+  "gradle": "assembleRelease lintRelease testDebugUnitTest assembleDebugAndroidTest PASS",
+  "lint": {
+    "errors": 0,
+    "warnings": 7,
+    "additionalWarning": "MonochromeLauncherIcon on v26; v33 resource includes monochrome and alpha mask"
+  },
+  "assets": {
+    "assets": [
+      {
+        "file": "icons/icon-180.png",
+        "width": 180,
+        "height": 180
+      },
+      {
+        "file": "icons/icon-192.png",
+        "width": 192,
+        "height": 192
+      },
+      {
+        "file": "icons/icon-512.png",
+        "width": 512,
+        "height": 512
+      }
+    ],
+    "adaptiveSafeCirclePixels": 156.44444444444446,
+    "maximumSymbolRadiusPixels": 149.01342221424215,
+    "monochromePixels": 20241,
+    "manifestIdentityPreserved": true,
+    "singleFileBrandImageEmbedded": true,
+    "masterSha256": "7341e3edec407bed66c86741d4ebdc1e77ff0307c4d2386113ffc64e6d21cd44"
+  },
+  "webViewports": [
+    1366,
+    390
+  ],
+  "liveUpdate": {
+    "metadata": {
+      "appVersion": "2.3.1",
+      "androidVersion": "4.1.2",
+      "androidVersionCode": 7,
+      "androidReleaseUrl": "https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest"
+    },
+    "release": {
+      "protocol": "rental-apk-update-v1",
+      "packageName": "kr.henry.rental.independent",
+      "versionName": "4.1.2",
+      "versionCode": 7,
+      "size": 3257945,
+      "sha256": "e0d22e20552fae3393d181880b41df3c5ddc7d4860475ac5e01926bea0b0a273",
+      "signerSha256": "b25160850067d115c493fe51aca9bdce1956d999ed45cee0950bd86d33c5a2a0",
+      "chunkCount": 9,
+      "chunkEncodedSize": 524288
+    },
+    "liveChunksVerified": 9,
+    "downloadedBytesIdentical": true,
+    "staleVersionRejected": true,
+    "rentalDataWritten": false,
+    "privateGitHubAuthenticationRequired": false,
+    "googleScopesExpanded": false
+  },
+  "liveInstall": {
+    "from": "4.1.1 / code 6",
+    "to": "4.1.2 / code 7",
+    "downloadAndInstaller": "PASS on retry",
+    "firstAttempt": "timeout",
+    "encryptedCacheBytesUnchanged": true,
+    "firstInstallTime": "2026-10-11 10:32:47",
+    "installedApkMatchesPublished": true,
+    "emulator": "rental-independent-v2 / API35 / emulator-5556"
+  },
+  "drive": {
+    "id": "1RLFgXBfE4wbh8ZPMC4w-OnkKN-Jy4Xjh",
+    "url": "https://drive.google.com/file/d/1RLFgXBfE4wbh8ZPMC4w-OnkKN-Jy4Xjh/view?usp=drivesdk",
+    "bytes": 3257945,
+    "sha256": "e0d22e20552fae3393d181880b41df3c5ddc7d4860475ac5e01926bea0b0a273",
+    "hashMatches": true
+  },
+  "deployment": {
+    "ownerVersion": 14,
+    "gatewayVersion": 7,
+    "unchangedAddressesAndAccess": true,
+    "unchangedScopes": true,
+    "unchangedRentalLogic": true,
+    "readbackAfterPropagation": true
+  },
+  "sheetReadback": {
+    "bytesUnchanged": true,
+    "rows": 3,
+    "bytes": 95582,
+    "sha256": "853e1a2afffccccc31063782058ec4d302d79c7f8e7686dc4763baeb7ccbeb45",
+    "realRentalWrites": false
+  },
+  "realRentalWrites": false,
+  "physicalPhone": "NOT TESTED",
+  "oneUiThemedLauncher": "NOT TESTED"
+}

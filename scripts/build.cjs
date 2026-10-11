@@ -20,6 +20,7 @@ function build() {
   if (!html.includes('NEW RENT STORE ' + version)) throw new Error('내비게이션 버전 표시가 오래되었습니다.');
   const icon = fs.readFileSync(path.join(root, 'icon.svg')).toString('base64');
   html = html.replace(/href="icon.svg"/g, 'href="data:image/svg+xml;base64,' + icon + '"');
+  html = html.replace(/src="icons\/icon-192\.png"/g, 'src="data:image/png;base64,' + fs.readFileSync(path.join(root, 'icons/icon-192.png')).toString('base64') + '"');
   if (fs.existsSync(path.join(root, 'icons/icon-180.png'))) {
     const icon180 = fs.readFileSync(path.join(root, 'icons/icon-180.png')).toString('base64');
     html = html.replace(/href="icons\/icon-180\.png"/g, 'href="data:image/png;base64,' + icon180 + '"');

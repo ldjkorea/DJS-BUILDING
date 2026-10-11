@@ -531,7 +531,7 @@ const baseCloudRequest=cloudRequest;cloudRequest=async function(options={}){
   if(options.method!=='POST')lastGoogleReadAt=time;
   observeApplicationVersion(result.appVersion);renderSyncCenter();return result;
 };
-const APPLICATION_VERSION='2.3.0';
+const APPLICATION_VERSION='2.3.1';
 const ANDROID_RELEASE_URL='https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest';
 let applicationUpdateBusy=false,applicationRemoteVersion=null,pwaUpdateRegistration=null;
 function setApplicationUpdateStatus(text){
