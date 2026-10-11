@@ -76,9 +76,22 @@ async function test(name,action){
   await test('closing all app windows activates update and only removes related old caches',async()=>{
     const observer=await context.newPage();await observer.goto(origin+'/pwa-observer');
     assert.equal(await observer.evaluate(()=>navigator.serviceWorker.controller),null);
+    // Pin the waiting worker: waiting can disappear before the previous active
+    // worker has been replaced, so its state alone is not an activation proof.
+    assert.ok(await observer.evaluate(async appUrl=>{
+      const registration=await navigator.serviceWorker.getRegistration(appUrl);
+      window.expectedPwaWorker=registration.waiting;
+      return !!window.expectedPwaWorker;
+    },url));
     await page.close();
-    await observer.waitForFunction(async appUrl=>{const registration=await navigator.serviceWorker.getRegistration(appUrl);return registration?.active?.state==='activated'&&!registration.waiting;},url);
-    await observer.close();page=await context.newPage();page.on('dialog',d=>d.accept());page.on('pageerror',e=>errors.push(e.message));
+    await observer.waitForFunction(async({appUrl,version})=>{
+      const registration=await navigator.serviceWorker.getRegistration(appUrl);
+      const names=await caches.keys();
+      return registration?.active===window.expectedPwaWorker&&registration.active.state==='activated'&&!registration.waiting&&
+        names.includes('rental-independent-20261009-%2Frental-app%2F-'+version+'-test-update-1')&&
+        !names.includes('rental-independent-20261009-%2Frental-app%2F-'+version);
+    },{appUrl:url,version});
+    page=await context.newPage();page.on('dialog',d=>d.accept());page.on('pageerror',e=>errors.push(e.message));
     await page.goto(url,{waitUntil:'domcontentloaded'});
     // Reload restores the user's last section, which was history in this flow.
     await page.waitForFunction(()=>typeof renderAll==='function'&&!!document.querySelector('.section.active'));
@@ -94,6 +107,7 @@ async function test(name,action){
     assert.ok(names.includes('unrelated-app-cache'));assert.ok(names.includes('rental-app-%2Fother%2F-1.0'));
     await page.evaluate(()=>goToHistory('demo2'));await page.waitForTimeout(80);await page.evaluate(()=>editThisMonth());
     assert.equal(await page.locator('#bill-electricity').inputValue(),'87654');
+    await observer.close();
   });
   await test('updated PWA remains usable offline with no application errors or cloud requests',async()=>{
     await context.setOffline(true);await page.reload();await navigateV2(page,'home');

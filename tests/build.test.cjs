@@ -25,3 +25,15 @@ test('single HTML is deterministic, current and contains every source in order',
   assert.doesNotMatch(html, /<link[^>]+href="(?!data:)/);
   assert.match(html, /href="data:image\/svg\+xml;base64,/);
 });
+
+test('LF and Windows CRLF SVG checkouts produce identical release HTML', t => {
+  const expected = build();
+  const original = fs.readFileSync;
+  t.mock.method(fs, 'readFileSync', function(file, ...options) {
+    const value = original.call(fs, file, ...options);
+    if (path.resolve(String(file)) !== path.resolve(__dirname, '../icon.svg')) return value;
+    const crlf = value.toString().replace(/\r\n?/g, '\n').replaceAll('\n', '\r\n');
+    return typeof value === 'string' ? crlf : Buffer.from(crlf);
+  });
+  assert.equal(build(), expected);
+});
