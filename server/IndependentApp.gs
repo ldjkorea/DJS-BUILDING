@@ -208,15 +208,16 @@ function nativeSettlement_(req,state,month) {
     }
     inputs.waterFloors[floor]=row;
   }
-  var people=state.data.tenants.filter(function(t){return !t.archived;}),ratio=state.data.waterRatio||{r2:1,r3:1,r4:1},result=RentalBilling.calculate(people,inputs,ratio);
+  var people=state.data.tenants.filter(function(t){return !t.archived&&['공실(정리중)','임대모집중'].indexOf(t.leaseStatus)<0;}),ratio=state.data.waterRatio||{r2:1,r3:1,r4:1},result=RentalBilling.calculateBuilding(state.data.tenants,inputs,ratio,{month:month,floorOperations:state.data.floorOperations});
   if(req.adjustments){
     if(!Array.isArray(req.adjustments)||req.adjustments.length!==result.rows.length)throw new Error('배분 행을 확인해주세요.');
     result.rows.forEach(function(row,i){var adjusted=req.adjustments[i];if(!adjusted||adjusted.id!==row.id)throw new Error('배분 대상이 변경됐습니다.');['water','elev','waste'].forEach(function(k){if(row[k]===null){if(adjusted[k]!=null)throw new Error('미청구 항목은 배분할 수 없습니다.');}else row[k]=RentalBilling.won(adjusted[k]);});});
   }
   var saved=state.data.settInputs&&state.data.settInputs[month]&&state.data.settInputs[month].usagePeriods||{};
-  var periods={electricity:inputs.elec?nativeUsagePeriod_(month,people,'period_elec',1,false,saved.electricity):{inactive:true},water:inputs.waterActive?nativeUsagePeriod_(month,people,'period_water_day',2,true,saved.water):{inactive:true}};
+  var period=function(field,span,water,previous){try{return nativeUsagePeriod_(month,people,field,span,water,previous);}catch(error){result.reviewRequired=true;result.reviewIssues.push(error.message);return {error:error.message};}};
+  var periods={electricity:inputs.elec?period('period_elec',1,false,saved.electricity):{inactive:true},water:inputs.waterActive?period('period_water_day',2,true,saved.water):{inactive:true}};
   var check=RentalBilling.reconcile(result);
-  return {status:'ok',month:month,revision:state.revision,inputs:inputs,usagePeriods:periods,rows:result.rows,expected:result.expected,totals:check.totals,balanced:check.balanced,previouslyConfirmed:!!(state.data.settInputs&&state.data.settInputs[month]&&state.data.settInputs[month].confirmed),previewHash:hash_(nativeCanonical_({revision:state.revision,month:month,inputs:inputs,periods:periods,rows:result.rows}))};
+  return {status:'ok',month:month,revision:state.revision,inputs:inputs,usagePeriods:periods,rows:result.rows,ownerCandidates:result.ownerCandidates,reviewRequired:result.reviewRequired,reviewIssues:result.reviewIssues,expected:result.expected,totals:check.totals,ownerTotals:check.ownerTotals,tenantTotals:check.tenantTotals,balanced:check.balanced,canConfirm:check.canConfirm,previouslyConfirmed:!!(state.data.settInputs&&state.data.settInputs[month]&&state.data.settInputs[month].confirmed),previewHash:hash_(nativeCanonical_({revision:state.revision,month:month,inputs:inputs,periods:periods,rows:result.rows,ownerCandidates:result.ownerCandidates,reviewIssues:result.reviewIssues}))};
 }
 function nativeRestore_(backup,state) {
   if(!backup||typeof backup!=='object'||Array.isArray(backup))throw new Error('JSON 백업 파일을 확인해주세요.');
@@ -273,7 +274,7 @@ function nativeAdvancedWrite_(req,state,month,data) {
     data.contractChanges=(data.contractChanges||[]).concat([record]);if(req.renew===true){data.renewalDone=data.renewalDone||{};data.renewalDone[tenant.id]=oldEnd;}return data;
   }
   if(req.action==='settlementConfirm'){
-    var preview=nativeSettlement_(req,state,month);if(!preview.balanced||req.previewHash!==preview.previewHash||req.confirm!==true)throw new Error('배분 합계와 최신 미리보기를 확인해주세요.');
+    var preview=nativeSettlement_(req,state,month);if(!preview.canConfirm||req.previewHash!==preview.previewHash||req.confirm!==true)throw new Error('배분 합계·공실 비용 부담과 최신 미리보기를 확인해주세요.');
     data.bills[month]=data.bills[month]||{};
     if(preview.rows.some(function(r){return data.bills[month][r.id]&&data.bills[month][r.id].receiptLedger;}))throw new Error('입금 원장이 개시된 고지서는 재정산할 수 없습니다.');
     preview.rows.forEach(function(row){var tenant=data.tenants.filter(function(t){return t.id===row.id;})[0],existing=data.bills[month][row.id],bill=existing||{};nativeFreeze_(tenant,bill,month,!!existing&&Object.keys(existing).length>0);var before=JSON.parse(JSON.stringify(bill));
@@ -291,7 +292,7 @@ function nativeAdvancedWrite_(req,state,month,data) {
   if(req.action==='ledgerOpen'){
     if(req.confirm!==true||bill.receiptLedger)throw new Error('입금 원장 상태와 확인 항목을 검토해주세요.');
     bill.receiptLedger=RentalBilling.openReceiptLedger(tenant,bill,month+':'+tenant.id,new Date().toISOString(),{reviewEstimated:req.reviewEstimated===true});nativeAudit_(bill,'입금 원장 개시','청구 기준·과거 확인 상태 검토 · Android');
-  }else if(req.action==='invoiceIssue'){if(req.confirm!==true)throw new Error('고지서 발행 표시를 확인해주세요.');bill.invoiceIssued=true;nativeAudit_(bill,'고지서 발행 표시',month+' · Android');}
+  }else if(req.action==='invoiceIssue'){if(req.confirm!==true||req.taxInvoiceVerified!==true)throw new Error('외부 세금계산서의 실제 발급 완료를 확인해주세요.');bill.invoiceIssued=true;nativeAudit_(bill,'세금계산서 발급 확인',month+' · 외부 발급 확인 · Android');}
   return data;
 }
 function nativeReport_(req,state,month) {
@@ -300,14 +301,14 @@ function nativeReport_(req,state,month) {
   if(req.reportType==='quarter'){
     var y=Number(req.year),q=Number(req.quarter),report=RentalBilling.quarterlyStatement(data.tenants,data.bills,y,q,nativeToday_());title=y+'년 '+q+'분기 고지서 집계';
     line('저장된 고지서 기준 · 발행 여부와 수납을 구분합니다.');
-    report.rows.forEach(function(r){line(r.identity.unit+' · '+(r.identity.biz||r.identity.name),'heading');line('월 '+r.months.join(', '));['rentNet','mgmtNet','elecNet','taxableNet','vat','otherCharges','gross','received','unpaid'].forEach(function(k,i){line(['월세 공급가','관리비 공급가','전기 공급가','과세 공급가','부가세','기타 실비','청구 총액','수납','미수납'][i]+'  '+money(r[k]));});line('고지서 '+r.billCount+'건 · 발행 '+r.invoiceCount+'건');if(r.estimatedFields.length)line('확인 필요: '+r.estimatedFields.join(', '));});
+    report.rows.forEach(function(r){line(r.identity.unit+' · '+(r.identity.biz||r.identity.name),'heading');line('월 '+r.months.join(', '));['rentNet','mgmtNet','elecNet','taxableNet','vat','otherCharges','gross','received','unpaid'].forEach(function(k,i){line(['월세 공급가','관리비 공급가','전기 공급가','과세 공급가','부가세','기타 실비','청구 총액','수납','미수납'][i]+'  '+money(r[k]));});line('고지서 '+r.billCount+'건 · 세금계산서 발급 확인 '+r.invoiceCount+'건');if(r.estimatedFields.length)line('확인 필요: '+r.estimatedFields.join(', '));});
     line('분기 합계','heading');['rentNet','mgmtNet','elecNet','taxableNet','vat','otherCharges','gross','received','unpaid'].forEach(function(k,i){line(['월세 공급가','관리비 공급가','전기 공급가','과세 공급가','부가세','기타 실비','청구 총액','수납','미수납'][i]+'  '+money(report.totals[k]));});
   }else if(req.reportType==='settlement'){
     title=month+' 공용비 정산';var saved=data.settInputs&&data.settInputs[month];if(!saved||!saved.confirmed)throw new Error('확정된 정산 자료가 없습니다.');line('확정일 '+saved.confirmedAt);['electricity','water'].forEach(function(k){var p=saved.usagePeriods&&saved.usagePeriods[k];if(p)line((k==='electricity'?'전기':'수도')+' 기간: '+(p.inactive?'미청구':p.start+' ~ '+p.end));});
     var view=nativeView_(state,month);view.bills.forEach(function(b){line(b.unit+' · '+b.name,'heading');['pay_elec','pay_water','pay_elev','pay_waste'].forEach(function(k,i){var item=b.items[k];line(['전기','수도','승강기','오물비'][i]+'  '+(item.na?'미청구':money(item.amount)));});});
   }else{
     title=month+' 임대 고지서';var view=nativeView_(state,month),rows=view.bills.filter(function(b){return !req.tenantId||b.tenantId===req.tenantId;});if(!rows.length)throw new Error('출력할 저장 고지서가 없습니다.');
-    rows.forEach(function(b,index){if(index)line('','page');line(b.unit+' · '+b.name,'heading');line(b.issued?'발행 고지서':'미발행 자료 · 검토용');line('기준일 '+nativeToday_());
+    rows.forEach(function(b,index){if(index)line('','page');line(b.unit+' · '+b.name,'heading');line(b.issued?'세금계산서 발급 확인됨':'세금계산서 미확인 · 고지서 검토용');line('기준일 '+nativeToday_());
       RentalBilling.itemKeys.forEach(function(k,i){var item=b.items[k];line(['월세','관리비','전기','수도','승강기','오물비'][i]+'  '+(item.na?'청구 제외':money(item.amount))+' · 수납 '+money(item.received)+' · 잔액 '+money(item.unpaid));if(item.date)line('입금 확인 날짜 '+item.date);});
       line('청구 '+money(b.total)+' · 수납 '+money(b.received)+' · 미수납 '+money(b.unpaid),'heading');
       if(b.estimatedFields.length)line('과거 추정 기준 확인 필요: '+b.estimatedFields.join(', '));

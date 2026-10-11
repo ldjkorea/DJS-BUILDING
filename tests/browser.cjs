@@ -14,6 +14,7 @@ const sample = () => ({...core.empty(), tenants: [
   {id: 't1', name: '김테스트', biz: '샘플 스튜디오', unit: '201호', rent: '1000000', mgmt: '100000', elevator: '30000', contract: ''},
   {id: 't2', name: '이테스트', biz: '샘플 사무실', unit: '301호', rent: '1200000', mgmt: '100000', elevator: '30000', contract: ''}
 ], loans: [{id: 'l1', name: '샘플 대출', principal: 100000000, rate: 4}], expenses: {}});
+const occupiedBuilding = () => {const data=sample();data.tenants.push(...[1,4].map(f=>({...data.tenants[0],id:'floor'+f,unit:f+'01호',elevator:0})));return data;};
 let browser;
 async function pageFor(data = sample(), options = {}) {
   const context = await browser.newContext({serviceWorkers:'block',viewport: {width: 1280, height: 1000}, ...options});
@@ -232,13 +233,13 @@ async function state(page) { return page.evaluate(() => currentData()); }
     assert.equal(await page.locator('#modal-loan').isVisible(), false); assert.deepEqual(errors, []); await context.close();
   });
   await run('waste-only settlement and negative input rejection', async () => {
-    const {page, context, errors} = await pageFor(); await navigateV2(page,'settlement');
+    const {page, context, errors} = await pageFor(occupiedBuilding()); await navigateV2(page,'settlement');
     await page.locator('#sett-waste').fill('-10'); await page.evaluate(() => calcSettlement());
     assert.equal(await page.locator('#sett-step2').isVisible(), false);
     await page.locator('#sett-waste').fill('10000'); await page.evaluate(() => calcSettlement());
     assert.ok(await page.locator('#sett-step2').isVisible());
     await page.evaluate(() => confirmSettlement());
-    assert.equal(Object.values((await state(page)).bills)[0].t1.waste, 5000); assert.deepEqual(errors, []); await context.close();
+    assert.equal(Object.values((await state(page)).bills)[0].t1.waste, 2500); assert.deepEqual(errors, []); await context.close();
   });
   await run('saved bill charges survive tenant edits in summary, editor and message', async () => {
     const {page, context, errors} = await pageFor();
@@ -255,11 +256,11 @@ async function state(page) { return page.evaluate(() => currentData()); }
     assert.deepEqual(errors, []); await context.close();
   });
   await run('settlement elevator allocation is actually saved to each bill', async () => {
-    const {page, context, errors} = await pageFor(); await navigateV2(page,'settlement');
+    const {page, context, errors} = await pageFor(occupiedBuilding()); await navigateV2(page,'settlement');
     await page.locator('#sett-elev-mode').selectOption('gross');await page.locator('#sett-elev').fill('150000'); await page.evaluate(() => { calcSettlement(); return confirmSettlement(); });
-    assert.equal(Object.values((await state(page)).bills)[0].t1.elevatorTotal, 75000);
+    assert.equal(Object.values((await state(page)).bills)[0].t1.elevatorTotal, 50000);
     await page.evaluate(() => goToHistory('t1')); await page.waitForTimeout(100);
-    assert.ok((await page.locator('#hist-content').innerText()).includes('75,000'));
+    assert.ok((await page.locator('#hist-content').innerText()).includes('50,000'));
     assert.deepEqual(errors, []); await context.close();
   });
   await run('another tab changing app data blocks stale writes', async () => {

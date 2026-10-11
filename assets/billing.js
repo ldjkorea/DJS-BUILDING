@@ -77,15 +77,49 @@
     }
     return {rows, expected:{elec:elec ? withVat(elec):0, water, elev:elevatorTotal, waste}};
   }
+  // Structural floor rows are calculation-only. They never become tenants or bills.
+  // Missing contractual liability remains a review candidate, not an owner debt.
+  function calculateBuilding(tenants, inputs, ratio, context = {}) {
+    const occupied = tenants.filter(t => !t.archived && !['공실(정리중)','임대모집중'].includes(t.leaseStatus));
+    const slots = [...occupied], missing = [], issues = [];
+    for (let floor = 1; floor <= 4; floor++) {
+      if (occupied.some(t => floorOf(t.unit) === floor)) continue;
+      const relevant = inputs.waterTotal || inputs.elev || inputs.waste || inputs.elec && floor >= 2;
+      if (!relevant) continue;
+      missing.push(floor);
+      slots.push({id:'vacancy_floor_'+floor, name:'공실 비용 검토', unit:floor+'01'});
+      issues.push(floor+'층 점유·계약상 비용 부담 종료일과 공실 부담 정책을 확인해주세요.');
+    }
+    // A vacant fifth floor normally stays outside the historic ratio. Recorded
+    // meter usage must not silently disappear into the other floors' charges.
+    if (!occupied.some(t => floorOf(t.unit) === 5) && Number(inputs.waterFloors?.[5]?.usage) > 0 && inputs.waterTotal) {
+      missing.push(5);slots.push({id:'vacancy_floor_5',name:'공실 비용 검토',unit:'501'});
+      issues.push('5층 공실 실측 수도 사용량의 비용 부담을 확인해주세요.');
+    }
+    if (context.month) {
+      for (const t of occupied) {
+        const start = dateISO(String(t.contract || '').split('~')[0]?.trim()), end = contractEndDate(t.contract);
+        const operation = context.floorOperations?.[floorOf(t.unit)] || {};
+        if ([start,end,operation.vacatedOn,operation.liabilityEndOn].some(day => day && day.slice(0,7) === context.month && day !== context.month+'-01' && day !== dateKey(Number(context.month.slice(0,4)),Number(context.month.slice(5)),new Date(Number(context.month.slice(0,4)),Number(context.month.slice(5)),0).getDate())))
+          issues.push(floorOf(t.unit)+'층 월 중 계약·점유 변경은 퇴거일과 비용 부담 종료일을 구분해 수동 검토해주세요.');
+      }
+    }
+    const result = calculate(slots, inputs, ratio);
+    const ownerCandidates = result.rows.filter(row => missing.includes(row.floor)).map(({id,name,unit,...row}) => ({...row, status:'review', reason:'계약상 부담 주체 미확정'}));
+    return {...result, rows:result.rows.filter(row => !missing.includes(row.floor)), ownerCandidates, reviewRequired:issues.length>0, reviewIssues:issues};
+  }
   function reconcile(result) {
     const totals = {elec:0, water:0, elev:0, waste:0};
-    result.rows.forEach(row => {
+    [...result.rows,...(result.ownerCandidates || [])].forEach(row => {
       for (const key of Object.keys(totals)) {
         const value = row[key] === null ? 0 : won(row[key]);
         totals[key] += key === 'elec' ? withVat(value) : value;
       }
     });
-    return {totals, balanced:Object.keys(totals).every(key => totals[key] === result.expected[key])};
+    const balanced=Object.keys(totals).every(key => totals[key] === result.expected[key]);
+    const ownerTotals={elec:0,water:0,elev:0,waste:0};
+    (result.ownerCandidates||[]).forEach(row=>Object.keys(ownerTotals).forEach(key=>{ownerTotals[key]+=key==='elec'?withVat(row[key]||0):won(row[key]||0);}));
+    return {totals, ownerTotals, tenantTotals:Object.fromEntries(Object.keys(totals).map(key=>[key,totals[key]-ownerTotals[key]])), balanced, canConfirm:balanced&&!result.reviewRequired};
   }
   function charges(tenant, bill = {}) {
     const firstFloor = floorOf(bill.unitSnapshot ?? tenant.unit) === 1;
@@ -666,7 +700,7 @@
     if(!Number.isSafeInteger(legacyUndated))operationError('과거 확인 금액 범위를 확인해주세요.');
     return {year,asOf,rows,legacyUndated};
   }
-  root.RentalBilling = {won, withVat, floorOf, distribute, calculate, reconcile, charges, payment, quarterlyStatement,
+  root.RentalBilling = {won, withVat, floorOf, distribute, calculate, calculateBuilding, reconcile, charges, payment, quarterlyStatement,
     dateISO, contractEndDate, contractDeadline, period, dueDate, historicalPayment, arrears, itemKeys, naFields,
     materializeGroup, invalidateChangedPayments, freezeBill, effectiveTenant, correctBillBasis, collectionStatus,
     RECEIPT_FORMAT,openReceiptLedger,validateReceiptLedger,appendReceiptEvent,receiptLedgerState,

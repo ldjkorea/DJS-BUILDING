@@ -1,6 +1,7 @@
 /* Anonymous local profiles; every external request is blocked. */
 const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
 const core=require('../assets/core.js'),billing=require('../assets/billing.js'),key='rentalIndependent20261009.'+core.STATE_KEY,root=path.resolve(__dirname,'..');
+const {navigate:navigateV2}=require('./navigation.cjs');
 const tenant={id:'anonymous-operation',name:'익명 예시',unit:'201호',rent:100000,mgmt:0,elevator:0,payday:'15일',paytype:'후불납',contract:'2025/01/01 ~ 2027/12/31'};
 const fixture=()=>({...core.empty(),tenants:[{...tenant}],bills:{'2026-09':{[tenant.id]:billing.freezeBill(tenant,{invoiceIssued:true},'2026-09')}}});
 const cases=[],results=[];let browser,server,serverExited,url=process.env.RENTAL_TEST_URL;
@@ -40,6 +41,16 @@ test('operational panel mobile PC large text keeps draft keyboard actions and an
  for(const width of [360,390,768,1366])for(const scale of [1,2]){
   const view=await open(fixture(),width),{page}=view;await fillRepair(page);await page.evaluate(scale=>document.documentElement.style.fontSize=(16*scale)+'px',scale);await page.evaluate(()=>{switchTab('home');switchTab('building');});assert.equal(await page.locator('#repair-location').inputValue(),'201호');assert.equal(await page.locator('[data-income-month="2026-09"] td').nth(1).innerText(),'₩110,000');assert.equal(await page.locator('[data-income-month="2026-09"] td').nth(0).innerText(),'근거 없음');assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);await page.locator('#repair-description').focus();await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.id),'save-repair');
   if(scale===1&&[390,1366].includes(width)){fs.mkdirSync(path.join(root,'docs/screenshots'),{recursive:true});await page.screenshot({path:path.join(root,'docs/screenshots/operations-'+width+'.png'),fullPage:true});}checked(view);await view.context.close();
+ }
+});
+test('vacant fourth floor PC mobile shows owner candidate and cannot create tenant bills',async()=>{
+ for(const width of [390,1366]){
+  const sample=core.empty();sample.tenants=[1,2,3,4].map(f=>({...tenant,id:'vacant-test-'+f,unit:f+'01호',archived:f===4,period_elec:'15',period_water_day:'15'}));
+  const view=await open(sample,width),{page}=view;const before=await raw(page);
+  await page.evaluate(()=>{cY=2026;cM=9;});await navigateV2(page,'settlement');
+  await page.locator('#sett-elec').fill('100000');await page.evaluate(()=>calcSettlement());
+  assert.equal(await page.locator('#confirm-settlement').isDisabled(),true);assert.match(await page.locator('#sett-tbody').innerText(),/4층 공실 · 임대인 부담 후보/);assert.match(await page.locator('#sett-tbody').innerText(),/33,000/);
+  await page.evaluate(()=>confirmSettlement());assert.equal(await raw(page),before);assert.equal((await data(page)).bills['2026-09'],undefined);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);checked(view);await view.context.close();
  }
 });
 (async()=>{

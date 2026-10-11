@@ -99,9 +99,9 @@ test('orphan historical bill supports receipt confirmation and reload',async()=>
   await page.reload();assert.equal(await page.evaluate(past=>bills[past].audit1.stampedRentDate,past),receipt);
 });
 test('re-settlement invalidates changed receipts but retains unaffected payments',async()=>{
-  const data=sample();data.bills[key]={audit1:billing.freezeBill(tenant,{water:10000,electricity:35000,elevatorTotal:50000,waste:1000,stampedMgmt:true,stampedMgmtDate:receipt,stampedRent:true,stampedRentDate:receipt,invoiceIssued:true},key)};
+  const data=sample();data.tenants.push(...[1,3,4].map(f=>({...tenant,id:'occupied'+f,unit:f+'01호'})));data.bills[key]={audit1:billing.freezeBill(tenant,{water:10000,electricity:35000,elevatorTotal:50000,waste:1000,stampedMgmt:true,stampedMgmtDate:receipt,stampedRent:true,stampedRentDate:receipt,invoiceIssued:true},key)};
   const {page}=await open(data);await navigateV2(page,'settlement');
-  await page.locator('#sett-elev').fill('60000');await page.locator('#sett-waste').fill('1000');
+  await page.locator('#sett-elev').fill('180000');await page.locator('#sett-waste').fill('4000');
   await page.evaluate(()=>calcSettlement());await page.evaluate(()=>confirmSettlement());
   const state=await page.evaluate(()=>RentalBilling.payment(tenants[0],bills[mk()].audit1));
   assert.equal(state.items.pay_elev.paid,false);assert.equal(state.items.pay_elec.paid,true,JSON.stringify(state));

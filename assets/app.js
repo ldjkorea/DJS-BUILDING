@@ -1505,14 +1505,15 @@ function calcSettlement() {
   };
 
   try {
-    const result = RentalBilling.calculate(activeTenants(), inputs, waterRatio);
+    const result = RentalBilling.calculateBuilding(tenants, inputs, waterRatio, {month:mk(),floorOperations});
     settlementReview = {
       ...result,
       month: mk(),
       inputs,
       usagePeriods: settlementUsagePeriods(mk(), waterActive),
-      tenantSignature: JSON.stringify(activeTenants().map(t => [t.id, t.unit]))
+      tenantSignature: JSON.stringify([tenants,floorOperations])
     };
+    for(const [key,charged] of [['electricity',inputs.elec>0],['water',inputs.waterTotal>0]])if(charged&&settlementReview.usagePeriods[key]?.error){settlementReview.reviewRequired=true;settlementReview.reviewIssues.push(settlementReview.usagePeriods[key].error);}
     settCalcResult = Object.fromEntries(result.rows.map(r => [r.id, r]));
     renderSettlementReview();
     goSettStep(2);
@@ -1521,7 +1522,7 @@ function calcSettlement() {
 function renderSettlementReview() {
   const result = settlementReview;
   if (!result) return;
-  const {totals,balanced} = RentalBilling.reconcile(result);
+  const {totals,balanced,canConfirm} = RentalBilling.reconcile(result);
   document.getElementById('sett-tbody').innerHTML = result.rows.map((row,index) => {
     const values = ['elec','water','elev','waste'].map(key => row[key]===null?null:key==='elec'?withVat(row[key]):row[key]);
     const floorLabel = row.floor > 0 ? `${row.floor}F` : '';
@@ -1581,7 +1582,10 @@ function renderSettlementReview() {
     const totalCell = `<td class="row-total" style="text-align:right;vertical-align:middle;font-size:12px;font-weight:700;color:var(--gold3);font-variant-numeric:tabular-nums;">${fmtN(subtotal)}</td>`;
 
     return `<tr>${tenantCell}${elecCell}${waterCell}${elevCell}${wasteCell}${totalCell}</tr>`;
-  }).join('') + `<tr class="sum-row"><td>배분 합계</td>${Object.values(totals).map(n=>`<td>${fmtN(n)}</td>`).join('')}<td>${fmtN(Object.values(totals).reduce((a,b)=>a+b,0))}</td></tr>`;
+  }).join('') + (result.ownerCandidates||[]).map(row=>{
+    const amounts=['elec','water','elev','waste'].map(key=>key==='elec'?withVat(row[key]||0):row[key]||0);
+    return `<tr><td>${row.floor}층 공실 · 임대인 부담 후보<br><small>부담 주체 검토 필요 · 고지서 생성 제외</small></td>${amounts.map(n=>`<td>${fmtN(n)}</td>`).join('')}<td>${fmtN(amounts.reduce((a,b)=>a+b,0))}</td></tr>`;
+  }).join('') + `<tr class="sum-row"><td>임차인 + 공실 검토 합계</td>${Object.values(totals).map(n=>`<td>${fmtN(n)}</td>`).join('')}<td>${fmtN(Object.values(totals).reduce((a,b)=>a+b,0))}</td></tr>`;
 
   const shortPeriod=period=>period?.inactive?'미청구':period?.error?'기준일 확인 필요':`${period.start.slice(5).replaceAll('-','.')}–${period.end.slice(5).replaceAll('-','.')}`;
   document.getElementById('sett-result-sub').textContent = `${result.month} · ${result.rows.length}개 층 배분 · 전기 ${shortPeriod(result.usagePeriods?.electricity)} · 수도 ${shortPeriod(result.usagePeriods?.water)} · VAT포함 기준`;
@@ -1589,7 +1593,8 @@ function renderSettlementReview() {
     `${balanced?'✓ 입력 실비와 배분 합계가 완벽히 일치합니다 (100% 정합성 검증)':'합계 차이가 있습니다. 배분액을 조정해주세요.'}</div>` +
     `<div class="reconcile-details">${Object.keys(totals).map((key,i)=>`${['전기','수도','엘리베이터','오물비'][i]}: ${fmt(totals[key])} / ${fmt(result.expected[key])}`).join(' · ')}</div>` +
     '<p class="card-sub">수도(2~5층 주방비례)·엘리베이터·오물비는 원 단위 잔액까지 오차 없이 배분되며 위 금액을 직접 조정할 수 있습니다.</p>';
-  document.getElementById('confirm-settlement').disabled = !balanced;
+  if(result.reviewRequired)document.getElementById('sett-note').innerHTML += `<p class="reconcile unbalanced">정산 확정 차단 · ${result.reviewIssues.map(esc).join('<br>')}</p>`;
+  document.getElementById('confirm-settlement').disabled = !canConfirm;
 }
 function adjustAllocation(index, key, value) {
   if (!settlementReview || !['elev','waste','water'].includes(key)) return;
@@ -1598,10 +1603,11 @@ function adjustAllocation(index, key, value) {
   renderSettlementReview();
 }
 async function confirmSettlement() {
-  if (!settlementReview || settlementReview.month!==mk() || settlementReview.tenantSignature!==JSON.stringify(activeTenants().map(t=>[t.id,t.unit]))) {
+  if(persistenceBusy)return;
+  if (!settlementReview || settlementReview.month!==mk() || settlementReview.tenantSignature!==JSON.stringify([tenants,floorOperations])) {
     showToast('월 또는 세입자 정보가 바뀌었습니다. 다시 계산해주세요.'); return;
   }
-  if (!RentalBilling.reconcile(settlementReview).balanced) { showToast('입력 실비와 배분 합계를 맞춰주세요.'); return; }
+  if (!RentalBilling.reconcile(settlementReview).canConfirm) { showToast('배분 합계와 공실·월 중 변경의 비용 부담 정책을 확인해주세요.'); return; }
   const key=mk();
   if(settlementReview.rows.some(row=>bills[key]?.[row.id]?.receiptLedger)){showToast('입금 원장이 있는 고지서의 청구액은 재정산할 수 없습니다. 원장과 기존 정산을 유지했습니다.');return;}
   if(settInputs[key]?.confirmed && !confirm('확정된 정산을 새 배분액으로 바꿀까요? 기존 자료는 복원 지점에 보관합니다.'))return;

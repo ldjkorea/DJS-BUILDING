@@ -32,7 +32,11 @@ function run(file,env,logName=file+'.log'){
     // inventory into four parts, with at most two browsers running at once.
     // This bounds each worker without increasing CPU contention on Windows.
     const shardCount=4,shards=[];
-    for(const pair of [[1,2],[3,4]])shards.push(...await Promise.all(pair.map(index=>run(suite,{...env,RENTAL_AUDIT_SHARD:index+'/'+shardCount},suite+'.'+index+'-of-'+shardCount+'.log'))));
+    const workers=Number(process.env.RENTAL_AUDIT_WORKERS||2);
+    if(![1,2].includes(workers))throw Error('RENTAL_AUDIT_WORKERS must be 1 or 2');
+    console.log('Audit workers: '+workers+'; all four shards remain required');
+    const groups=workers===1?[[1],[2],[3],[4]]:[[1,2],[3,4]];
+    for(const pair of groups)shards.push(...await Promise.all(pair.map(index=>run(suite,{...env,RENTAL_AUDIT_SHARD:index+'/'+shardCount},suite+'.'+index+'-of-'+shardCount+'.log'))));
     let coverageError;
     try{
       const parts=[1,2,3,4].map(index=>JSON.parse(fs.readFileSync(path.join(out,'audit-browser-results-'+index+'-of-'+shardCount+'.json'),'utf8')));
