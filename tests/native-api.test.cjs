@@ -7,7 +7,7 @@ function setup(data){
   const scope={require,__dirname,console,process};vm.createContext(scope);vm.runInContext(harness+'\nthis.makeServer=server;',scope);
   const s=scope.makeServer({raw:JSON.stringify(data||fixture())}),c=s.context;
   c.ContentService.createTextOutput=text=>({getContent:()=>text,setMimeType(){return this;},toString:()=>text});
-  vm.runInContext(fs.readFileSync(path.join(__dirname,'../server/IndependentApp.gs'),'utf8'),c);
+  vm.runInContext(fs.readFileSync(path.join(process.env.RENTAL_GAS_TEST_ROOT||path.join(__dirname,'../server'),'IndependentApp.gs'),'utf8'),c);
   const call=req=>JSON.parse(c.nativeAppRequest(JSON.stringify(req))),verifier='a'.repeat(64),challenge=crypto.createHash('sha256').update(verifier).digest('hex');
   const issue=()=>c.createNativePairing(challenge),pair=()=>call({action:'pair',code:issue().code,verifier});
   return {...s,get:params=>JSON.parse(JSON.stringify(s.get(params))),c,call,issue,pair,verifier};

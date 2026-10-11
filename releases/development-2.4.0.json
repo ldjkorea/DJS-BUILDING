@@ -1,0 +1,276 @@
+{
+  "appVersion": "2.4.0",
+  "androidVersion": "4.2.0",
+  "androidVersionCode": 8,
+  "phase": "Personal-building stabilization development candidate",
+  "sourceCommit": "23fcd4c3f6ea5e44565ac671f52c86c33124e782",
+  "localRuntimeSourceCommit": "41d20f5",
+  "recordedAt": "2026-10-11T14:51:47.749Z",
+  "validation": {
+    "command": "npm run test:all",
+    "unit": {
+      "total": 247,
+      "passed": 247
+    },
+    "browser": {
+      "startedAt": "2026-10-11T14:38:22.708Z",
+      "finishedAt": "2026-10-11T14:47:02.274Z",
+      "url": "http://127.0.0.1:6378/",
+      "node": "v24.20.0",
+      "results": [
+        {
+          "suite": "browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "audit-browser.cjs",
+          "exitCode": 0,
+          "status": "pass",
+          "shards": [
+            {
+              "suite": "audit-browser.cjs",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "suite": "audit-browser.cjs",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "suite": "audit-browser.cjs",
+              "exitCode": 0,
+              "status": "pass"
+            },
+            {
+              "suite": "audit-browser.cjs",
+              "exitCode": 0,
+              "status": "pass"
+            }
+          ]
+        },
+        {
+          "suite": "receipt-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "receipt-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "bill-basis-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "quarter-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "restored-data-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "print-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "pwa-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "single-file-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "integrity-v2-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "independent-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "operations-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        },
+        {
+          "suite": "update-browser.cjs",
+          "exitCode": 0,
+          "status": "pass"
+        }
+      ]
+    },
+    "pdf": {
+      "appVersion": "2.4.0",
+      "anonymous": true,
+      "pdfCount": 5,
+      "checks": [
+        {
+          "name": "legacy",
+          "file": "test-results\\print-pdf-MKNeF0\\legacy.pdf",
+          "pages": 1,
+          "sha256": "b8e1037f618e5157c8f7d36d7d29329c6a8114ea0fc61dd2a24f7ecf6f4eb06b",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        },
+        {
+          "name": "journal",
+          "file": "test-results\\print-pdf-MKNeF0\\journal.pdf",
+          "pages": 5,
+          "sha256": "06dfed1b5370fce3539d3f66114f13ccba7c1ad46c897b95ddd7d2e867455a34",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": true,
+          "status": "pass"
+        },
+        {
+          "name": "journal-mobile",
+          "file": "test-results\\print-pdf-MKNeF0\\journal-mobile.pdf",
+          "pages": 5,
+          "sha256": "06532475f730c290b82b9b1a20e9045d0303463da86ba335f40163437e78cabd",
+          "portrait": true,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": true,
+          "status": "pass"
+        },
+        {
+          "name": "quarter",
+          "file": "test-results\\print-pdf-MKNeF0\\quarter.pdf",
+          "pages": 6,
+          "sha256": "059be4417944e2f0d72c1c32638b527a7dc0c9e4d7236eabed3388f2aa1b0da7",
+          "portrait": false,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        },
+        {
+          "name": "quarter-empty",
+          "file": "test-results\\print-pdf-MKNeF0\\quarter-empty.pdf",
+          "pages": 1,
+          "sha256": "0bb7a48ea3beb193582fb0f595eeb1e5a0a63aea1ae55d12b3378e5763fb5655",
+          "portrait": false,
+          "noBlankPages": true,
+          "noInteractiveControls": true,
+          "amountsMatched": true,
+          "noOutsidePageText": true,
+          "completeReceiptNotesOnSinglePages": false,
+          "status": "pass"
+        }
+      ],
+      "scope": "Edge-generated PDF text, page dimensions and bounds. Visual rendering reviewed separately; no physical printer or Google execution."
+    }
+  },
+  "sourceHashes": {
+    "package.json": "14c671b2158898337fc954f8c0e8db44b1d96521e4315e86d53e49f6cbdc25e4",
+    "index.html": "11e3923fbd87bbbd57298a4aa4e19c4ebc7f070497eb9f98b7cf3765b3b45715",
+    "src/index.template.html": "4ed5ffd8670ba97bf93bf2c363972e05be7d701af2f60763090bb853c112ac06",
+    "assets/core.js": "a6816cab51bb69601bf7b852054a25b424e042e57cef219beae5b2b0697f840c",
+    "assets/billing.js": "6d2c178199bd7bfa0ceb879e1f809204dec830de439de83b80d131c1f29d3e15",
+    "assets/app.js": "14870100f758c42f8daa9245820f93bec0b618f1db1f8f4df4bc7e02a1a1d9d9",
+    "assets/enhancements.js": "4673aca0161a02b19c5420b1542619134a3fbcf65611015c2030cf76ec1caa25",
+    "assets/workspace.css": "8f42030158cb24d8dc097b43e30270ec840950e53154177965ef1f2665bf4b84",
+    "sw.js": "2e7175c54282e96d6f7e8011456cb81afcdfdfaa800092dc84e082e9ca835bf2",
+    "scripts/build.cjs": "9d6729f08e42f0a12ddd2e3302c3c7dd4fec65c98f1ab79473d91cd31fb62616",
+    "scripts/test-browser.cjs": "a4d84182a1038519f5d9a29a4ea580e5c5d099f2b8f80fe1dc492cf22f1e35e4",
+    "scripts/test-gas-candidate.cjs": "02ccdfad7da37b03b8b61ca11c493e5af0e5f730d9989bf90d4232dd04a5afc0",
+    "tests/single-file-browser.cjs": "87315dc719ee20b163818d9fe882757cfc2908bf0bbaf78d0d69e7988eeed327",
+    "server/appsscript.json": "a6954c274b74d412d9ff0968b40641931869fcc31f5a0eb622a54575ca8d1247",
+    "server/AuthorizeDocs.gs": "5512c7b1828320898d8c86fc78163c2860bc9b63d9317ec98f81a4bac838efbb",
+    "server/Billing.gs": "339272337d68e348eae4234c52e5bfa459f5b3140cb0bdb324b6af564ccfdf79",
+    "server/CalendarSync.gs": "ee6fe4c1ce07fc932ff91522ceb782793798bff17341b00d6df8fc277900e4d3",
+    "server/Code.gs": "6dada7192d126095f3e7fcab3850165cf278a337f24ebc8164be2a06fec41610",
+    "server/CurrentStatus.gs": "2645981b706d0aa04b920da18030216725520ace895477e0112fd46676ac69bf",
+    "server/IndependentApp.gs": "498bdc2544373fc82ae8e66feffc2c12f6111bf2f76f62ff85c9d68f588f531b",
+    "tests/operations.test.cjs": "b3335bae51d6b13bb4efba1ba9af9459f1cfef8acafb851a81a5b641d3684418",
+    "tests/operations-browser.cjs": "ceb8998fe51d1a119a222db06c5467f00ee0412289579869c475cc07d4c75ea9",
+    "tests/basis-review.test.cjs": "aaf98fbb5629d49fc9a681c9ba39b6548139e21650ff26471f32c4f03fc64a95",
+    "tests/server.test.cjs": "c393bd19b2daefeb4fd0d17edb41758a6389a21d859a69c182d09529fbb634f1",
+    "scripts/prepare-basis-review.cjs": "ea320362adc6eab8760fe25498afa80f43febdc347f951745c8c3c65e558fbb0",
+    ".github/workflows/regression.yml": "c1fdc385a02b800684acb5213b6a4182b5cfbc8f966168c5e43055a7d9340a84",
+    "tests/audit-browser.cjs": "6185b4d8484c55a1db78a0ec1045532cce463de9511b7ad9682fc910f979a855",
+    "manifest.json": "2fa2e7168658975e65ccfe75e867fe83d974a8cc999096f2a1885d5cbd75eccf",
+    "tests/update.test.cjs": "34fcbf5b8d8bdd77dbca0401c1d79e66f07414edea1b855fe296b7449a3cd56c",
+    "tests/update-browser.cjs": "6cd4f84c5deae4a0e2955b873b32c2a7cb35f055d62c14e36d49e560c88ea6a7",
+    "scripts/prepare-android-update-fixture.cjs": "de8ab1bc9a872a8bac17cb0c5e85c4525629764d593c5d88bcde9333b5ac4528",
+    "tests/native-api.test.cjs": "066a7c0c5fd5d7eaa72e8f84457c1a55a67ce1055012678785d868f801fa9163",
+    "tests/building-stability.test.cjs": "165f56ed0ba503cc1bdd78f5d3e081c93a54eca66fd628bb34df9ea8d24eb1df",
+    "tests/service-worker.test.cjs": "3f4c2745eb3e823d37976393d5fdb528847874ca5f57e2f76b1d2842b6e3549f",
+    "tests/pwa-browser.cjs": "aa9066312216d5e304709913d949c72b6b1486073e05a980153c8344c4a0e389",
+    "android/app/build.gradle.kts": "c3c78626558b2f1d89521f77f73a8731289263ed179c29f59875b200266c6e9a",
+    "android/app/src/main/AndroidManifest.xml": "e8bb407179577b850a2fead1af28f135675824960fd8e220d1f1cfb7ab33300e",
+    "android/app/src/main/assets/fonts/OFL.txt": "82e9c8a4b203261f10ddba1296422d64914ff3d4b7bd8a12896d03f0f088d70a",
+    "android/app/src/main/assets/fonts/Pretendard-Regular.otf": "3ffbacde6ab8411f1d2db54bb9b1f0b3ee2a738932033722cf0388c06aed1c93",
+    "android/app/src/main/java/kr/henry/rental/independent/ApkUpdate.kt": "76b94fa6d3de01015aad2c4fde3b49aa688cdfbe63cbc19937801b0a971b7eea",
+    "android/app/src/main/java/kr/henry/rental/independent/AppDestination.kt": "ff2fd4d7263d7276604aac731b01c29b25b9889b5c8a594708f55f8d04ccf8c6",
+    "android/app/src/main/java/kr/henry/rental/independent/MainActivity.kt": "3f92f67ac8c9f0b2cc5d240f7685f2020f9ce5a9f64924d861722f2a514b7cb6",
+    "android/app/src/main/java/kr/henry/rental/independent/NativeApi.kt": "2f15c79c4475dc61f7e5d10a599c18f7918349c4e9f2a5b23f44b4432ab55166",
+    "android/app/src/main/java/kr/henry/rental/independent/NativeDemo.kt": "56d112dc19cbce1b30f11259f141c5368f57aa7a77e817bf6268f3aa49efa852",
+    "android/app/src/main/java/kr/henry/rental/independent/NativeDocuments.kt": "6da967da483d4a687c57491f01dcd214ae6bdbd690dff48fcf4ddb5d2188ad59",
+    "android/app/src/main/java/kr/henry/rental/independent/OperationsActivity.kt": "4475cbf56ce265b56fb61ebe3fd844f32c4f5594ca79e01010ad15ee9ec5851e",
+    "android/app/src/main/java/kr/henry/rental/independent/PdfPreviewActivity.kt": "367b6e98e5f1bb163ffcb33492c1cab5b05283a4bd9ca745f39d88c3883b7590",
+    "android/app/src/main/java/kr/henry/rental/independent/SecureSession.kt": "dfe3ecf63ab600ec1391fa4f742c86cfada725e08cd77763f220fb77611cf1c8",
+    "android/app/src/main/java/kr/henry/rental/independent/SnapshotReader.kt": "376d272b3cfb46f72d927b19f37b8560b99908948196a46e447e3482c13bfbfd",
+    "android/app/src/main/java/kr/henry/rental/independent/UpdateActivity.kt": "710bbb165583c6afa085980e53af4f3e98a0b9a0192acf2274c5d3755517669a",
+    "android/app/src/main/res/drawable-nodpi/launcher_artwork.png": "bbfbd4a3351768b6a351fd0dceefe92abf85d7acf6bbde72cb4da94be1779eaa",
+    "android/app/src/main/res/drawable-nodpi/launcher_monochrome.png": "51f72a43e74a9b79478af947a5fb85bdc0dee2fc589565e6907d24b44c8a06de",
+    "android/app/src/main/res/drawable-v26/ic_launcher.xml": "bb7088463896a92de1a13b60ec3d394a9ea4e8bc7db8bc13f0c529c40ef82391",
+    "android/app/src/main/res/drawable-v33/ic_launcher.xml": "7e288370838885a1b57ba593ccc00249057f39c5e20bdb794704350f94a16475",
+    "android/app/src/main/res/drawable/ic_launcher.xml": "260ad6b1055d10c46cb9a4f13176bb4e5580b9094677a9cdbf9979378e91d9f5",
+    "android/app/src/main/res/drawable/launcher_foreground.xml": "260ad6b1055d10c46cb9a4f13176bb4e5580b9094677a9cdbf9979378e91d9f5",
+    "android/app/src/main/res/drawable/launcher_themed.xml": "e508a7b5623899d19141b1b5248a7961fc3807851aca98dad57f1971a9fbbdce",
+    "android/app/src/main/res/values-v27/styles.xml": "dd887d1bf72332fdaf98d8f13e5fb4c3c29811f060a6a145cb471ad90e851c9a",
+    "android/app/src/main/res/values/launcher_colors.xml": "961332505da7743eda6c1b80807a4a2d262a65d3859ba7ba335b4c14293fee5f",
+    "android/app/src/main/res/values/strings.xml": "e6807790b050baf6421865e0445c503186601d829624340b2f205800c947873e",
+    "android/app/src/main/res/values/styles.xml": "53f34336fcbbfa41a72755277d27127d2f931a32ead8a7954b6d020a3e3f03c8",
+    "android/app/src/main/res/xml/backup_rules.xml": "1faadbc664a4ab8a82436ab3a167afaa0c294b1a0e7782f5e36a14d7b6bdcd6f",
+    "android/app/src/main/res/xml/data_extraction_rules.xml": "8e56951e85f2ca961ef8951d66793acac34a98ff7b189fb5dba7573f798ddf73",
+    "android/app/src/main/res/xml/update_paths.xml": "1f9140d317fa7bb329a39c6379603cdde16427a16f126f278c329bf193e24e81",
+    "android/app/src/release/java/kr/henry/rental/independent/NativeOperationsTransport.kt": "e3d8d49baa7277691c89f3626ec129dd226a6fe4a2e98c2c8382b88fe9857ffc",
+    "server/native-api/Code.gs": "fa2b765e03b3dad77b896127a8cf0bbb9f00bddac324bbffcb3071109b4a1240",
+    "server/native-api/appsscript.json": "c8596c86eac37d55d8a4c26ea4885ca1378fc7385e438822f9aeb9c02e289aed"
+  },
+  "external": {
+    "realGoogleWrites": false,
+    "realGoogleReadOnlyComparison": true,
+    "productionDeployed": false,
+    "apkPublished": false
+  },
+  "scope": "One owner building; no migration or SaaS architecture",
+  "ci": {
+    "runId": 38147921347,
+    "url": "https://github.com/ldjkorea/NEW-RENT-STORE/actions/runs/38147921347",
+    "status": "success",
+    "sourceCommit": "23fcd4c3f6ea5e44565ac671f52c86c33124e782"
+  }
+}
