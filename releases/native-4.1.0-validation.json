@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-11",
+  "androidVersion": "4.1.0",
+  "webVersion": "2.3.0",
+  "unitTests": {
+    "pass": 221,
+    "fail": 0
+  },
+  "nativeInstrumentation": {
+    "pass": 11,
+    "fail": 0,
+    "skipped": 2,
+    "skipReason": "live install and post-install preservation are run separately on their required baseline"
+  },
+  "isolatedLiveUpgrade": {
+    "downloadAndPermissionInstaller": "PASS",
+    "actualAndroidInstallerUpgrade": "PASS",
+    "postUpgradeCacheAndPublishedApk": "PASS",
+    "firstInstallTime": "2026-10-11 05:49:30"
+  },
+  "liveUpdate": {
+    "metadata": {
+      "appVersion": "2.3.0",
+      "androidVersion": "4.1.0",
+      "androidVersionCode": 5,
+      "androidReleaseUrl": "https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest"
+    },
+    "release": {
+      "protocol": "rental-apk-update-v1",
+      "packageName": "kr.henry.rental.independent",
+      "versionName": "4.1.0",
+      "versionCode": 5,
+      "size": 3066923,
+      "sha256": "e776400a358a7769eca19d956c1a17b7b9330bda8fc3639f2729b6d798301fa0",
+      "signerSha256": "b25160850067d115c493fe51aca9bdce1956d999ed45cee0950bd86d33c5a2a0",
+      "chunkCount": 8,
+      "chunkEncodedSize": 524288
+    },
+    "liveChunksVerified": 8,
+    "downloadedBytesIdentical": true,
+    "staleVersionRejected": true,
+    "rentalDataWritten": false,
+    "privateGitHubAuthenticationRequired": false,
+    "googleScopesExpanded": false
+  },
+  "drive": {
+    "id": "1nmrhoB0PaefOmhEnU5KvFC2Gd7Gcod7L",
+    "name": "NEW-RENT-STORE-4.1.0.apk",
+    "webViewLink": "https://drive.google.com/file/d/1nmrhoB0PaefOmhEnU5KvFC2Gd7Gcod7L/view?usp=drivesdk",
+    "sha256Checksum": "e776400a358a7769eca19d956c1a17b7b9330bda8fc3639f2729b6d798301fa0",
+    "size": "3066923"
+  },
+  "webBusinessSource": "UNCHANGED",
+  "realRentalWrites": "NOT PERFORMED",
+  "physicalPhone": "NOT TESTED",
+  "physicalPrinter": "NOT TESTED"
+}

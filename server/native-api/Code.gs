@@ -1,7 +1,14 @@
 /* JSON-only gateway. The owner-only web app remains a separate deployment.
  * Authentication, Script Properties, locks and billing execute in its library. */
-function doGet() {
-  return ContentService.createTextOutput(JSON.stringify(RentalBackend.getAppUpdateInfo()))
+function doGet(e) {
+  var result;
+  var action=e && e.parameter && e.parameter.action;
+  if (action==='androidUpdateManifest' || action==='androidUpdateChunk') {
+    // Only the packaged, signed APK is public. No Drive access or rental query.
+    try { result=androidUpdateResponse_(e.parameter); }
+    catch (ignored) { result={status:'error',message:'업데이트 배포가 준비되지 않았습니다. 잠시 후 다시 확인해주세요.'}; }
+  } else result=RentalBackend.getAppUpdateInfo();
+  return ContentService.createTextOutput(JSON.stringify(result))
     .setMimeType(ContentService.MimeType.JSON);
 }
 function doPost(e) {

@@ -1,7 +1,7 @@
 /* Called through google.script.run inside the owner-only web app. */
 function getAppUpdateInfo() {
   // Release metadata only: do not open the spreadsheet, document or calendar.
-  return {appVersion:'2.3.0',androidVersion:'4.0.0',androidVersionCode:4,
+  return {appVersion:'2.3.0',androidVersion:'4.1.0',androidVersionCode:5,
     androidReleaseUrl:'https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest'};
 }
 

@@ -6,8 +6,14 @@ import java.net.URL
 
 /** No web renderer. JSON only, pinned HTTPS hosts, bounded responses, no retries. */
 object NativeApi {
-    fun request(body: JSONObject?): JSONObject {
-        var next = URL(AppDestination.NATIVE_API)
+    fun request(body: JSONObject?): JSONObject = exchange(body, "")
+    fun updateManifest(): JSONObject = exchange(null, "?action=androidUpdateManifest")
+    fun updateChunk(version: Int, hash: String, index: Int): JSONObject {
+        require(version > 0 && hash.matches(Regex("[a-f0-9]{64}")) && index in 0..63)
+        return exchange(null, "?action=androidUpdateChunk&version=$version&sha256=$hash&index=$index")
+    }
+    private fun exchange(body: JSONObject?, query: String): JSONObject {
+        var next = URL(AppDestination.NATIVE_API + query)
         var post = body != null
         repeat(5) {
             require(next.protocol == "https" && next.host in setOf("script.google.com", "script.googleusercontent.com")) { "연결 주소를 확인해주세요." }

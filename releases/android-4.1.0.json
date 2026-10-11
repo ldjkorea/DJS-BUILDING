@@ -1,0 +1,46 @@
+{
+  "appName": "NEW RENT STORE",
+  "versionName": "4.1.0",
+  "versionCode": 5,
+  "packageName": "kr.henry.rental.independent",
+  "minSdk": 23,
+  "targetSdk": 37,
+  "apkFile": "NEW-RENT-STORE-4.1.0.apk",
+  "apkBytes": 3066923,
+  "apkSha256": "e776400a358a7769eca19d956c1a17b7b9330bda8fc3639f2729b6d798301fa0",
+  "signingCertificateSha256": "b25160850067d115c493fe51aca9bdce1956d999ed45cee0950bd86d33c5a2a0",
+  "signatureVerification": "PASS; same certificate as 4.0.0, 3.0.0 and 2.x",
+  "downloadUrl": "https://github.com/ldjkorea/NEW-RENT-STORE/releases/download/v4.1.0/NEW-RENT-STORE-4.1.0.apk",
+  "latestReleaseUrl": "https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest",
+  "driveUrl": "https://drive.google.com/file/d/1nmrhoB0PaefOmhEnU5KvFC2Gd7Gcod7L/view?usp=drivesdk",
+  "deviceEvidence": {
+    "emulator": "rental-independent-v2 / API 35 / emulator-5556",
+    "signedReleaseUpgrade": "PASS updater-capable code4 test baseline -> published 4.1.0 code5 via actual GAS download and Android installer; firstInstallTime retained",
+    "nativeInstrumentationTests": 11,
+    "isolatedUpgradeTests": 2,
+    "encryptedRentalCacheBytes": "UNCHANGED",
+    "physicalPhone": "NOT TESTED",
+    "physicalPrinter": "NOT TESTED"
+  },
+  "webApp": {
+    "version": "2.3.0",
+    "deployment": "GAS version 12; MYSELF owner-only",
+    "androidApiDeployment": 5,
+    "libraryVersion": 12,
+    "url": "https://script.google.com/macros/s/AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae/exec"
+  },
+  "validation": {
+    "gradle": "assembleRelease lintRelease testDebugUnitTest connectedDebugAndroidTest PASS",
+    "lintErrors": 0,
+    "lintWarnings": 6
+  },
+  "update": {
+    "protocol": "rental-apk-update-v1",
+    "transport": "existing fixed GAS GET; signed APK only; no rental or Drive access",
+    "chunkCount": 8,
+    "apkSha256": "e776400a358a7769eca19d956c1a17b7b9330bda8fc3639f2729b6d798301fa0",
+    "sourcePermission": "Android user-controlled REQUEST_INSTALL_PACKAGES",
+    "installation": "Android confirmation required; no browser download after 4.1.0 bootstrap",
+    "stock400Bootstrap": "ONE APK INSTALL REQUIRED"
+  }
+}

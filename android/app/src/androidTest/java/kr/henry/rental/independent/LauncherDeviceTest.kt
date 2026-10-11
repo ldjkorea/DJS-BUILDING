@@ -47,7 +47,7 @@ class LauncherDeviceTest {
             assertNotNull(device.wait(Until.findObject(By.text("고지서 내역")),5000))
             device.findObject(By.text("닫기")).click()
             device.wait(Until.findObject(By.desc("설정 메뉴")),5000).click()
-            assertNotNull(device.wait(Until.findObject(By.text("Android 4.0.0")),5000))
+            assertNotNull(device.wait(Until.findObject(By.text("Android ${BuildConfig.VERSION_NAME}")),5000))
             capture("native-settings.png")
             assertEquals(AppDestination.PACKAGE,device.currentPackageName)
         }
