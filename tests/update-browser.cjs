@@ -1,6 +1,7 @@
 const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {navigate}=require('./navigation.cjs');
 const url=process.env.RENTAL_TEST_URL||'http://127.0.0.1:4290/',out=path.join(__dirname,'../test-results'),version=require('../package.json').version;
+const nextVersion=version.split('.').map((value,index)=>Number(value)+(index===2?1:0)).join('.');
 let browser;const results=[],errors=[],external=[];
 async function test(name,action){await action();results.push({name,status:'pass'});console.log('PASS '+name);}
 (async()=>{
@@ -25,10 +26,10 @@ async function test(name,action){await action();results.push({name,status:'pass'
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
   });
   await test(viewport.width+'px new version displays an explicit apply action without navigation',async()=>{
-   const before=page.url();await page.evaluate(()=>window.__releaseVersion='2.4.0');
+   const before=page.url();await page.evaluate(value=>window.__releaseVersion=value,nextVersion);
    await page.getByRole('button',{name:'업데이트 확인',exact:true}).click();
    await page.locator('#app-update-notice').waitFor({state:'visible'});
-   assert.match(await page.locator('#app-update-notice').innerText(),/2.4.0/);assert.equal(page.url(),before);
+   assert.ok((await page.locator('#app-update-notice').innerText()).includes(nextVersion));assert.equal(page.url(),before);
    assert.equal(await page.evaluate(()=>prepareApplicationUpdate()),true);
    await page.screenshot({path:path.join(out,'update-'+viewport.width+'.png'),fullPage:true});
   });

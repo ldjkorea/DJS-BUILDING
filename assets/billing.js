@@ -139,7 +139,7 @@
   function buildingOverview(data) {
     const people=(data.tenants||[]).filter(t=>!t.archived),records=data.propertyRecords||[],voided=new Set(records.filter(r=>r.kind==='void').map(r=>r.reference));
     const floors=[1,2,3,4,5].map(floor=>{
-      const tenants=people.filter(t=>floorOf(t.unit)===floor),statuses=tenants.length?tenants.map(t=>t.leaseStatus||'임대중'):[data.floorOperations?.[floor]?.leaseStatus||'-'];
+      const tenants=people.filter(t=>floorOf(t.unit)===floor),statuses=tenants.length?tenants.map(t=>t.leaseStatus||'임대중'):[data.floorOperations?.[floor]?.leaseStatus||(floor===5?'공실(정리중)':'-')];
       const repairs=records.filter(r=>r.kind==='repair'&&!voided.has(r.id)&&new RegExp('^'+floor+'(?:층|0[0-9](?:호)?)(?:$|\\s)').test(r.location));
       return {floor,tenantIds:tenants.map(t=>t.id),statuses,vacant:statuses.every(s=>['공실(정리중)','임대모집중'].includes(s)),repairCount:repairs.length,lastRepairOn:repairs.map(r=>r.occurredOn).sort().slice(-1)[0]||''};
     });

@@ -155,7 +155,7 @@ class SnapshotReaderDeviceTest {
                 assertNotNull(device.wait(Until.findObject(By.text("스튜디오 여백")), 3000))
                 device.wait(Until.findObject(By.desc("고지서 메뉴")), 3000).click()
                 assertNotNull(device.wait(Until.findObject(By.text("고지서 · 수납")), 3000))
-                device.findObjects(By.text("내역 · 입금 처리"))[1].click()
+                device.wait(Until.findObject(By.text("내역 · 입금 처리")),3000).click()
                 assertNotNull(device.wait(Until.findObject(By.text("고지서 내역")), 3000))
                 val save = device.wait(Until.findObject(By.textContains("월세 완납 날짜 저장")), 3000)
                 assertNotNull(save); assertFalse(save.isEnabled)

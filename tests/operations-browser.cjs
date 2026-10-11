@@ -53,6 +53,9 @@ test('vacant fourth floor PC mobile shows owner candidate and cannot create tena
   await page.evaluate(()=>confirmSettlement());assert.equal(await raw(page),before);assert.equal((await data(page)).bills['2026-09'],undefined);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);checked(view);await view.context.close();
  }
 });
+test('same normal settlement cannot add another audit or change confirmed amounts',async()=>{
+ const sample=core.empty();sample.tenants=[1,2,3,4].map(f=>({...tenant,id:'normal-'+f,unit:f+'01호',period_elec:'15',period_water_day:'15'}));const view=await open(sample),{page}=view;await page.evaluate(()=>{cY=2026;cM=9;});await navigateV2(page,'settlement');await page.locator('#sett-elec').fill('100000');await page.evaluate(()=>calcSettlement());assert.equal(await page.locator('#confirm-settlement').isDisabled(),false);await page.evaluate(()=>confirmSettlement());await page.waitForFunction(()=>!persistenceBusy&&settInputs[mk()]?.confirmed);const before=await raw(page);await page.evaluate(()=>calcSettlement());await page.evaluate(()=>confirmSettlement());assert.equal(await raw(page),before);assert.match(await page.locator('#toast').innerText(),/같은 입력과 배분/);checked(view);await view.context.close();
+});
 test('contract reminder and repair expense comparison PC mobile preserve current contracts and historical money',async()=>{
  for(const width of [390,1366]){
   const sample=fixture(),today=new Date(Date.now()+9*3600000).toISOString().slice(0,10);sample.tenants[0].leaseStatus='공실(정리중)';sample.floorOperations[2]={leaseStatus:'공실(정리중)'};sample.expenses[today.slice(0,7)]=[{id:'existing-expense',name:'기존 수리 지출',amount:30000,date:today}];
