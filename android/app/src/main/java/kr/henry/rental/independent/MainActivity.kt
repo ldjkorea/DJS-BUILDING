@@ -24,7 +24,7 @@ import java.util.*
 import java.util.concurrent.Executors
 
 /** Android Views render rental work. Browser use is explicit: owner approval,
- * external Google documents, advanced PC tools and APK downloads. */
+ * external Google documents and APK downloads. Business work stays native. */
 class MainActivity : Activity() {
     private val ink=Color.rgb(25,38,60); private val muted=Color.rgb(102,117,139)
     private val blue=Color.rgb(50,104,200); private val pale=Color.rgb(237,243,253)
@@ -49,6 +49,7 @@ class MainActivity : Activity() {
         formDraft?.let { if(!busy) showForm(it, restoring=true) }
     }
     override fun onNewIntent(intent:Intent){super.onNewIntent(intent);setIntent(intent);consumedPair=false;consumePair(intent)}
+    override fun onResume(){super.onResume();if(::store.isInitialized&&!demo&&!busy){try{val latest=store.read().optJSONObject("snapshot");if(latest!=null&&latest.optString("revision")!=snapshot?.optString("revision")){snapshot=latest;online=false;render();if(connected())refresh()}}catch(_:Exception){online=false}}}
     override fun onSaveInstanceState(out:Bundle){out.putBoolean("consumedPair",consumedPair);out.putInt("tab",tab);out.putString("month",month);out.putString("query",query);out.putBoolean("demo",demo);out.putString("form",formDraft?.toString());super.onSaveInstanceState(out)}
     override fun onDestroy(){executor.shutdown();super.onDestroy()}
     private fun connected()= !storageFault && try {store.read().optString("token").isNotEmpty()}catch(_:Exception){false}
@@ -91,7 +92,7 @@ class MainActivity : Activity() {
         val deadlines=array("tenants").filter{ !it.optBoolean("archived")&&it.optJSONObject("deadline")!=null&&it.getJSONObject("deadline").optInt("days")<=45 }
         if(deadlines.isEmpty())card(content){add(it,text("45일 안에 만료되는 계약이 없어요.",14f,muted))}
         deadlines.forEach{t->card(content){add(it,text(t.optString("unit")+" · "+t.optString("biz").ifBlank{t.optString("name")},16f,ink,true));row(it,t.getJSONObject("deadline").optString("endDate"),t.getJSONObject("deadline").optString("label"),blue);add(it,button("계약 정보 보기"){tenantDetail(t)},8)}}
-        add(content,button("이번 달 지출 내역"){expenseList()},4,12);add(content,button("새로고침",true){refresh()});add(content,text("기준일 ${snapshot!!.optString("today")} · 저장된 고지서 기준",11f,muted),16)
+        add(content,button("공용 비용 정산"){openOperations("settlement")},4,12);add(content,button("이번 달 지출 내역"){expenseList()},4,12);add(content,button("새로고침",true){refresh()});add(content,text("기준일 ${snapshot!!.optString("today")} · 저장된 고지서 기준",11f,muted),16)
     }
     private fun monthPicker(){val line=LinearLayout(this).apply{gravity=Gravity.CENTER_VERTICAL};line.addView(button("‹"){moveMonth(-1)}.apply{contentDescription="이전 달"},LinearLayout.LayoutParams(dp(48),dp(48)));line.addView(text(month.replace("-","."),18f,ink,true).apply{gravity=Gravity.CENTER;contentDescription="조회 월 선택";isFocusable=true;setOnClickListener{selectMonth()}},LinearLayout.LayoutParams(0,dp(48),1f));line.addView(button("›"){moveMonth(1)}.apply{contentDescription="다음 달"},LinearLayout.LayoutParams(dp(48),dp(48)));add(content,line,0,18)}
     private fun moveMonth(offset:Int){val c=Calendar.getInstance();c.set(month.substring(0,4).toInt(),month.substring(5).toInt()-1,1);c.add(Calendar.MONTH,offset);month=SimpleDateFormat("yyyy-MM",Locale.KOREA).format(c.time);refresh()}
@@ -105,10 +106,10 @@ class MainActivity : Activity() {
         search.addTextChangedListener(watcher{query=it;populate()});populate()
     }
     private fun watcher(change:(String)->Unit)=object:TextWatcher{override fun beforeTextChanged(s:CharSequence?,st:Int,c:Int,a:Int){};override fun onTextChanged(s:CharSequence?,st:Int,b:Int,c:Int){change(s.toString())};override fun afterTextChanged(s:Editable?) {}}
-    private fun tenantDetail(t:JSONObject){val box=column(24);add(box,text(t.optString("unit")+" · "+t.optString("name"),21f,ink,true),0,18);row(box,"상호",t.optString("biz").ifBlank{"미등록"});row(box,"보증금",money(t.optLong("deposit")));row(box,"월차임 공급가",money(t.optLong("rent")));row(box,"관리비 공급가",money(t.optLong("mgmt")));add(box,text("계약 기간",12f,muted),16,8);add(box,text(t.optString("contract").ifBlank{"계약 기간 미등록"},15f));row(box,"전체 연체",money(t.optJSONObject("collection")?.optLong("totalOverdue")?:0),red);add(box,text("변경 이력",15f,ink,true),20,8);audit(box,t.optJSONArray("audit"));if(t.optString("phone").isNotBlank())add(box,button("전화 걸기"){openExternal("tel:"+Uri.encode(t.optString("phone")))},12);showDetail("세입자 정보",box)}
+    private fun tenantDetail(t:JSONObject){val box=column(24);add(box,text(t.optString("unit")+" · "+t.optString("name"),21f,ink,true),0,18);row(box,"상호",t.optString("biz").ifBlank{"미등록"});row(box,"보증금",money(t.optLong("deposit")));row(box,"월차임 공급가",money(t.optLong("rent")));row(box,"관리비 공급가",money(t.optLong("mgmt")));add(box,text("계약 기간",12f,muted),16,8);add(box,text(t.optString("contract").ifBlank{"계약 기간 미등록"},15f));row(box,"전체 연체",money(t.optJSONObject("collection")?.optLong("totalOverdue")?:0),red);add(box,text("변경 이력",15f,ink,true),20,8);audit(box,t.optJSONArray("audit"));if(t.optString("phone").isNotBlank())add(box,button("전화 걸기"){openExternal("tel:"+Uri.encode(t.optString("phone")))},12);add(box,button("계약 변경 · 재계약"){activeDialog?.dismiss();openOperations("contract",t.getString("id"))},16);showDetail("세입자 정보",box)}
     private fun bills(){
         heading("고지서 · 수납","저장된 청구액과 실제 입금 날짜를 확인하세요.");if(snapshot==null){welcome();return};monthPicker();val rows=array("bills")
-        if(rows.isEmpty())card(content){add(it,text("이 달에는 저장된 고지서가 없어요.",16f,ink,true),0,8);add(it,text("새 고지서 생성과 청구 기준 검토는 기존 웹의 정산 화면에서 할 수 있어요.",13f,muted))}
+        if(rows.isEmpty())card(content){add(it,text("이 달에는 저장된 고지서가 없어요.",16f,ink,true),0,8);add(it,button("정산하고 고지서 생성"){openOperations("settlement")})}
         rows.forEach{b->card(content){add(it,text(b.optString("unit")+" · "+b.optString("name"),18f,ink,true),0,8);row(it,"청구 합계",money(b.optLong("total")));row(it,"수납",money(b.optLong("received")),green);row(it,"미수납",money(b.optLong("unpaid")),if(b.optLong("unpaid")>0)red else ink);add(it,button("내역 · 입금 처리",b.optLong("unpaid")>0){billDetail(b)},12)}};add(content,button("새로고침"){refresh()},4)
     }
     private val itemNames=linkedMapOf("pay_rent" to "월세","pay_mgmt" to "관리비","pay_elec" to "전기","pay_water" to "수도","pay_elev" to "승강기","pay_waste" to "오물비")
@@ -117,7 +118,7 @@ class MainActivity : Activity() {
         itemNames.forEach{(key,label)->val i=items.optJSONObject(key)?:JSONObject();if(i.optLong("amount")>0){row(box,label,money(i.optLong("amount")));add(box,text(if(i.optBoolean("na"))"청구 제외" else "수납 ${money(i.optLong("received"))} · 잔액 ${money(i.optLong("unpaid"))}"+i.optString("date").let{if(it.isBlank())"" else " · $it"},12f,muted),0,8)}}
         if(b.optBoolean("ledger")){add(box,text("입금 원장 · 항목별 기록",14f,blue,true),12,8);itemNames.forEach{(key,label)->if((items.optJSONObject(key)?.optLong("unpaid")?:0)>0)add(box,button("$label 입금 추가"){activeDialog?.dismiss();showForm(JSONObject().put("kind","receipt").put("tenantId",b.getString("tenantId")).put("item",key).put("max",items.getJSONObject(key).optLong("unpaid")))},8)}}
         else listOf("rent" to "월세","mgmt" to "관리비 전체").forEach{(group,label)->val g=b.getJSONObject("groups").getJSONObject(group);if(g.optLong("total")>0){add(box,button("$label 완납 날짜 저장",!g.optBoolean("complete")){activeDialog?.dismiss();showForm(JSONObject().put("kind","payment").put("tenantId",b.getString("tenantId")).put("group",group).put("remove",false))},10);if(g.optLong("received")>0)add(box,button("$label 완납 취소"){activeDialog?.dismiss();showForm(JSONObject().put("kind","payment").put("tenantId",b.getString("tenantId")).put("group",group).put("remove",true))},8)}}
-        add(box,text("변경 이력",15f,ink,true),20,8);audit(box,b.optJSONArray("audit"));showDetail("고지서 내역",box)
+        add(box,text("변경 이력",15f,ink,true),20,8);audit(box,b.optJSONArray("audit"));add(box,button("고지서 PDF · 발행"){activeDialog?.dismiss();openOperations("output",b.getString("tenantId"))},16);if(!b.optBoolean("ledger"))add(box,button("입금 원장 시작"){activeDialog?.dismiss();openOperations("ledger",b.getString("tenantId"))},10);showDetail("고지서 내역",box)
     }
     private fun audit(box:LinearLayout,rows:JSONArray?){if((rows?.length()?:0)==0){add(box,text("기록된 변경이 없어요.",12f,muted));return};objects(rows).forEach{add(box,text(it.optString("action")+"\n"+it.optString("at").take(10)+" · "+it.optString("detail"),12f,muted),4,8)}}
     private fun showDetail(title:String,box:LinearLayout){activeDialog=AlertDialog.Builder(this).setTitle(title).setView(ScrollView(this).apply{addView(box)}).setPositiveButton("닫기",null).show()}
@@ -127,7 +128,7 @@ class MainActivity : Activity() {
         card(content){add(it,text("앱 업데이트",18f,ink,true),0,8);add(it,text("Android ${BuildConfig.VERSION_NAME}",14f,muted),0,8);add(it,text(updateText,13f,muted),0,14);add(it,button("업데이트 확인",true){checkUpdate()},0,10);add(it,button("최신 APK 다운로드"){openExternal(AppDestination.RELEASE_URL)})}
         card(content){add(it,text("Google 연결",18f,ink,true),0,8);add(it,text(if(connected())"승인한 기기로 기존 GAS 자료에 연결합니다."else"소유자 계정으로 기기를 승인해주세요.",13f,muted),0,14);add(it,button(if(connected())"기기 다시 연결"else"Google 계정으로 연결",true){startPair()},0,10);add(it,button("연결 코드 입력"){manualPair()},0,10);if(connected())add(it,button("이 기기 연결 해제"){disconnect()});if(storageFault)add(it,button("기기 보관 자료 초기화"){AlertDialog.Builder(this).setMessage("이 기기의 연결과 보관 자료만 지웁니다. Google 시트 자료는 유지됩니다.").setNegativeButton("취소",null).setPositiveButton("기기 자료 초기화"){_,_->store.clear();storageFault=false;snapshot=null;notice="";render()}.show()})}
         if(snapshot!=null&&!demo)card(content){add(it,text("연동 작업",18f,ink,true),0,14);add(it,button("현재현황 문서 다시 생성"){confirmService("regenerateCurrentStatus","현재현황 문서")},0,10);add(it,button("계약 일정 Calendar 동기화"){confirmService("syncContractCalendar","계약 일정")},0,10);val doc=snapshot?.optJSONObject("links")?.optString("document")?:"";if(doc.startsWith("https://docs.google.com/document/d/"))add(it,button("Google 문서 열기"){openExternal(doc)})}
-        card(content){add(it,text("PC용 웹앱",18f,ink,true),0,8);add(it,text("정산 · 고지서 생성 · 계약 변경 · 출력 · 백업은 기존 웹에서도 계속 사용할 수 있어요.",13f,muted),0,14);add(it,button("기존 웹앱 열기"){openExternal(AppDestination.WEB_APP)})}
+        card(content){add(it,text("앱에서 관리",18f,ink,true),0,8);add(it,button("계약 변경 · 재계약"){openOperations("contract")},0,10);add(it,button("공용 비용 정산"){openOperations("settlement")},0,10);add(it,button("고지서 · 정산 출력"){openOperations("output")},0,10);add(it,button("백업 · 복원"){openOperations("backup")})}
         add(content,button(if(demo)"예시 모드 종료"else"예시 화면 둘러보기"){demo= !demo;snapshot=if(demo)NativeDemo.snapshot(month)else try{store.read().optJSONObject("snapshot")}catch(_:Exception){null};online=false;notice="";render();if(!demo&&connected())refresh()});add(content,text("Pretendard · SIL Open Font License\n자료는 기기에 암호화하여 보관합니다. 오프라인에서는 조회만 가능합니다.",11f,muted),18)
     }
     private fun showForm(draft:JSONObject,restoring:Boolean=false){
@@ -186,4 +187,5 @@ class MainActivity : Activity() {
     private fun disconnect(){AlertDialog.Builder(this).setMessage("이 기기 연결과 보관 자료를 해제할까요? Google 시트 자료는 유지됩니다.").setNegativeButton("취소",null).setPositiveButton("연결 해제"){_,_->runTask("기기 연결을 해제하고 있어요.",{val r=NativeApi.request(JSONObject().put("action","disconnect").put("token",store.read().getString("token")));ensureOk(r);store.clear();r}){demo=false;snapshot=null;online=false;notice="기기 연결을 해제했습니다."}}.show()}
     private fun openExternal(url:String){if(!(url==AppDestination.WEB_APP||url==AppDestination.RELEASE_URL||url.startsWith("https://docs.google.com/document/d/")||url.startsWith("tel:")))return;try{startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(url)))}catch(_:Exception){toast("링크를 열 수 있는 앱을 확인해주세요.")}}
     private fun toast(message:String){Toast.makeText(this,message,Toast.LENGTH_LONG).show()}
+    private fun openOperations(mode:String,id:String?=null){startActivity(Intent(this,OperationsActivity::class.java).putExtra("mode",mode).putExtra("month",month).putExtra("tenantId",id?:"").putExtra("demo",demo))}
 }

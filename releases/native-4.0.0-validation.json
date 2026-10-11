@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-11",
+  "webVersion": "2.3.0",
+  "androidVersion": "4.0.0",
+  "unitTests": {
+    "pass": 216,
+    "fail": 0
+  },
+  "browserSuites": {
+    "pass": 15,
+    "fail": 0
+  },
+  "nativeInstrumentation": {
+    "pass": 7,
+    "fail": 0
+  },
+  "nativeMockServerCases": 23,
+  "nativePdf": {
+    "pages": 6,
+    "all140RowsPresent": true,
+    "lastMarker": true
+  },
+  "webPdf": {
+    "files": 5,
+    "pages": 18,
+    "status": "PASS"
+  },
+  "liveApi": {
+    "metadata": {
+      "appVersion": "2.3.0",
+      "androidVersion": "4.0.0",
+      "androidVersionCode": 4,
+      "androidReleaseUrl": "https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest"
+    },
+    "anonymous": "unauthorized",
+    "pair": "ok",
+    "rentalDataWritten": false,
+    "read": {
+      "status": "ok",
+      "tenants": 4,
+      "revisionValid": true
+    },
+    "backup": {
+      "status": "ok",
+      "bytes": 93743,
+      "integrityPresent": true
+    },
+    "restorePreview": {
+      "status": "ok",
+      "integrityVerified": true
+    },
+    "settlementPreview": {
+      "status": "ok",
+      "balanced": true,
+      "syntheticInputs": true
+    },
+    "quarterReport": "ok",
+    "monthlyReport": "ok",
+    "revisionUnchanged": true,
+    "disconnect": "ok",
+    "revokedRead": "unauthorized"
+  },
+  "sheetValuesUnchanged": true,
+  "realRentalWrites": "NOT PERFORMED",
+  "physicalPhone": "NOT TESTED",
+  "physicalPrinter": "NOT TESTED",
+  "apkBytes": 3055020,
+  "apkSha256": "38e33b6477f9fc8598112eaa150a07b882b3fdd5875a0f62c99d1b17a1b67ae8",
+  "driveSha256": "38e33b6477f9fc8598112eaa150a07b882b3fdd5875a0f62c99d1b17a1b67ae8"
+}

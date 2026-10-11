@@ -1,6 +1,6 @@
-# NEW RENT STORE — Android 3.0.0 / 웹 2.3.0
+# NEW RENT STORE — Android 4.0.0 / 웹 2.3.0
 
-현재 Android는 Pretendard 기반 Kotlin 네이티브 앱 **3.0.0 / versionCode 3**입니다. 홈·세입자·고지서·설정과 입금·지출을 Android 화면에서 사용합니다. [APK 설치·기기 연결·검증 범위](docs/ANDROID_NATIVE_3.0.0.md)와 [Drive 다운로드](https://drive.google.com/file/d/1jmPpLhqla_LxGVmC0ZNseymgkEEkpssu/view)를 확인하세요. 기존 웹 2.3.0은 동일한 소유자 전용 주소와 데이터로 유지하며 GAS 배포는 버전 8입니다. 별도 JSON Android API는 같은 버전 8 라이브러리를 호출하고, 소유자가 승인한 기기만 임대 자료에 접근합니다. 아래 이전 배포 안내는 이력입니다.
+현재 Android는 Pretendard 기반 Kotlin 네이티브 앱 **4.0.0 / versionCode 4**입니다. 홈·세입자·고지서·설정, 입금·지출, 계약 변경·정산·PDF 출력·백업·복원을 Android 화면에서 사용합니다. [APK 설치·기기 연결·검증 범위](docs/ANDROID_NATIVE_4.0.0.md)와 [Drive 다운로드](https://drive.google.com/file/d/1wpWEZDbJNpURIEWbTAa5NtHzeghobDwI/view?usp=drivesdk)를 확인하세요. 기존 웹 2.3.0은 동일한 소유자 전용 주소와 데이터로 유지하며 GAS 배포는 버전 9입니다. 별도 JSON Android API는 같은 버전 9 라이브러리를 호출하고, 소유자가 승인한 기기만 임대 자료에 접근합니다. 아래 이전 배포 안내는 이력입니다.
 
 현재 독립 프로젝트의 공식 명칭은 **NEW RENT STORE**이며, GitHub 저장소는 [`ldjkorea/NEW-RENT-STORE`](https://github.com/ldjkorea/NEW-RENT-STORE)입니다. 기존 1.4 앱은 **RENT STORE**, 오래된 앱은 **2025 RENT STORE**로 구분합니다. [저장소 이름과 연결 주소](docs/REPOSITORY_NAMES.md)에 변경 전후 대응 관계와 확인 결과를 기록했습니다.
 
@@ -21,7 +21,7 @@
 - [미발행 고지서 보존과 월별 CSV](docs/MONTHLY_CSV_BOUNDARY.md) — 웹 2.1.4는 고지서가 없는 임차인의 예정 금액을 CSV에서 제외하고, 빈 고지서 객체를 재실행 때 채우지 않습니다.
 - [고지서·분기 PDF 출력 보완](docs/PRINT_OUTPUT.md) — 웹 2.1.5는 출력에서 조작 요소를 숨기고 입금 기록의 페이지 나눔과 불필요한 빈 페이지를 보완합니다. 익명 PDF 5종·18페이지를 검증했습니다.
 
-현재 실제 운영 Google 웹 앱은 **NEW RENT STORE 2.3.0 / GAS 배포 버전 8**, Android는 **3.0.0 / versionCode 3**입니다. 설정에 웹 버전 확인·최신 화면 적용·APK 다운로드 버튼을 제공합니다. 설치본은 [비공개 GitHub 릴리스](https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest)에서 받습니다. 계약 변경 적용일과 이력, 월별 수입 추세, 수리 기록과 증빙, 부분입금과 사유 정정, 분기 집계·PDF·CSV를 포함한 기존 웹 기능도 유지합니다. 원장 시작 후 청구 기준 변경은 계속 차단하며, 과거 추정 기준 30건의 원문 대조와 실제 Google 저장·문서/일정 갱신 범위는 [운영 배포 기록](docs/OPERATING_DEPLOYMENT_2.2.2.md)을 따릅니다. 과거 후보 ZIP과 서명 Android 2.x APK는 보존합니다.
+현재 실제 운영 Google 웹 앱은 **NEW RENT STORE 2.3.0 / GAS 배포 버전 9**, Android는 **4.0.0 / versionCode 4**입니다. 설정에 웹 버전 확인·최신 화면 적용·APK 다운로드 버튼을 제공합니다. 설치본은 [비공개 GitHub 릴리스](https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest)에서 받습니다. 계약 변경 적용일과 이력, 월별 수입 추세, 수리 기록과 증빙, 부분입금과 사유 정정, 분기 집계·PDF·CSV를 포함한 기존 웹 기능도 유지합니다. 원장 시작 후 청구 기준 변경은 계속 차단하며, 과거 추정 기준 30건의 원문 대조와 실제 Google 저장·문서/일정 갱신 범위는 [운영 배포 기록](docs/OPERATING_DEPLOYMENT_2.2.2.md)을 따릅니다. 과거 후보 ZIP과 서명 Android 2.x APK는 보존합니다.
 
 - 웹 2.1.1은 [분기 고지서 집계](docs/QUARTERLY_STATEMENT.md)를 보완합니다. 고지서가 없는 달의 예정 금액을 더하지 않고, 보관·미등록 임차인의 과거 고지서를 포함하며, 항목별 부가세·오물비·부분입금 잔액을 화면과 CSV에 일치시킵니다.
 - 웹 2.1.2는 [입금 원장 시작 전 청구 기준 대조](docs/RECEIPT_BASIS_REVIEW.md)를 추가합니다. 항목별 청구·확인·잔액, 날짜 미지정과 미래 확인 날짜, 과거 보완 기준을 표시하며 저장 원문 대조가 필요한 경우 입력 전에 안내합니다.

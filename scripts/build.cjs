@@ -63,13 +63,20 @@ if (require.main === module) {
   const output = build(), target = path.join(root, 'index.html');
   const billingTarget = path.join(root, 'server/Billing.gs');
   const billingSource = '// Generated from assets/billing.js by npm run build. Do not edit.\n' + fs.readFileSync(path.join(root, 'assets/billing.js'), 'utf8');
+  const nativeTarget=path.join(root,'server/IndependentApp.gs');
+  const nativeBefore=fs.readFileSync(nativeTarget,'utf8');
+  if((nativeBefore.match(/\/\* SHARED_CORE_BEGIN \*\//g)||[]).length!==1||(nativeBefore.match(/\/\* SHARED_CORE_END \*\//g)||[]).length!==1)throw new Error('Missing or duplicate native shared validator markers');
+  const nativeSource=nativeBefore.replace(/\/\* SHARED_CORE_BEGIN \*\/[\s\S]*?\/\* SHARED_CORE_END \*\//,
+    '/* SHARED_CORE_BEGIN */\n'+fs.readFileSync(path.join(root,'assets/core.js'),'utf8')+'\n/* SHARED_CORE_END */');
   if (process.argv.includes('--check')) {
     if (fs.readFileSync(target, 'utf8') !== output) throw new Error('index.html is stale: run npm run build');
     if (fs.readFileSync(billingTarget, 'utf8') !== billingSource) throw new Error('server/Billing.gs is stale: run npm run build');
+    if(nativeBefore!==nativeSource)throw new Error('Native shared backup validator is stale: run npm run build');
     console.log('Single-file output matches sources');
   } else {
     fs.writeFileSync(target, output);
     fs.writeFileSync(billingTarget, billingSource);
+    fs.writeFileSync(nativeTarget,nativeSource);
     console.log('Built index.html (' + Buffer.byteLength(output) + ' bytes)');
   }
 }
