@@ -2289,7 +2289,7 @@ if(isDemo) {
       data.bills[month]=Object.fromEntries(data.tenants.map((t,i)=>[t.id,{rent:t.rent,mgmt:t.mgmt,electricity:i===0?0:i===3?45000:35000,water:15000+i*3000,elevatorTotal:i===0?0:50000,waste:12500,stampedRent:i<3,stampedRentDate:month.replace('-','.')+'.05',stampedMgmt:i===0,stampedMgmtDate:month.replace('-','.')+'.07'}]));
       data.loans=[{id:'demoLoan',name:'건물 담보대출',principal:180000000,rate:3.8}];
       data.expenses[month]=[{id:'demoExpense',name:'공용부 조명 교체',date:month+'/03',amount:80000,memo:'LED 조명 교체'}];
-      for(const tenant of data.tenants)RentalBilling.freezeBill(tenant,data.bills[month][tenant.id],month);
+      for(const tenant of data.tenants){tenant.period_elec='15';tenant.period_water_day='15';RentalBilling.freezeBill(tenant,data.bills[month][tenant.id],month);}
       RentalCore.persist(appStorage,data);
     }
   }catch{}
