@@ -1,0 +1,84 @@
+{
+  "checkedAt": "2026-10-11T13:09:17.873Z",
+  "androidVersion": "4.1.2",
+  "webVersion": "2.3.1",
+  "scope": "Post-release build determinism and PWA regression verification only",
+  "source": {
+    "localCommit": "7a0c50560976757b3658672fbda28dad729afc8c",
+    "githubCommit": "4dcc088e1a46489e229773b5e1261752a2bfc9bd",
+    "branch": "work/independent-v2"
+  },
+  "local": {
+    "unit": {
+      "pass": 226,
+      "fail": 0
+    },
+    "browserSuites": {
+      "pass": 15,
+      "fail": 0
+    },
+    "auditCases": {
+      "pass": 69,
+      "unique": 69
+    },
+    "pwa": {
+      "pass": 6,
+      "fail": 0
+    },
+    "pdf": {
+      "files": 5,
+      "pages": 18,
+      "pass": 5
+    },
+    "focusedPwaRepeatRuns": 2,
+    "generatedSourceDiff": "PASS",
+    "pdfRuntime": "Existing Codex bundled Python; system Python lacked pdfplumber"
+  },
+  "github": {
+    "runId": 38141477497,
+    "url": "https://github.com/ldjkorea/NEW-RENT-STORE/actions/runs/38141477497",
+    "conclusion": "success",
+    "unit": {
+      "pass": 226,
+      "fail": 0
+    },
+    "browserSuites": {
+      "pass": 15,
+      "fail": 0
+    },
+    "auditCases": {
+      "pass": 69,
+      "unique": 69
+    },
+    "pwa": {
+      "pass": 6,
+      "fail": 0
+    },
+    "pdf": {
+      "files": 5,
+      "pages": 18,
+      "pass": 5
+    },
+    "generatedSourceDiff": "PASS",
+    "downloadedArtifactChecked": true
+  },
+  "publishedApk": {
+    "recheckedAt": "2026-10-11T13:04:53.255Z",
+    "driveId": "1RLFgXBfE4wbh8ZPMC4w-OnkKN-Jy4Xjh",
+    "driveUrl": "https://drive.google.com/file/d/1RLFgXBfE4wbh8ZPMC4w-OnkKN-Jy4Xjh/view?usp=drivesdk",
+    "versionCode": 7,
+    "bytes": 3257945,
+    "sha256": "e0d22e20552fae3393d181880b41df3c5ddc7d4860475ac5e01926bea0b0a273",
+    "publicManifestMatches": true,
+    "unchanged": true
+  },
+  "appRuntimeChanged": false,
+  "androidSourceChanged": false,
+  "gasRedeployed": false,
+  "rentalDataWritten": false,
+  "publishedTagMoved": false,
+  "priorDeviceEvidence": "API35 in-app 4.1.1 to 4.1.2 install and encrypted cache retention: see native-4.1.2-validation.json; not rerun here",
+  "physicalPhone": "NOT TESTED",
+  "oneUiThemedLauncher": "NOT TESTED",
+  "authenticatedPhysicalPhoneLoadLatency": "NOT TESTED"
+}

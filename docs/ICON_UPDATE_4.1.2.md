@@ -19,3 +19,5 @@ Pretendard, 기존 라이트 작업 화면, 계약·정산·출력·백업, 4.1.
 - 실제 배포 4.1.1에서 앱 내부 업데이트로 4.1.2 설치 및 암호화 보관 자료·최초 설치 시각 보존을 확인했다. 첫 시도는 연결 시간 초과였고 재시도는 43.5초에 설치 확인 화면까지 통과했다. 안정적인 모든 네트워크의 시간을 보장하는 결과는 아니다.
 - 소유자 GAS 14 / Android API 7 / 라이브러리 14. 기존 주소·접근 정책·Google 범위·임대 로직을 유지했고 운영 시트 내용이 배포 전후 같다.
 - APK의 로컬·GAS 실제 다운로드·Drive·설치본 해시가 같다. [Drive APK](https://drive.google.com/file/d/1RLFgXBfE4wbh8ZPMC4w-OnkKN-Jy4Xjh/view?usp=drivesdk) · [GitHub 릴리스](https://github.com/ldjkorea/NEW-RENT-STORE/releases/tag/v4.1.2).
+
+이후 Windows SVG 줄바꿈에 따른 생성 파일 차이와 PWA 자동 검사 대기 조건을 보완했다. [최종 검사 기록](RELEASE_FINALIZATION_4.1.2.md)의 GitHub 실행에서 Node 226개·브라우저 15개 묶음·PDF 5종/18페이지 및 생성 파일 일치 검사가 모두 통과했다. 기존 APK와 운영 배포는 유지한다.
