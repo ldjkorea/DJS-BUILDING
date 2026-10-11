@@ -6,7 +6,8 @@ import java.net.URL
 
 /** No web renderer. JSON only, pinned HTTPS hosts, bounded responses, no retries. */
 object NativeApi {
-    fun request(body: JSONObject?): JSONObject = exchange(body, "")
+    fun request(body: JSONObject?): JSONObject = try { exchange(body, "") }
+        catch (_: java.net.SocketTimeoutException) { error("서버 응답이 늦어지고 있습니다. 잠시 후 새로고침해주세요.") }
     fun updateManifest(): JSONObject = exchange(null, "?action=androidUpdateManifest")
     fun updateChunk(version: Int, hash: String, index: Int): JSONObject {
         require(version > 0 && hash.matches(Regex("[a-f0-9]{64}")) && index in 0..63)
@@ -15,12 +16,19 @@ object NativeApi {
     private fun exchange(body: JSONObject?, query: String): JSONObject {
         var next = URL(AppDestination.NATIVE_API + query)
         var post = body != null
+        val deadline = if (body?.optString("action") == "read") System.nanoTime() + 45_000_000_000L else null
+        fun remaining(): Int {
+            val ms = deadline?.let { (it - System.nanoTime()) / 1_000_000L } ?: 60_000L
+            if (ms <= 0) throw java.net.SocketTimeoutException()
+            return ms.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+        }
         repeat(5) {
             require(next.protocol == "https" && next.host in setOf("script.google.com", "script.googleusercontent.com")) { "연결 주소를 확인해주세요." }
             val connection = next.openConnection() as HttpURLConnection
             try {
                 connection.instanceFollowRedirects = false
-                connection.connectTimeout = 20000; connection.readTimeout = 60000
+                connection.connectTimeout = minOf(if(deadline!=null)12000 else 20000,remaining())
+                connection.readTimeout = minOf(if(deadline!=null)30000 else 60000,remaining())
                 connection.setRequestProperty("Accept", "application/json")
                 if (post) {
                     connection.requestMethod = "POST"; connection.doOutput = true
@@ -37,6 +45,7 @@ object NativeApi {
                     connection.inputStream.use { input ->
                         val buffer = ByteArray(8192)
                         while (true) {
+                            connection.readTimeout = minOf(if(deadline!=null)30000 else 60000,remaining())
                             val count = input.read(buffer); if (count < 0) break
                             require(output.size() + count <= 5000000) { "자료 크기를 확인해주세요." }
                             output.write(buffer, 0, count)

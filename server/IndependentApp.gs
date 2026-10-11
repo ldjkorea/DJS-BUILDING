@@ -1,7 +1,7 @@
 /* Called through google.script.run inside the owner-only web app. */
 function getAppUpdateInfo() {
   // Release metadata only: do not open the spreadsheet, document or calendar.
-  return {appVersion:'2.3.0',androidVersion:'4.1.0',androidVersionCode:5,
+  return {appVersion:'2.3.0',androidVersion:'4.1.1',androidVersionCode:6,
     androidReleaseUrl:'https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest'};
 }
 
@@ -90,7 +90,14 @@ function nativeAppRequest(raw) {
     if(actions.indexOf(req.action)<0)return JSON.stringify({status:'unsupported',message:'지원하지 않는 작업입니다.'});
     var month=req.month||nativeToday_().slice(0,7);
     if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))throw new Error('조회 월을 확인해주세요.');
-    if(req.action==='read')return locked_(function(){return nativeView_(read_(source_().sheet),month);}).getContent();
+    if(req.action==='read')return locked_(function(){
+      var state=read_(source_().sheet),today=nativeToday_();
+      // Always authorize and read/validate the real Sheet under its lock first.
+      // This skips projection work only when the caller has this exact day/revision.
+      if(req.knownRevision===state.revision&&req.knownToday===today)
+        return {status:'ok',protocol:'rental-native-v1',unchanged:true,revision:state.revision,today:today,month:month};
+      return nativeView_(state,month);
+    }).getContent();
     if(['settlementPreview','backup','restorePreview','report'].indexOf(req.action)>=0)return locked_(function(){
       var state=read_(source_().sheet);
       if(req.expectedRevision!==state.revision)return {status:'conflict',message:'자료가 변경됐습니다. 새로고침 후 다시 확인해주세요.'};
@@ -136,6 +143,11 @@ function nativeAppRequest(raw) {
     }).getContent());
     if(preparation.status!=='ok')return JSON.stringify(preparation);
     var saved=JSON.parse(doPost({postData:{contents:JSON.stringify(preparation.command)}}).getContent());
+    if(saved.status==='ok'&&req.includeSnapshot===true){
+      // Opt-in only: older APKs keep their original response. Keep save/Docs status
+      // independent of a subsequent read failure; never retry the write.
+      saved.latest=JSON.parse(locked_(function(){return nativeView_(read_(source_().sheet),month);}).getContent());
+    }
     // No blind write retry: the Android client reloads after uncertain outcomes.
     return JSON.stringify(saved);
   }catch(err){return JSON.stringify({status:'error',message:String(err.message||err)});}

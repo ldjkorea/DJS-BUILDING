@@ -44,3 +44,32 @@ test('native monthly and quarterly output follows frozen terms, exact tax totals
 test('native backup web import edit export and native restore never reuse a stale checksum',()=>{const s=operations(fixture()),b=s.send({action:'backup'}).backup;const web=core.validateData(b);assert.equal(web.localMeta,undefined);assert.equal(web.nativeBackup,undefined);web.extension.webEdit='왕복 보존';const exported=core.envelope(web);exported.localMeta={draftRecovery:{}};const p=s.send({action:'restorePreview',backup:exported});assert.equal(p.status,'ok',p.message);assert.equal(p.integrityVerified,false);assert.equal(s.send({action:'restore',backup:exported,previewHash:p.previewHash,confirm:true}).status,'ok');assert.equal(s.get().data.extension.webEdit,'왕복 보존');});
 
 test('contract edits leave empty unissued months empty and settlement treats placeholders as newly issued basis',()=>{const data=fixture();data.bills['2026-10']={native:{}};const s=operations(data);assert.equal(s.send({action:'contract',tenantId:'native',terms:{rent:200000},effectiveOn:'2026-09-01',reason:'검토'}).status,'ok');assert.deepEqual(s.get({operationsHistoryProtocol:billing.OPERATIONS_FORMAT}).data.bills['2026-10'].native,{});const inputs={elec:0,waterActive:false,elev:0,waste:703},f=floors();f.bills['2026-09']={floor1:{}};const a=operations(f),preview=a.send({action:'settlementPreview',inputs});assert.equal(a.send({action:'settlementConfirm',inputs,previewHash:preview.previewHash,confirm:true}).status,'ok');assert.deepEqual(a.get().data.bills['2026-09'].floor1.snapshotEstimated||[],[]);});
+
+
+test('conditional native reads validate real storage, revision, day and authorization before skipping projection',()=>{
+ const s=setup(),token=s.pair().token,month='2026-09';let projections=0;const view=s.c.nativeView_;s.c.nativeView_=function(...args){projections++;return view(...args);};
+ const first=s.call({action:'read',token,month});assert.equal(projections,1);const raw=s.raw();
+ const req={action:'read',token,month,knownRevision:first.revision,knownToday:first.today};
+ const same=s.call(req);assert.equal(same.unchanged,true);assert.equal(projections,1);assert.equal(same.month,month);assert.equal(s.raw(),raw);assert.equal(s.writes(),0);
+ assert.equal(s.call({...req,knownToday:'2000-01-01'}).unchanged,undefined);assert.equal(projections,2);
+ const changed=fixture();changed.extension.more='web change';s.corrupt(JSON.stringify(changed));const next=s.call(req);assert.equal(next.unchanged,undefined);assert.notEqual(next.revision,first.revision);assert.equal(projections,3);
+ s.corrupt('malformed storage');assert.equal(s.call(req).status,'error');assert.equal(projections,3);
+ s.props.set('NATIVE_DEVICES_V1','{}');assert.equal(s.call(req).status,'unauthorized');assert.equal(projections,3);
+});
+
+test('opt-in native save includes a verified fresh projection with unchanged transaction and Docs status',()=>{
+ const s=setup(),token=s.pair().token,month='2026-09',base=s.call({action:'read',token,month});s.fail('docs');
+ const req={action:'payment',token,month,tenantId:'native',group:'rent',remove:false,date:'2026-09-15',expectedRevision:base.revision,requestId:crypto.randomUUID(),includeSnapshot:true};
+ const ack=s.call(req);assert.equal(ack.status,'ok');assert.equal(ack.docs.status,'error');assert.equal(ack.latest.status,'ok');assert.equal(ack.latest.revision,ack.revision);assert.equal(ack.latest.bills[0].groups.rent.complete,true);assert.equal(s.writes(),1);assert.ok(s.backupRows.length);
+ const stale=s.call({...req,requestId:crypto.randomUUID()});assert.equal(stale.status,'conflict');assert.equal(stale.latest,undefined);assert.equal(s.writes(),1);
+});
+
+test('projection failure after a successful opt-in save never hides the save acknowledgement',()=>{
+ const s=setup(),token=s.pair().token,month='2026-09',base=s.call({action:'read',token,month});s.c.nativeView_=()=>{throw Error('projection failed');};
+ const ack=s.call({action:'payment',token,month,tenantId:'native',group:'rent',remove:false,date:'2026-09-15',expectedRevision:base.revision,requestId:crypto.randomUUID(),includeSnapshot:true});
+ assert.equal(ack.status,'ok');assert.equal(ack.latest.status,'error');assert.equal(s.writes(),1);assert.equal(s.get().data.bills[month].native.stampedRent,true);
+});
+
+test('older APK save responses remain unbundled',()=>{
+ const s=setup(),token=s.pair().token,month='2026-09',base=s.call({action:'read',token,month});const ack=s.call({action:'payment',token,month,tenantId:'native',group:'rent',remove:false,date:'2026-09-15',expectedRevision:base.revision,requestId:crypto.randomUUID()});assert.equal(ack.status,'ok');assert.equal(ack.latest,undefined);assert.equal(s.writes(),1);
+});

@@ -1,0 +1,105 @@
+{
+  "date": "2026-10-11",
+  "androidVersion": "4.1.1",
+  "webVersion": "2.3.0",
+  "unitTests": {
+    "pass": 225,
+    "fail": 0
+  },
+  "nativeInstrumentation": {
+    "pass": 20,
+    "fail": 0,
+    "skipped": 2,
+    "skipReason": "installer and post-upgrade evidence run separately on actual published 4.1.0 baseline"
+  },
+  "isolatedLiveUpgrade": {
+    "downloadAndAndroidInstaller": "PASS",
+    "exactPublishedApkAndEncryptedCache": "PASS",
+    "firstInstallTimeUnchanged": true
+  },
+  "liveUpdate": {
+    "metadata": {
+      "appVersion": "2.3.0",
+      "androidVersion": "4.1.1",
+      "androidVersionCode": 6,
+      "androidReleaseUrl": "https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest"
+    },
+    "release": {
+      "protocol": "rental-apk-update-v1",
+      "packageName": "kr.henry.rental.independent",
+      "versionName": "4.1.1",
+      "versionCode": 6,
+      "size": 3071361,
+      "sha256": "2609d0c96c8eb03bea9209dceda279f67d35e67b8f0d82f74676449e5dd41808",
+      "signerSha256": "b25160850067d115c493fe51aca9bdce1956d999ed45cee0950bd86d33c5a2a0",
+      "chunkCount": 8,
+      "chunkEncodedSize": 524288
+    },
+    "liveChunksVerified": 8,
+    "downloadedBytesIdentical": true,
+    "staleVersionRejected": true,
+    "rentalDataWritten": false,
+    "privateGitHubAuthenticationRequired": false,
+    "googleScopesExpanded": false
+  },
+  "drive": {
+    "id": "1DG1lqnIvQmbninLu04VobYFLac6M50s6",
+    "url": "https://drive.google.com/file/d/1DG1lqnIvQmbninLu04VobYFLac6M50s6/view?usp=drivesdk",
+    "bytes": 3071361,
+    "sha256": "2609d0c96c8eb03bea9209dceda279f67d35e67b8f0d82f74676449e5dd41808",
+    "hashMatches": true
+  },
+  "sheetReadback": {
+    "sheetId": 0,
+    "rows": 3,
+    "sha256": "853e1a2afffccccc31063782058ec4d302d79c7f8e7686dc4763baeb7ccbeb45",
+    "bytes": 95582,
+    "readOnly": true,
+    "bytesUnchanged": true
+  },
+  "baselineTransport": {
+    "samples": [
+      {
+        "action": "metadata",
+        "ms": 3094,
+        "http": 200,
+        "status": "metadata"
+      },
+      {
+        "action": "unauthorizedRead",
+        "ms": 3057,
+        "http": 200,
+        "status": "unauthorized"
+      },
+      {
+        "action": "metadata",
+        "ms": 2898,
+        "http": 200,
+        "status": "metadata"
+      },
+      {
+        "action": "unauthorizedRead",
+        "ms": 4986,
+        "http": 200,
+        "status": "unauthorized"
+      },
+      {
+        "action": "metadata",
+        "ms": 3315,
+        "http": 200,
+        "status": "metadata"
+      },
+      {
+        "action": "unauthorizedRead",
+        "ms": 2728,
+        "http": 200,
+        "status": "unauthorized"
+      }
+    ],
+    "authenticatedRead": "not measured; no existing device token used",
+    "rentalWrites": false
+  },
+  "realRentalWrites": "NOT PERFORMED",
+  "webBusinessSource": "UNCHANGED",
+  "physicalPhone": "NOT TESTED"
+}

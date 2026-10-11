@@ -10,8 +10,8 @@ android {
         applicationId = "kr.henry.rental.independent"
         minSdk = 23
         targetSdk = 37
-        versionCode = 5
-        versionName = "4.1.0"
+        versionCode = 6
+        versionName = "4.1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {

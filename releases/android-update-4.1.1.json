@@ -1,0 +1,11 @@
+{
+  "protocol": "rental-apk-update-v1",
+  "packageName": "kr.henry.rental.independent",
+  "versionName": "4.1.1",
+  "versionCode": 6,
+  "size": 3071361,
+  "sha256": "2609d0c96c8eb03bea9209dceda279f67d35e67b8f0d82f74676449e5dd41808",
+  "signerSha256": "b25160850067d115c493fe51aca9bdce1956d999ed45cee0950bd86d33c5a2a0",
+  "chunkCount": 8,
+  "chunkEncodedSize": 524288
+}

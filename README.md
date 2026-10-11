@@ -1,6 +1,6 @@
-# NEW RENT STORE — Android 4.1.0 / 웹 2.3.0
+# NEW RENT STORE — Android 4.1.1 / 웹 2.3.0
 
-현재 Android는 Pretendard 기반 Kotlin 네이티브 앱 **4.1.0 / versionCode 5**입니다. 홈·세입자·고지서·설정, 입금·지출, 계약 변경·정산·PDF 출력·백업·복원을 유지하며, 설정의 **앱 업데이트**에서 새 APK를 직접 내려받아 Android 설치 화면으로 이어집니다. [앱 내부 업데이트·검증 범위](docs/ANDROID_UPDATE_4.1.0.md)와 [Drive 다운로드](https://drive.google.com/file/d/1nmrhoB0PaefOmhEnU5KvFC2Gd7Gcod7L/view?usp=drivesdk)를 확인하세요. 4.0.0에서 처음 4.1.0으로 바꿀 때는 APK를 한 번 받아 기존 앱 위에 설치합니다. 웹 2.3.0은 동일한 소유자 전용 주소와 데이터로 유지하며 소유자 GAS·라이브러리 버전은 12, Android API 배포는 5입니다. APK 배포 정보와 파일만 공개 GET으로 제공하며 임대 자료는 소유자가 승인한 기기만 접근합니다. 아래 이전 배포 안내는 이력입니다.
+현재 Android는 Pretendard 기반 Kotlin 네이티브 앱 **4.1.1 / versionCode 6**입니다. 기존 계약·정산·PDF·백업과 앱 내부 업데이트를 유지하며, 서버 확인 중 메뉴 조회, 최대 30초의 확인된 자료 재사용, 중복 조회 공유와 저장 응답에 최신 자료 포함으로 연결 대기를 줄였습니다. [로딩 개선·검증 범위](docs/ANDROID_LOADING_4.1.1.md) · [Drive APK](https://drive.google.com/file/d/1DG1lqnIvQmbninLu04VobYFLac6M50s6/view?usp=drivesdk). 4.1.0 사용자는 설정의 **앱 업데이트**로 설치할 수 있습니다. 웹 2.3.0 UI는 유지하며 소유자 GAS·라이브러리 버전 13, Android API 버전 6입니다. 아래 이전 안내는 배포 이력입니다.
 
 현재 독립 프로젝트의 공식 명칭은 **NEW RENT STORE**이며, GitHub 저장소는 [`ldjkorea/NEW-RENT-STORE`](https://github.com/ldjkorea/NEW-RENT-STORE)입니다. 기존 1.4 앱은 **RENT STORE**, 오래된 앱은 **2025 RENT STORE**로 구분합니다. [저장소 이름과 연결 주소](docs/REPOSITORY_NAMES.md)에 변경 전후 대응 관계와 확인 결과를 기록했습니다.
 
