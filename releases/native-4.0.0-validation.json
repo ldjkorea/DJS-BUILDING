@@ -3,7 +3,7 @@
   "webVersion": "2.3.0",
   "androidVersion": "4.0.0",
   "unitTests": {
-    "pass": 216,
+    "pass": 217,
     "fail": 0
   },
   "browserSuites": {
@@ -14,7 +14,7 @@
     "pass": 7,
     "fail": 0
   },
-  "nativeMockServerCases": 23,
+  "nativeMockServerCases": 24,
   "nativePdf": {
     "pages": 6,
     "all140RowsPresent": true,
@@ -66,5 +66,6 @@
   "physicalPrinter": "NOT TESTED",
   "apkBytes": 3055020,
   "apkSha256": "38e33b6477f9fc8598112eaa150a07b882b3fdd5875a0f62c99d1b17a1b67ae8",
-  "driveSha256": "38e33b6477f9fc8598112eaa150a07b882b3fdd5875a0f62c99d1b17a1b67ae8"
+  "driveSha256": "38e33b6477f9fc8598112eaa150a07b882b3fdd5875a0f62c99d1b17a1b67ae8",
+  "backupWebRoundtrip": "PASS core web import edit export and native restore; checksum only in discarded export metadata"
 }

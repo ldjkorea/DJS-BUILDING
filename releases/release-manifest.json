@@ -22,9 +22,9 @@
   },
   "webApp": {
     "version": "2.3.0",
-    "deployment": "GAS version 9; MYSELF owner-only",
-    "androidApiDeployment": 2,
-    "libraryVersion": 9,
+    "deployment": "GAS version 10; MYSELF owner-only",
+    "androidApiDeployment": 3,
+    "libraryVersion": 10,
     "url": "https://script.google.com/macros/s/AKfycbzclS1FDsLvKEpojsGrQ9eh4dDrjpWP1OFeG2e4RG3LjmtVR7hQRCAutBoSMoXGmgae/exec"
   },
   "validation": {

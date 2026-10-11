@@ -208,9 +208,10 @@ function nativeSettlement_(req,state,month) {
 }
 function nativeRestore_(backup,state) {
   if(!backup||typeof backup!=='object'||Array.isArray(backup))throw new Error('JSON 백업 파일을 확인해주세요.');
-  var candidate=JSON.parse(JSON.stringify(backup)),integrity=candidate.nativeBackup;
+  var candidate=JSON.parse(JSON.stringify(backup)),integrity=candidate.localMeta&&candidate.localMeta.nativeBackup||candidate.nativeBackup;
   if(integrity&&integrity.format==='rental-native-backup-v1'){
-    delete candidate.nativeBackup;if(integrity.sha256!==hash_(nativeCanonical_(candidate)))throw new Error('백업 무결성 검증에 실패했습니다. 원본 파일을 보관해주세요.');
+    if(candidate.localMeta&&candidate.localMeta.nativeBackup)delete candidate.localMeta;else delete candidate.nativeBackup;
+    if(integrity.sha256!==hash_(nativeCanonical_(candidate)))throw new Error('백업 무결성 검증에 실패했습니다. 원본 파일을 보관해주세요.');
   }
   if(candidate.recoveryRaw)throw new Error('손상 원문 복구 파일은 정상 JSON 백업으로 복원할 수 없습니다. 원문을 보관해주세요.');
   if(Object.keys(candidate.localDrafts||{}).length||Object.keys(candidate.localSettlementDrafts||{}).length)throw new Error('미확정 웹 초안이 포함돼 있습니다. 웹에서 초안을 확정하거나 보관한 뒤 확정 자료 백업을 사용해주세요.');
@@ -221,13 +222,16 @@ function nativeRestore_(backup,state) {
 function nativeAdvancedRead_(req,state,month) {
   if(req.action==='settlementPreview')return nativeSettlement_(req,state,month);
   if(req.action==='backup'){
-    var backup=Object.assign({schemaVersion:1,exportedAt:new Date().toISOString()},JSON.parse(JSON.stringify(state.data)));delete backup.nativeBackup;
-    backup.nativeBackup={format:'rental-native-backup-v1',sha256:hash_(nativeCanonical_(backup))};
+    var backup=Object.assign({schemaVersion:1,exportedAt:new Date().toISOString()},JSON.parse(JSON.stringify(state.data)));delete backup.nativeBackup;delete backup.localMeta;
+    // localMeta is already recognized export metadata by the unchanged web validator.
+    // Web import/export must never persist an old checksum as rental domain data.
+    backup.localMeta={nativeBackup:{format:'rental-native-backup-v1',sha256:hash_(nativeCanonical_(backup))}};
     return {status:'ok',revision:state.revision,backup:backup};
   }
   if(req.action==='restorePreview'){
     var restored=nativeRestore_(req.backup,state),before=state.data,after=restored.data;
-    return {status:'ok',revision:state.revision,previewHash:restored.hash,current:{tenants:before.tenants.length,months:Object.keys(before.bills).length},restored:{tenants:after.tenants.length,months:Object.keys(after.bills).length,bills:Object.keys(after.bills).reduce(function(n,m){return n+Object.keys(after.bills[m]).length;},0),contractRecords:(after.contractChanges||[]).length},integrityVerified:!!(req.backup.nativeBackup&&req.backup.nativeBackup.format==='rental-native-backup-v1'),summary:{currentTenants:before.tenants.length,restoreTenants:after.tenants.length,currentMonths:Object.keys(before.bills).length,restoreMonths:Object.keys(after.bills).length,restoreBills:Object.keys(after.bills).reduce(function(n,m){return n+Object.keys(after.bills[m]).length;},0),contractRecords:(after.contractChanges||[]).length,hasIntegrity:!!(req.backup.nativeBackup&&req.backup.nativeBackup.format==='rental-native-backup-v1')}};
+    var integrity=req.backup.localMeta&&req.backup.localMeta.nativeBackup||req.backup.nativeBackup;
+    return {status:'ok',revision:state.revision,previewHash:restored.hash,current:{tenants:before.tenants.length,months:Object.keys(before.bills).length},restored:{tenants:after.tenants.length,months:Object.keys(after.bills).length,bills:Object.keys(after.bills).reduce(function(n,m){return n+Object.keys(after.bills[m]).length;},0),contractRecords:(after.contractChanges||[]).length},integrityVerified:!!(integrity&&integrity.format==='rental-native-backup-v1'),summary:{currentTenants:before.tenants.length,restoreTenants:after.tenants.length,currentMonths:Object.keys(before.bills).length,restoreMonths:Object.keys(after.bills).length,restoreBills:Object.keys(after.bills).reduce(function(n,m){return n+Object.keys(after.bills[m]).length;},0),contractRecords:(after.contractChanges||[]).length,hasIntegrity:!!(integrity&&integrity.format==='rental-native-backup-v1')}};
   }
   return nativeReport_(req,state,month);
 }
