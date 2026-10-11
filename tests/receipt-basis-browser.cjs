@@ -75,7 +75,10 @@ test('basis six viewports and 200 percent text wrap large amounts with keyboard 
   const bill=invoice();bill.tenantSnapshot.name='긴 익명 성명 '.repeat(14);bill.rent=1000000000000;
   const view=await open(fixture(bill),width),{page}=view,before=await source(page);await page.evaluate(font=>document.documentElement.style.fontSize=font,font);await begin(page);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);assert.equal(await page.locator('#modal-receipt-entry .modal').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true);
-  assert.equal(await page.locator('#receipt-basis-content').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true);assert.ok((await page.locator('#receipt-basis-details summary').boundingBox()).height>=44);assert.equal(await row(page,'pay_rent').locator('dd').first().innerText(),'₩1,100,000,000,000');
+  // Translated entrance animation can produce a fractional DOMRect just below
+  // 44px. Measure the completed layout while retaining the strict touch target.
+  await page.locator('#modal-receipt-entry .modal').evaluate(async element=>{await Promise.all(element.getAnimations().map(animation=>animation.finished));});
+  assert.equal(await page.locator('#receipt-basis-content').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true);const targetHeight=(await page.locator('#receipt-basis-details summary').boundingBox()).height;assert.ok(targetHeight>=44,`${width}px / ${font}: summary height ${targetHeight}`);assert.equal(await row(page,'pay_rent').locator('dd').first().innerText(),'₩1,100,000,000,000');
   await page.locator('#receipt-input-focus').click();assert.equal(await page.locator('#receipt-basis-details').getAttribute('open'),null);assert.equal(await page.evaluate(()=>document.activeElement.id),'receipt-amount');assert.equal(await source(page),before);
   await page.locator('#receipt-prepare').focus();await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.classList.contains('modal-close')),true);await page.keyboard.press('Escape');await page.waitForFunction(()=>document.activeElement.dataset.focusKey==='receipt-add');assert.equal(await source(page),before);check(view);await view.context.close();
  }
