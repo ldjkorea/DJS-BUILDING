@@ -208,6 +208,7 @@ function nativeSettlement_(req,state,month) {
   var saved=state.data.settInputs&&state.data.settInputs[month]&&state.data.settInputs[month].usagePeriods||{};
   var period=function(field,span,water,previous){try{return nativeUsagePeriod_(month,people,field,span,water,previous);}catch(error){result.reviewRequired=true;result.reviewIssues.push(error.message);return {error:error.message};}};
   var periods={electricity:inputs.elec?period('period_elec',1,false,saved.electricity):{inactive:true},water:inputs.waterActive?period('period_water_day',2,true,saved.water):{inactive:true}};
+  RentalBilling.reviewAllocationPeriods(result,inputs,periods,state.data.tenants,state.data.floorOperations);
   var check=RentalBilling.reconcile(result);
   return {status:'ok',month:month,revision:state.revision,inputs:inputs,usagePeriods:periods,rows:result.rows,ownerCandidates:result.ownerCandidates,reviewRequired:result.reviewRequired,reviewIssues:result.reviewIssues,expected:result.expected,totals:check.totals,ownerTotals:check.ownerTotals,tenantTotals:check.tenantTotals,balanced:check.balanced,canConfirm:check.canConfirm,previouslyConfirmed:!!(state.data.settInputs&&state.data.settInputs[month]&&state.data.settInputs[month].confirmed),previewHash:hash_(nativeCanonical_({revision:state.revision,month:month,inputs:inputs,periods:periods,rows:result.rows,ownerCandidates:result.ownerCandidates,reviewIssues:result.reviewIssues}))};
 }

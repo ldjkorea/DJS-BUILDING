@@ -53,6 +53,11 @@ test('vacant fourth floor PC mobile shows owner candidate and cannot create tena
   await page.evaluate(()=>confirmSettlement());assert.equal(await raw(page),before);assert.equal((await data(page)).bills['2026-09'],undefined);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);checked(view);await view.context.close();
  }
 });
+test('first-day incoming lease PC mobile cannot auto-confirm prior occupancy utility costs',async()=>{
+ for(const width of [390,1366]){
+  const sample=core.empty();sample.tenants=[1,2,3,4].map(f=>({...tenant,id:'incoming-'+f,unit:f+'01호',period_elec:'15',period_water_day:'15',contract:f===4?'2026-09-01 ~ 2027-08-31':tenant.contract}));const view=await open(sample,width),{page}=view,before=await raw(page);await page.evaluate(()=>{cY=2026;cM=9;});await navigateV2(page,'settlement');await page.locator('#sett-elec').fill('100000');await page.evaluate(()=>calcSettlement());assert.equal(await page.locator('#confirm-settlement').isDisabled(),true);assert.match(await page.locator('#sett-note').innerText(),/사용기간 중 계약/);await page.evaluate(()=>confirmSettlement());assert.equal(await raw(page),before);checked(view);await view.context.close();
+ }
+});
 test('same normal settlement cannot add another audit or change confirmed amounts',async()=>{
  const sample=core.empty();sample.tenants=[1,2,3,4].map(f=>({...tenant,id:'normal-'+f,unit:f+'01호',period_elec:'15',period_water_day:'15'}));const view=await open(sample),{page}=view;await page.evaluate(()=>{cY=2026;cM=9;});await navigateV2(page,'settlement');await page.locator('#sett-elec').fill('100000');await page.evaluate(()=>calcSettlement());assert.equal(await page.locator('#confirm-settlement').isDisabled(),false);await page.evaluate(()=>confirmSettlement());await page.waitForFunction(()=>!persistenceBusy&&settInputs[mk()]?.confirmed);const before=await raw(page);await page.evaluate(()=>calcSettlement());await page.evaluate(()=>confirmSettlement());assert.equal(await raw(page),before);assert.match(await page.locator('#toast').innerText(),/같은 입력과 배분/);checked(view);await view.context.close();
 });

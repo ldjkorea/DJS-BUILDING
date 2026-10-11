@@ -1515,6 +1515,7 @@ function calcSettlement() {
       tenantSignature: JSON.stringify([tenants,floorOperations])
     };
     for(const [key,charged] of [['electricity',inputs.elec>0],['water',inputs.waterTotal>0]])if(charged&&settlementReview.usagePeriods[key]?.error){settlementReview.reviewRequired=true;settlementReview.reviewIssues.push(settlementReview.usagePeriods[key].error);}
+    RentalBilling.reviewAllocationPeriods(settlementReview,inputs,settlementReview.usagePeriods,tenants,floorOperations);
     settCalcResult = Object.fromEntries(result.rows.map(r => [r.id, r]));
     renderSettlementReview();
     goSettStep(2);

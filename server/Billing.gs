@@ -86,7 +86,7 @@
     const slots = [...occupied], missing = [], issues = [];
     for (let floor = 1; floor <= 4; floor++) {
       if (occupied.some(t => floorOf(t.unit) === floor)) continue;
-      const relevant = inputs.waterTotal || inputs.elev || inputs.waste || inputs.elec && floor >= 2;
+      const relevant = inputs.waterTotal || inputs.elev && floor > 1 || inputs.waste || inputs.elec && floor >= 2;
       if (!relevant) continue;
       missing.push(floor);
       slots.push({id:'vacancy_floor_'+floor, name:'공실 비용 검토', unit:floor+'01'});
@@ -124,6 +124,20 @@
         row.usage=Math.round((row.curMeter-row.prevMeter)*1000)/1000;
       }
       result[floor]=row;
+    }
+    return result;
+  }
+  function reviewAllocationPeriods(result,inputs,periods,tenants,floorOperations={}) {
+    for(const tenant of tenants.filter(t=>!t.archived&&!['공실(정리중)','임대모집중'].includes(t.leaseStatus))){
+      const floor=floorOf(tenant.unit),start=dateISO(String(tenant.contract||'').split('~')[0]?.trim()),end=contractEndDate(tenant.contract),operation=floorOperations?.[floor]||{};
+      for(const [key,charged] of [['electricity',inputs.elec>0&&floor>=2&&floor<=4],['water',inputs.waterTotal>0]]){
+        const p=periods?.[key];if(!charged||!p?.start||!p?.end)continue;
+        if(start&&start>p.start&&start<=p.end||end&&end>=p.start&&end<p.end||[operation.vacatedOn,operation.liabilityEndOn].some(day=>day&&day>=p.start&&day<=p.end)){
+          result.reviewRequired=true;
+          const issue=floor+'층 '+(key==='electricity'?'전기':'수도')+' 사용기간 중 계약·점유 변경: 이전·신규 계약과 실제 비용 부담 종료일을 수동 검토해주세요.';
+          if(!result.reviewIssues.includes(issue))result.reviewIssues.push(issue);
+        }
+      }
     }
     return result;
   }
@@ -764,7 +778,7 @@
     if(!Number.isSafeInteger(legacyUndated))operationError('과거 확인 금액 범위를 확인해주세요.');
     return {year,asOf,rows,legacyUndated};
   }
-  root.RentalBilling = {won, withVat, floorOf, distribute, calculate, calculateBuilding, normalizeWaterFloors, setContractReview, buildingOverview, repairExpenseCandidates, allocationSnapshot, isSameAllocation, reconcile, charges, payment, quarterlyStatement,
+  root.RentalBilling = {won, withVat, floorOf, distribute, calculate, calculateBuilding, normalizeWaterFloors, reviewAllocationPeriods, setContractReview, buildingOverview, repairExpenseCandidates, allocationSnapshot, isSameAllocation, reconcile, charges, payment, quarterlyStatement,
     dateISO, contractEndDate, contractDeadline, period, dueDate, historicalPayment, arrears, itemKeys, naFields,
     materializeGroup, invalidateChangedPayments, freezeBill, effectiveTenant, correctBillBasis, collectionStatus,
     RECEIPT_FORMAT,openReceiptLedger,validateReceiptLedger,appendReceiptEvent,receiptLedgerState,receiptReferences,prepareReceiptVoid,

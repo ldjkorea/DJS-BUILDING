@@ -16,7 +16,7 @@ function renderDashboardMetrics(context={}) {
   const contracts=contractAlerts(koreaDateKey(now)).map(r=>({t:r.tenant,days:r.deadline.days}));
   if(contracts.length)work+='<div class="priority-item"><div><strong>계약 일정 '+contracts.length+'곳 확인</strong><p>'+contracts.slice(0,3).map(r=>esc(r.t.biz||r.t.name)+' '+(r.days<0?'만료 경과':r.days+'일 남음')).join(' · ')+'</p></div><button class="btn btn-secondary" onclick="switchTab(\'building\')">계약 확인</button></div>';
   if(cloudDirty)work+='<div class="priority-item"><div><strong>Google에 아직 반영되지 않은 수정</strong><p>이 기기 저장과 Google 저장을 확인하세요.</p></div><button class="btn btn-secondary" onclick="openSyncCenter()">저장 상태</button></div>';
-  const reviews=active.filter(t=>t.contractReviewOn&&t.contractReviewOn<=new Date(now.getTime()+30*86400000).toISOString().slice(0,10));
+  const reviews=active.filter(t=>t.contractReviewOn&&t.contractReviewOn<=koreaDateKey(new Date(now.getTime()+30*86400000)));
   if(reviews.length)work+='<div class="priority-item"><div><strong>계약 확인 예정 '+reviews.length+'곳</strong><p>'+reviews.map(t=>esc(t.unit)+' · '+esc(t.contractReviewOn)).join(' / ')+' · 계약 조건은 자동 변경되지 않습니다.</p></div><button class="btn btn-secondary" onclick="switchTab(\'building\')">확인 일정</button></div>';
   document.getElementById('priority-work').innerHTML=work||'<p class="priority-empty">현재 확인된 연체나 임박한 계약 일정이 없습니다.</p>';
   const receipts=[];

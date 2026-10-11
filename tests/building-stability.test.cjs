@@ -55,3 +55,12 @@ test('a future contract review records only its reminder and an audit without ap
  const data={tenants:people(),bills:{},contractChanges:[]},before=JSON.stringify(data.tenants[0]);
  b.setContractReview(data,'f1','2027-01-15','2026-09-01T00:00:00.000Z');const {contractReviewOn,audit,...current}=data.tenants[0];assert.equal(JSON.stringify(current),before);assert.equal(contractReviewOn,'2027-01-15');assert.equal(audit.length,1);assert.deepEqual(data.contractChanges,[]);assert.throws(()=>b.setContractReview(data,'f1','2027-02-30','2026-09-01T00:00:00.000Z'));assert.throws(()=>b.setContractReview(data,'unknown','2027-01-15','2026-09-01T00:00:00.000Z'));
 });
+test('utility periods across bill months require review for incoming leases and separate occupancy liability dates',()=>{
+ const period={electricity:{start:'2026-08-15',end:'2026-09-14'},water:{start:'2026-07-15',end:'2026-09-14'}};
+ const tenants=people();tenants[3].contract='2026-09-01 ~ 2027-08-31';const result=b.calculateBuilding(tenants,input,ratio,{month:'2026-09'});assert.equal(result.reviewRequired,false);b.reviewAllocationPeriods(result,input,period,tenants);assert.equal(b.reconcile(result).canConfirm,false);assert.match(result.reviewIssues.join(' '),/사용기간/);
+ const normal=b.calculateBuilding(people(),input,ratio);b.reviewAllocationPeriods(normal,input,period,people());assert.equal(normal.reviewRequired,false);
+ b.reviewAllocationPeriods(normal,input,period,people(),{4:{vacatedOn:'2026-08-20',liabilityEndOn:'2026-10-15'}});assert.equal(normal.reviewRequired,true);
+});
+test('a vacant first floor does not receive an elevator share under the unchanged exclusion rule',()=>{
+ const tenants=people();tenants[0].archived=true;const inputs={elec:0,waterTotal:0,elev:150000,waste:0},result=b.calculateBuilding(tenants,inputs,ratio);assert.deepEqual(result.ownerCandidates,[]);assert.deepEqual(result.rows.map(r=>r.elev),[50000,50000,50000]);assert.equal(b.reconcile(result).canConfirm,true);
+});
