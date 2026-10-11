@@ -1,7 +1,7 @@
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg', './assets/styles.css', './assets/core.js', './assets/app.js', './assets/billing.js', './assets/enhancements.js', './assets/workspace.css', './assets/mobile.css', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png'];
 const scope = new URL(self.registration.scope);
 const CACHE_PREFIX = 'rental-independent-20261009-'+encodeURIComponent(scope.pathname)+'-';
-const CACHE_NAME = CACHE_PREFIX+'2.3.1';
+const CACHE_NAME = CACHE_PREFIX+'2.4.0';
 const allowedPaths = new Set(ASSETS.map(path => new URL(path, scope).pathname));
 
 self.addEventListener('message', e => {
@@ -33,8 +33,9 @@ self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== scope.origin || !allowedPaths.has(url.pathname)) return;
   e.respondWith((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(e.request, {ignoreSearch: true});
+    // Read without creating a cache. A late fetch from the previous worker can
+    // finish after activation deleted its cache and must not recreate it.
+    const cached = await caches.match(e.request, {cacheName:CACHE_NAME,ignoreSearch: true});
     // Static hosts may redirect index.html to /. A followed redirect stored by
     // addAll cannot be returned unchanged to a navigation with redirect=manual.
     // Rebuild only cached successful responses; network/auth redirects still

@@ -17,7 +17,7 @@ class SnapshotReader(
     private val today: () -> String = { SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).apply {
         timeZone = TimeZone.getTimeZone("Asia/Seoul")
     }.format(Date()) },
-    private val transport: (JSONObject) -> JSONObject = NativeApi::request
+    private val transport: (JSONObject) -> JSONObject = NativeOperationsTransport::request
 ) {
     private data class Stamp(val digest: String, val checked: Long)
     private val stamps = LinkedHashMap<String, Stamp>()
@@ -74,6 +74,7 @@ class SnapshotReader(
             val started = generation
             task = existing ?: FutureTask {
                 val req = JSONObject().put("action", "read").put("token", token).put("month", month)
+                    .put("requireReceiptVoid", true).put("knownReceiptVoid", cached?.optJSONObject("capabilities")?.optBoolean("receiptVoid") == true)
                 val usable = cached != null && runCatching { validate(cached, month) }.isSuccess
                 if (usable) req.put("knownRevision", cached!!.getString("revision")).put("knownToday", cached.getString("today"))
                 val response = transport(req)

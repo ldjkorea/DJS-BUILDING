@@ -33,7 +33,10 @@ async function test(name,action){
   const origin=`http://127.0.0.1:${server.address().port}`,url=origin+'/rental-app/?demo=1';
   browser=await chromium.launch({headless:true,executablePath:process.env.RENTAL_BROWSER||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});
   context=await browser.newContext({serviceWorkers:'allow',viewport:{width:1280,height:1000}});
-  await context.route('**/*',r=>r.request().url().startsWith(origin+'/')?r.continue():(external.push(r.request().url()),r.abort()));
+  // Let loopback traffic reach the real worker directly. Intercepting its own
+  // origin can stall a new Edge page while the last controlled tab closes.
+  // External traffic remains blocked, including all Google requests.
+  await context.route(url=>url.origin!==origin,r=>(external.push(r.request().url()),r.abort()));
   let page=await context.newPage();page.on('dialog',d=>d.accept());page.on('pageerror',e=>errors.push(e.message));
   await test('PWA installs all application assets and gains control after reload',async()=>{
     await page.goto(url);await page.evaluate(()=>navigator.serviceWorker.ready);

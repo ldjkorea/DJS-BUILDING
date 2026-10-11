@@ -1,7 +1,7 @@
 /* Called through google.script.run inside the owner-only web app. */
 function getAppUpdateInfo() {
   // Release metadata only: do not open the spreadsheet, document or calendar.
-  return {appVersion:'2.3.1',androidVersion:'4.1.2',androidVersionCode:7,
+  return {appVersion:'2.4.0',androidVersion:'4.2.0',androidVersionCode:8,
     androidReleaseUrl:'https://github.com/ldjkorea/NEW-RENT-STORE/releases/latest'};
 }
 
@@ -86,7 +86,7 @@ function nativeAppRequest(raw) {
     }).getContent();
     var auth=nativeAuthorize_(req);if(auth.status!=='ok')return JSON.stringify(auth);
     if(req.action==='disconnect')return JSON.stringify({status:'ok'});
-    var actions=['read','payment','receipt','expense','regenerateCurrentStatus','syncContractCalendar','contract','settlementPreview','settlementConfirm','backup','restorePreview','restore','report','ledgerOpen','invoiceIssue'];
+    var actions=['read','payment','receipt','receiptVoidPreview','receiptVoid','expense','regenerateCurrentStatus','syncContractCalendar','contract','contractReview','settlementPreview','settlementConfirm','backup','restorePreview','restore','report','ledgerOpen','invoiceIssue'];
     if(actions.indexOf(req.action)<0)return JSON.stringify({status:'unsupported',message:'지원하지 않는 작업입니다.'});
     var month=req.month||nativeToday_().slice(0,7);
     if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))throw new Error('조회 월을 확인해주세요.');
@@ -94,11 +94,11 @@ function nativeAppRequest(raw) {
       var state=read_(source_().sheet),today=nativeToday_();
       // Always authorize and read/validate the real Sheet under its lock first.
       // This skips projection work only when the caller has this exact day/revision.
-      if(req.knownRevision===state.revision&&req.knownToday===today)
+      if(req.knownRevision===state.revision&&req.knownToday===today&&(req.requireReceiptVoid!==true||req.knownReceiptVoid===true))
         return {status:'ok',protocol:'rental-native-v1',unchanged:true,revision:state.revision,today:today,month:month};
       return nativeView_(state,month);
     }).getContent();
-    if(['settlementPreview','backup','restorePreview','report'].indexOf(req.action)>=0)return locked_(function(){
+    if(['settlementPreview','receiptVoidPreview','backup','restorePreview','report'].indexOf(req.action)>=0)return locked_(function(){
       var state=read_(source_().sheet);
       if(req.expectedRevision!==state.revision)return {status:'conflict',message:'자료가 변경됐습니다. 새로고침 후 다시 확인해주세요.'};
       return nativeAdvancedRead_(req,state,month);
@@ -112,7 +112,7 @@ function nativeAppRequest(raw) {
       var command={protocol:'rental-sync-v2',expectedRevision:state.revision,requestId:req.requestId,receiptLedgerProtocol:RentalBilling.RECEIPT_FORMAT,operationsHistoryProtocol:RentalBilling.OPERATIONS_FORMAT};
       if(req.action==='regenerateCurrentStatus'||req.action==='syncContractCalendar'){command.action=req.action;return {status:'ok',command:command};}
       var data=JSON.parse(JSON.stringify(state.data));
-      if(['contract','settlementConfirm','restore','ledgerOpen','invoiceIssue'].indexOf(req.action)>=0) {
+      if(['contract','contractReview','receiptVoid','settlementConfirm','restore','ledgerOpen','invoiceIssue'].indexOf(req.action)>=0) {
         command.data=nativeAdvancedWrite_(req,state,month,data);return {status:'ok',command:command};
       }else if(req.action==='expense'){
         var n=Number(req.amount),day=RentalBilling.dateISO(req.date),label=String(req.label||'').trim();
@@ -156,18 +156,18 @@ function nativeView_(state,month) {
   var data=state.data,today=nativeToday_(),months=Object.keys(data.bills).sort().reverse(),rows=[];
   var tenants=data.tenants.map(function(t){
     var collection=RentalBilling.collectionStatus(t,data.bills,today);
-    return {id:t.id,name:t.name||'',biz:t.biz||'',unit:t.unit||'',phone:t.phone||t.tel||'',contract:t.contract||'',deposit:Number(t.deposit)||0,rent:Number(t.rent)||0,mgmt:Number(t.mgmt)||0,terms:RentalBilling.contractTerms(t),leaseStatus:t.leaseStatus||'임대중',archived:t.archived===true,collection:collection,deadline:RentalBilling.contractDeadline(t.contract,today),audit:(t.audit||[]).slice(-12).reverse(),contractChanges:(data.contractChanges||[]).filter(function(r){return r.tenantId===t.id;}).reverse()};
+    return {id:t.id,name:t.name||'',biz:t.biz||'',unit:t.unit||'',phone:t.phone||t.tel||'',contract:t.contract||'',deposit:Number(t.deposit)||0,rent:Number(t.rent)||0,mgmt:Number(t.mgmt)||0,terms:RentalBilling.contractTerms(t),leaseStatus:t.leaseStatus||'임대중',archived:t.archived===true,contractReviewOn:t.contractReviewOn||'',collection:collection,deadline:RentalBilling.contractDeadline(t.contract,today),audit:(t.audit||[]).slice(-12).reverse(),contractChanges:(data.contractChanges||[]).filter(function(r){return r.tenantId===t.id;}).reverse()};
   });
   var total=0,received=0,unpaid=0;
   Object.keys(data.bills[month]||{}).forEach(function(id){
     var b=data.bills[month][id];if(!b||!Object.keys(b).length)return;
     var t=data.tenants.filter(function(t){return t.id===id;})[0]||{id:id,name:'미등록 임차인',unit:'',rent:0,mgmt:0,elevator:0},saved=RentalBilling.effectiveTenant(t,b);
     var p=RentalBilling.historicalPayment(t,b,Number(month.slice(0,4)),Number(month.slice(5)),today);
-    rows.push({tenantId:id,name:saved.biz||saved.name||'',unit:saved.unit||'',total:p.total,received:p.received,unpaid:p.unpaid,overdue:p.overdue,groups:p.groups,items:p.items,ledger:!!b.receiptLedger,estimatedFields:b.snapshotEstimated||[],issued:b.invoiceIssued===true,audit:(b.audit||[]).slice(-10).reverse()});
+    rows.push({tenantId:id,name:saved.biz||saved.name||'',unit:saved.unit||'',total:p.total,received:p.received,unpaid:p.unpaid,overdue:p.overdue,groups:p.groups,items:p.items,ledger:!!b.receiptLedger,estimatedFields:b.snapshotEstimated||[],issued:b.invoiceIssued===true,receiptReferences:b.receiptLedger?RentalBilling.receiptReferences(b.receiptLedger):[],receiptEvents:b.receiptLedger?b.receiptLedger.events:[],audit:(b.audit||[]).slice(-10).reverse()});
     total+=p.total;received+=p.received;unpaid+=p.unpaid;
   });
   var arrears=RentalBilling.arrears(data.tenants,data.bills,today),expenses=data.expenses&&data.expenses[month]||[];
-  return {status:'ok',revision:state.revision,protocol:'rental-native-v1',today:today,month:month,months:months,tenants:tenants,bills:rows,expenses:expenses,settlement:{inputs:data.settInputs&&data.settInputs[month]||{},waterRatio:data.waterRatio||{r2:1,r3:1,r4:1}},summary:{total:total,received:received,unpaid:unpaid,overdue:arrears.total,activeTenants:tenants.filter(function(t){return !t.archived;}).length,expense:expenses.reduce(function(s,e){return s+(Number(e.amount)||0);},0)},links:{document:currentStatusDocumentUrl_()},updates:getAppUpdateInfo()};
+  return {status:'ok',revision:state.revision,protocol:'rental-native-v1',capabilities:{receiptVoid:true,vacancyReview:true,contractReview:true},today:today,month:month,months:months,building:RentalBilling.buildingOverview(data),tenants:tenants,bills:rows,expenses:expenses,settlement:{inputs:data.settInputs&&data.settInputs[month]||{},waterRatio:data.waterRatio||{r2:1,r3:1,r4:1}},summary:{total:total,received:received,unpaid:unpaid,overdue:arrears.total,activeTenants:tenants.filter(function(t){return !t.archived;}).length,expense:expenses.reduce(function(s,e){return s+(Number(e.amount)||0);},0)},links:{document:currentStatusDocumentUrl_()},updates:getAppUpdateInfo()};
 }
 function currentStatusDocumentUrl_(){var id=PropertiesService.getScriptProperties().getProperty('RENTAL_STATUS_DOCUMENT_ID')||'';return id?'https://docs.google.com/document/d/'+encodeURIComponent(id)+'/edit':'';}
 
@@ -199,15 +199,7 @@ function nativeUsagePeriod_(month,people,field,span,water,saved) {
 }
 function nativeSettlement_(req,state,month) {
   var raw=req.inputs||{},inputs={elec:RentalBilling.won(raw.elec||0),waterTotal:raw.waterActive===true?RentalBilling.won(raw.waterTotal||0):0,waterUsage:Number(raw.waterUsage||0),waterF1:Number(raw.waterF1||0),waterFloors:{},waterActive:raw.waterActive===true,elev:RentalBilling.won(raw.elev||0),elevMode:raw.elevMode==='net'?'net':'gross',waste:RentalBilling.won(raw.waste||0)};
-  for(var floor=1;floor<=5;floor++){
-    var wf=raw.waterFloors&&raw.waterFloors[floor];if(!wf)continue;
-    var row={};['prevMeter','curMeter','usage'].forEach(function(k){var v=wf[k];row[k]=v==null||v===''?'':Number(v);if(row[k]!==''&&(!isFinite(row[k])||row[k]<0||row[k]>1e12))throw new Error('수도 계량기와 사용량을 확인해주세요.');});
-    if(row.prevMeter!==''&&row.curMeter!==''){
-      if(row.curMeter<row.prevMeter)throw new Error('현재 수도 계량기는 이전 값보다 작을 수 없습니다.');
-      row.usage=Math.round((row.curMeter-row.prevMeter)*1000)/1000;
-    }
-    inputs.waterFloors[floor]=row;
-  }
+  inputs.waterFloors=RentalBilling.normalizeWaterFloors(raw.waterFloors);
   var people=state.data.tenants.filter(function(t){return !t.archived&&['공실(정리중)','임대모집중'].indexOf(t.leaseStatus)<0;}),ratio=state.data.waterRatio||{r2:1,r3:1,r4:1},result=RentalBilling.calculateBuilding(state.data.tenants,inputs,ratio,{month:month,floorOperations:state.data.floorOperations});
   if(req.adjustments){
     if(!Array.isArray(req.adjustments)||req.adjustments.length!==result.rows.length)throw new Error('배분 행을 확인해주세요.');
@@ -234,6 +226,9 @@ function nativeRestore_(backup,state) {
 }
 function nativeAdvancedRead_(req,state,month) {
   if(req.action==='settlementPreview')return nativeSettlement_(req,state,month);
+  if(req.action==='receiptVoidPreview'){
+    var review=nativeReceiptVoid_(req,state,month);delete review.ledger;return review;
+  }
   if(req.action==='backup'){
     var backup=Object.assign({schemaVersion:1,exportedAt:new Date().toISOString()},JSON.parse(JSON.stringify(state.data)));delete backup.nativeBackup;delete backup.localMeta;
     // localMeta is already recognized export metadata by the unchanged web validator.
@@ -249,6 +244,13 @@ function nativeAdvancedRead_(req,state,month) {
   return nativeReport_(req,state,month);
 }
 function nativeAdvancedWrite_(req,state,month,data) {
+  if(req.action==='contractReview'){if(req.confirm!==true)throw new Error('계약 확인 일정만 저장하는 내용을 확인해주세요.');return RentalBilling.setContractReview(data,req.tenantId,req.reviewOn,new Date().toISOString());}
+  if(req.action==='receiptVoid'){
+    var review=nativeReceiptVoid_(req,state,month);
+    if(req.confirm!==true||req.previewHash!==review.previewHash)throw new Error('최신 원본 입금과 정정 후 잔액을 다시 검토해주세요.');
+    var bill=data.bills[month][req.tenantId];bill.receiptLedger=review.ledger;
+    nativeAudit_(bill,'입금 기록 정정',review.target.id+' · '+String(req.reason).trim()+' · 실제 환급 아님');return data;
+  }
   if(req.action==='restore'){
     var restored=nativeRestore_(req.backup,state);if(req.previewHash!==restored.hash||req.confirm!==true)throw new Error('복원 내용을 다시 검토하고 확정해주세요.');return restored.data;
   }
@@ -275,6 +277,7 @@ function nativeAdvancedWrite_(req,state,month,data) {
   }
   if(req.action==='settlementConfirm'){
     var preview=nativeSettlement_(req,state,month);if(!preview.canConfirm||req.previewHash!==preview.previewHash||req.confirm!==true)throw new Error('배분 합계·공실 비용 부담과 최신 미리보기를 확인해주세요.');
+    if(RentalBilling.isSameAllocation(data.settInputs&&data.settInputs[month],preview))throw new Error('같은 입력과 배분으로 이미 확정된 정산입니다.');
     data.bills[month]=data.bills[month]||{};
     if(preview.rows.some(function(r){return data.bills[month][r.id]&&data.bills[month][r.id].receiptLedger;}))throw new Error('입금 원장이 개시된 고지서는 재정산할 수 없습니다.');
     preview.rows.forEach(function(row){var tenant=data.tenants.filter(function(t){return t.id===row.id;})[0],existing=data.bills[month][row.id],bill=existing||{};nativeFreeze_(tenant,bill,month,!!existing&&Object.keys(existing).length>0);var before=JSON.parse(JSON.stringify(bill));
@@ -285,7 +288,7 @@ function nativeAdvancedWrite_(req,state,month,data) {
       if(row.elev!==null)bill.elevatorTotal=row.elev;bill.waste=row.waste;bill.wasteNA=row.waste===0;if(bill.paid&&bill.paid.pay_waste)bill.paid.pay_waste.na=bill.wasteNA;
       var changed=RentalBilling.invalidateChangedPayments(tenant,before,bill);if(changed.length)nativeAudit_(bill,'청구 변경 · 관련 납부 재확인',changed.join(', '));nativeAudit_(bill,'정산 확정',month+' 비용 배분 · Android');data.bills[month][row.id]=bill;
     });
-    data.settInputs=data.settInputs||{};data.settInputs[month]=Object.assign({},preview.inputs,{usagePeriods:preview.usagePeriods,confirmed:true,confirmedAt:new Date().toISOString(),allocationMode:'exact-gross-v2'});return data;
+    data.settInputs=data.settInputs||{};data.settInputs[month]=Object.assign({},preview.inputs,{usagePeriods:preview.usagePeriods,confirmed:true,confirmedAt:new Date().toISOString(),allocationMode:'exact-gross-v2',allocationSnapshot:RentalBilling.allocationSnapshot(preview)});return data;
   }
   var tenant=data.tenants.filter(function(t){return t.id===req.tenantId;})[0],bill=data.bills[month]&&data.bills[month][req.tenantId];if(!tenant||!bill||!Object.keys(bill).length)throw new Error('저장된 고지서를 확인해주세요.');
   nativeFreeze_(tenant,bill,month,true);
@@ -294,6 +297,15 @@ function nativeAdvancedWrite_(req,state,month,data) {
     bill.receiptLedger=RentalBilling.openReceiptLedger(tenant,bill,month+':'+tenant.id,new Date().toISOString(),{reviewEstimated:req.reviewEstimated===true});nativeAudit_(bill,'입금 원장 개시','청구 기준·과거 확인 상태 검토 · Android');
   }else if(req.action==='invoiceIssue'){if(req.confirm!==true||req.taxInvoiceVerified!==true)throw new Error('외부 세금계산서의 실제 발급 완료를 확인해주세요.');bill.invoiceIssued=true;nativeAudit_(bill,'세금계산서 발급 확인',month+' · 외부 발급 확인 · Android');}
   return data;
+}
+function nativeReceiptVoid_(req,state,month) {
+  var bill=state.data.bills[month]&&state.data.bills[month][req.tenantId];
+  if(!bill||!bill.receiptLedger)throw new Error('입금 원장이 개시된 저장 고지서를 확인해주세요.');
+  var tenant=state.data.tenants.filter(function(t){return t.id===req.tenantId;})[0]||{id:req.tenantId};
+  RentalBilling.validateReceiptBill(tenant,bill,month+':'+req.tenantId);
+  var review=RentalBilling.prepareReceiptVoid(bill.receiptLedger,req.reference,req.reason,req.requestId,new Date().toISOString(),nativeToday_());
+  var hash=hash_(nativeCanonical_({revision:state.revision,month:month,tenantId:req.tenantId,reference:req.reference,reason:String(req.reason).trim(),requestId:req.requestId,asOf:review.after.asOf,before:review.before.items,after:review.after.items}));
+  return {status:'ok',revision:state.revision,previewHash:hash,target:review.target,before:{received:review.before.received,unpaid:review.before.unpaid},after:{received:review.after.received,unpaid:review.after.unpaid},ledger:review.ledger,refundPerformed:false};
 }
 function nativeReport_(req,state,month) {
   if(['bill','quarter','settlement'].indexOf(req.reportType)<0)throw new Error('출력 종류를 확인해주세요.');
@@ -439,6 +451,7 @@ function nativeReport_(req,state,month) {
     validateList(data.tenants, '세입자', ['rent', 'mgmt', 'elevator', 'elecFixed']);
     data.tenants.forEach(t => {
       flags(t, ['archived'], '세입자');
+      if(t.contractReviewOn!==undefined&&(!date(t.contractReviewOn)||t.contractReviewOn&&!/^\d{4}-\d{2}-\d{2}$/.test(t.contractReviewOn)))fail('계약 확인 예정일을 확인해주세요.');
       if (t.leaseStatus !== undefined && !LEASE_STATUSES.includes(t.leaseStatus)) fail('임대상태를 확인해주세요.');
       if (t.deposit != null && t.deposit !== '') {
         if (typeof t.deposit === 'string') t.deposit = Number(t.deposit.replace(/,/g, '').trim());

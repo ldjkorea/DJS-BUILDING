@@ -7,7 +7,7 @@ function worker() {
   const context = {URL, Set, Promise, encodeURIComponent,
     self: {registration: {scope: 'https://example.test/rental-app/'}, addEventListener: (name, handler) => events[name] = handler},
     caches: {keys: async () => ['rental-v3', 'other-app', 'rental-foundation-v2', 'rental-foundation-v3', 'rental-independent-20261009-%2Frental-app%2F-old'], delete: async key => deleted.push(key),
-      open: async () => ({match: async () => stored, addAll: async () => {}})},
+      match: async () => stored, open: async () => ({match: async () => stored, addAll: async () => {}})},
     fetch: () => { throw new Error('should use cache'); }};
   vm.runInNewContext(fs.readFileSync(require.resolve('../sw.js'), 'utf8'), context);
   return {events, deleted, stored};

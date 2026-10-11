@@ -53,6 +53,16 @@ test('vacant fourth floor PC mobile shows owner candidate and cannot create tena
   await page.evaluate(()=>confirmSettlement());assert.equal(await raw(page),before);assert.equal((await data(page)).bills['2026-09'],undefined);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);checked(view);await view.context.close();
  }
 });
+test('contract reminder and repair expense comparison PC mobile preserve current contracts and historical money',async()=>{
+ for(const width of [390,1366]){
+  const sample=fixture(),today=new Date(Date.now()+9*3600000).toISOString().slice(0,10);sample.tenants[0].leaseStatus='공실(정리중)';sample.floorOperations[2]={leaseStatus:'공실(정리중)'};sample.expenses[today.slice(0,7)]=[{id:'existing-expense',name:'기존 수리 지출',amount:30000,date:today}];
+  const view=await open(sample,width),{page}=view;page.on('dialog',dialog=>dialog.accept());await navigateV2(page,'building');const before=await data(page);
+  await page.locator('#review-'+tenant.id).fill('2027-01-15');await page.getByRole('button',{name:'확인 일정 저장',exact:true}).click();await page.waitForFunction(id=>currentData().tenants.find(t=>t.id===id).contractReviewOn==='2027-01-15',tenant.id);
+  const updated=await data(page);assert.deepEqual(updated.bills,before.bills);assert.equal(updated.tenants[0].contract,before.tenants[0].contract);assert.equal(updated.tenants[0].rent,before.tenants[0].rent);assert.equal(updated.contractChanges,undefined);
+  await fillRepair(page);await saveRepair(page);assert.match(await page.locator('#repair-records').innerText(),/기존 수리 지출/);assert.deepEqual((await data(page)).expenses,before.expenses);assert.match(await page.locator('[data-floor="2"]').innerText(),/수리 1건/);
+  await page.evaluate(()=>switchTab('home'));assert.equal(await page.evaluate(()=>RentalBilling.buildingOverview(currentData()).vacant),2);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);checked(view);await view.context.close();
+ }
+});
 (async()=>{
  if(!url){server=spawn(process.execPath,['scripts/serve.cjs'],{cwd:root,env:{...process.env,RENTAL_PORT:'0'},windowsHide:true,stdio:['ignore','pipe','pipe']});serverExited=new Promise(resolve=>server.once('exit',resolve));url=await new Promise((resolve,reject)=>{let log='';const timeout=setTimeout(()=>reject(Error('Startup timed out')),10000);server.once('error',reject);server.stdout.on('data',b=>{log+=b;const m=log.match(/http:\/\/127\.0\.0\.1:\d+/);if(m){clearTimeout(timeout);resolve(m[0]+'/');}});});}
  browser=await chromium.launch({headless:true,executablePath:process.env.RENTAL_BROWSER||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'});for(const {name,fn} of cases){try{await fn();results.push({name,status:'pass'});console.log('PASS '+name);}catch(error){results.push({name,status:'fail',error:error.stack});console.error('FAIL '+name+': '+error.message);}finally{await Promise.all(browser.contexts().map(c=>c.close()));}}

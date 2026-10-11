@@ -118,6 +118,7 @@
     validateList(data.tenants, '세입자', ['rent', 'mgmt', 'elevator', 'elecFixed']);
     data.tenants.forEach(t => {
       flags(t, ['archived'], '세입자');
+      if(t.contractReviewOn!==undefined&&(!date(t.contractReviewOn)||t.contractReviewOn&&!/^\d{4}-\d{2}-\d{2}$/.test(t.contractReviewOn)))fail('계약 확인 예정일을 확인해주세요.');
       if (t.leaseStatus !== undefined && !LEASE_STATUSES.includes(t.leaseStatus)) fail('임대상태를 확인해주세요.');
       if (t.deposit != null && t.deposit !== '') {
         if (typeof t.deposit === 'string') t.deposit = Number(t.deposit.replace(/,/g, '').trim());

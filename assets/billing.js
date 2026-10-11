@@ -80,6 +80,7 @@
   // Structural floor rows are calculation-only. They never become tenants or bills.
   // Missing contractual liability remains a review candidate, not an owner debt.
   function calculateBuilding(tenants, inputs, ratio, context = {}) {
+    inputs={...inputs,waterFloors:normalizeWaterFloors(inputs.waterFloors)};
     const occupied = tenants.filter(t => !t.archived && !['공실(정리중)','임대모집중'].includes(t.leaseStatus));
     const slots = [...occupied], missing = [], issues = [];
     for (let floor = 1; floor <= 4; floor++) {
@@ -92,15 +93,16 @@
     }
     // A vacant fifth floor normally stays outside the historic ratio. Recorded
     // meter usage must not silently disappear into the other floors' charges.
-    if (!occupied.some(t => floorOf(t.unit) === 5) && Number(inputs.waterFloors?.[5]?.usage) > 0 && inputs.waterTotal) {
+    if (!occupied.some(t => floorOf(t.unit) === 5) && (Number(inputs.waterFloors?.[5]?.usage) > 0 && inputs.waterTotal || tenants.some(t=>floorOf(t.unit)===5) && (inputs.waterTotal||inputs.elev||inputs.waste))) {
       missing.push(5);slots.push({id:'vacancy_floor_5',name:'공실 비용 검토',unit:'501'});
-      issues.push('5층 공실 실측 수도 사용량의 비용 부담을 확인해주세요.');
+      issues.push('5층 공실 이후 실측 수도와 기존 공용비 부담을 확인해주세요.');
     }
     if (context.month) {
       for (const t of occupied) {
         const start = dateISO(String(t.contract || '').split('~')[0]?.trim()), end = contractEndDate(t.contract);
         const operation = context.floorOperations?.[floorOf(t.unit)] || {};
-        if ([start,end,operation.vacatedOn,operation.liabilityEndOn].some(day => day && day.slice(0,7) === context.month && day !== context.month+'-01' && day !== dateKey(Number(context.month.slice(0,4)),Number(context.month.slice(5)),new Date(Number(context.month.slice(0,4)),Number(context.month.slice(5)),0).getDate())))
+        const last=dateKey(Number(context.month.slice(0,4)),Number(context.month.slice(5)),new Date(Number(context.month.slice(0,4)),Number(context.month.slice(5)),0).getDate());
+        if ([[start,context.month+'-01'],[end,last],[operation.vacatedOn,''],[operation.liabilityEndOn,'']].some(([day,allowed])=>day&&day.slice(0,7)===context.month&&day!==allowed))
           issues.push(floorOf(t.unit)+'층 월 중 계약·점유 변경은 퇴거일과 비용 부담 종료일을 구분해 수동 검토해주세요.');
       }
     }
@@ -108,6 +110,50 @@
     const ownerCandidates = result.rows.filter(row => missing.includes(row.floor)).map(({id,name,unit,...row}) => ({...row, status:'review', reason:'계약상 부담 주체 미확정'}));
     return {...result, rows:result.rows.filter(row => !missing.includes(row.floor)), ownerCandidates, reviewRequired:issues.length>0, reviewIssues:issues};
   }
+  function normalizeWaterFloors(source={}) {
+    const result={};
+    for(let floor=1;floor<=5;floor++){
+      const raw=source?.[floor];if(!raw)continue;
+      const row={};for(const key of ['prevMeter','curMeter','usage']){
+        const value=raw[key];row[key]=value==null||value===''?'':Number(value);
+        if(row[key]!==''&&(!Number.isFinite(row[key])||row[key]<0||row[key]>1e12))throw Error('수도 계량기와 사용량을 확인해주세요.');
+      }
+      if(row.prevMeter!==''&&row.curMeter!==''){
+        if(row.curMeter<row.prevMeter)throw Error('현재 수도 계량기는 이전 값보다 작을 수 없습니다.');
+        row.usage=Math.round((row.curMeter-row.prevMeter)*1000)/1000;
+      }
+      result[floor]=row;
+    }
+    return result;
+  }
+  function setContractReview(data,tenantId,day,recordedAt) {
+    const tenant=data.tenants.find(t=>t.id===tenantId&&!t.archived);
+    if(!tenant)throw Error('확인 일정을 기록할 현재 임차인을 선택해주세요.');
+    if(typeof day!=='string'||day&&(!/^\d{4}-\d{2}-\d{2}$/.test(day)||dateISO(day)!==day))throw Error('계약 확인 예정일을 확인해주세요.');
+    operationTime(recordedAt);
+    if((tenant.contractReviewOn||'')===day)throw Error('계약 확인 예정일이 같습니다.');
+    const before=tenant.contractReviewOn||'';tenant.contractReviewOn=day;
+    tenant.audit=(tenant.audit||[]).concat([{at:recordedAt,action:'계약 확인 일정',detail:(before||'미등록')+' → '+(day||'해제')+' · 계약 조건 자동 적용 없음'}]).slice(-100);
+    return data;
+  }
+  function buildingOverview(data) {
+    const people=(data.tenants||[]).filter(t=>!t.archived),records=data.propertyRecords||[],voided=new Set(records.filter(r=>r.kind==='void').map(r=>r.reference));
+    const floors=[1,2,3,4,5].map(floor=>{
+      const tenants=people.filter(t=>floorOf(t.unit)===floor),statuses=tenants.length?tenants.map(t=>t.leaseStatus||'임대중'):[data.floorOperations?.[floor]?.leaseStatus||'-'];
+      const repairs=records.filter(r=>r.kind==='repair'&&!voided.has(r.id)&&new RegExp('^'+floor+'(?:층|0[0-9](?:호)?)(?:$|\\s)').test(r.location));
+      return {floor,tenantIds:tenants.map(t=>t.id),statuses,vacant:statuses.every(s=>['공실(정리중)','임대모집중'].includes(s)),repairCount:repairs.length,lastRepairOn:repairs.map(r=>r.occurredOn).sort().slice(-1)[0]||''};
+    });
+    return {floors,vacant:floors.filter(f=>f.vacant).length,occupied:floors.filter(f=>f.tenantIds.length&&!f.vacant).length};
+  }
+  function repairExpenseCandidates(data,repair) {
+    return Object.entries(data.expenses||{}).flatMap(([month,rows])=>rows.filter(e=>Number(e.amount)===repair.amount&&dateISO(e.date)===repair.occurredOn).map(e=>({month,id:e.id||'',name:e.name||e.label||'',amount:Number(e.amount),date:dateISO(e.date)})));
+  }
+  function allocationSnapshot(result){
+    const input=result.inputs||{},inputs={};for(const key of ['elec','waterTotal','waterUsage','waterF1','elev','waste'])inputs[key]=Number(input[key]||0);
+    inputs.waterActive=input.waterActive===true;inputs.elevMode=input.elevMode==='net'?'net':'gross';inputs.waterFloors=normalizeWaterFloors(input.waterFloors);
+    return {inputs,usagePeriods:result.usagePeriods||{},rows:result.rows.map(row=>Object.fromEntries(['id','elec','water','elev','waste'].map(key=>[key,row[key]]))).sort((a,b)=>a.id.localeCompare(b.id))};
+  }
+  function isSameAllocation(saved,result){return saved?.confirmed===true&&!!saved.allocationSnapshot&&receiptEqual(saved.allocationSnapshot,allocationSnapshot(result));}
   function reconcile(result) {
     const totals = {elec:0, water:0, elev:0, waste:0};
     [...result.rows,...(result.ownerCandidates || [])].forEach(row => {
@@ -260,6 +306,19 @@
       total+=due;received+=settled;legacyConfirmed+=opening;newReceived+=actual;if(charge.exempt)exempt+=charge.amount;
     }
     return {billId:ledger.billId,asOf:cutoff,knownAt:knowledge,items,total,received,legacyConfirmed,newReceived,unpaid:total-received,exempt,complete:total>0&&total===received};
+  }
+  function receiptReferences(ledger) {
+    validateReceiptLedger(ledger);
+    const cancelled=new Set(ledger.events.filter(event=>event.kind==='void').map(event=>event.reference));
+    const legacy=Object.entries(journalLegacy(ledger)).filter(([,item])=>item.amount>0).map(([item,entry])=>({id:'legacy:'+item,item,amount:entry.amount,receivedOn:entry.date,note:'원장 개시 시 보존한 과거 확인',legacy:true}));
+    return [...legacy,...ledger.events.filter(event=>event.kind==='receipt')].map(event=>({...event,cancelled:cancelled.has(event.id)}));
+  }
+  function prepareReceiptVoid(ledger,reference,reason,id,recordedAt,asOf) {
+    const target=receiptReferences(ledger).find(row=>row.id===reference&&!row.cancelled);
+    if(!target)journalError('취소할 원본 입금이 없거나 이미 취소됐습니다.');
+    if(typeof reason!=='string'||!reason.trim()||reason.length>1000)journalError('정정 사유를 1~1000자로 입력해주세요.');
+    const next=appendReceiptEvent(ledger,{kind:'void',id,billId:ledger.billId,recordedAt,reference,reason:reason.trim()});
+    return {target,ledger:next,before:receiptLedgerState(ledger,asOf),after:receiptLedgerState(next,asOf)};
   }
   function receiptEqual(left,right){
     if(left===right)return true;
@@ -475,17 +534,21 @@
     }
     return dateISO(value);
   }
-  function paydayOf(tenant) {
+  function rentDueSpec(tenant) {
     const raw=String(tenant?.payday??'').trim();
-    if(/^(?:매월\s*|매달\s*|당월\s*|익월\s*)?(?:말일|월말|말)$/.test(raw))return 31;
+    const offset=raw.startsWith('익월')?1:0;
+    if(/^(?:매월\s*|매달\s*|당월\s*|익월\s*)?(?:말일|월말|말)$/.test(raw))return {day:31,offset};
     const match=raw.match(/^(?:매월\s*|매달\s*|당월\s*|익월\s*)?(0?[1-9]|[12]\d|3[01])\s*일?$/);
     const day=match?Number(match[1]):0;
-    return Number.isInteger(day) && day >= 1 && day <= 31 ? day : 0;
+    return {day:Number.isInteger(day) && day >= 1 && day <= 31 ? day : 0,offset};
   }
+  function paydayOf(tenant) { return rentDueSpec(tenant).day; }
   function dueDate(tenant, itemKey, year, month) {
     if (itemKey === 'pay_rent') {
-      const day = paydayOf(tenant);
-      return day ? dateKey(year, month, Math.min(day, new Date(Number(year), Number(month), 0).getDate())) : '';
+      if(!monthKey(year,month))return '';
+      const {day,offset}=rentDueSpec(tenant),target=new Date(Number(year),Number(month)-1+offset,1);
+      const y=target.getFullYear(),m=target.getMonth()+1;
+      return day ? dateKey(y, m, Math.min(day, new Date(y,m,0).getDate())) : '';
     }
     const mk = monthKey(year, month);
     return mk ? dateKey(year, month, new Date(Number(year), Number(month), 0).getDate()) : '';
@@ -700,10 +763,10 @@
     if(!Number.isSafeInteger(legacyUndated))operationError('과거 확인 금액 범위를 확인해주세요.');
     return {year,asOf,rows,legacyUndated};
   }
-  root.RentalBilling = {won, withVat, floorOf, distribute, calculate, calculateBuilding, reconcile, charges, payment, quarterlyStatement,
+  root.RentalBilling = {won, withVat, floorOf, distribute, calculate, calculateBuilding, normalizeWaterFloors, setContractReview, buildingOverview, repairExpenseCandidates, allocationSnapshot, isSameAllocation, reconcile, charges, payment, quarterlyStatement,
     dateISO, contractEndDate, contractDeadline, period, dueDate, historicalPayment, arrears, itemKeys, naFields,
     materializeGroup, invalidateChangedPayments, freezeBill, effectiveTenant, correctBillBasis, collectionStatus,
-    RECEIPT_FORMAT,openReceiptLedger,validateReceiptLedger,appendReceiptEvent,receiptLedgerState,
+    RECEIPT_FORMAT,openReceiptLedger,validateReceiptLedger,appendReceiptEvent,receiptLedgerState,receiptReferences,prepareReceiptVoid,
     hasReceiptLedgers,validateReceiptBill,assertReceiptDataTransition,
     OPERATIONS_FORMAT,contractTerms,createContractChange,validateOperationsData,hasOperationalRecords,assertOperationsTransition,incomeTrend};
   if (typeof module !== 'undefined') module.exports = root.RentalBilling;

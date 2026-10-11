@@ -829,7 +829,8 @@ function buildingRows(asOf=new Date()) {
     const leaseStatuses=occupants.length
       ?occupants.map(tenant=>RentalCore.leaseStatus(tenant))
       :[floorOperations?.[floor]?.leaseStatus||(floor===5?'공실(정리중)':'-')];
-    return {floor,occupants,collections,leaseStatuses};
+    const repairs=RentalBilling.buildingOverview(currentData()).floors.find(row=>row.floor===floor);
+    return {floor,occupants,collections,leaseStatuses,repairs};
   });
 }
 function setBuildingFilter(filter) {
@@ -881,7 +882,7 @@ function renderBuildingOperations(asOf=new Date()) {
     </div>`;
     const action=clickable?` role="button" tabindex="0" data-focus-key="building-${row.floor}" aria-label="${row.floor}층 임차인 수정 열기" onclick="openBuildingTenant('${row.occupants[0].id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openBuildingTenant('${row.occupants[0].id}')}"`:'';
     return `<article class="building-card${clickable?' is-clickable':''}" data-floor="${row.floor}"${action}>
-      <div class="building-floor"><span>${row.floor}</span><small>층</small></div><div class="building-card-body">${details}</div>
+      <div class="building-floor"><span>${row.floor}</span><small>층</small></div><div class="building-card-body">${details}${row.repairs.repairCount?`<p class="operations-help">수리 ${row.repairs.repairCount}건 · 최근 ${esc(row.repairs.lastRepairOn)}</p>`:''}</div>
     </article>`;
   }).join('');
 }
@@ -1409,7 +1410,7 @@ function calcWaterFloorUsage(floor){
   if(curEl && curEl.value!==''){
     const prev=(prevEl && prevEl.value!=='')?Number(prevEl.value):0;
     const cur=Number(curEl.value);
-    const diff=Math.max(0,Math.round((cur-prev)*100)/100);
+    const diff=Math.round((cur-prev)*1000)/1000;
     if(usageEl)usageEl.value=diff;
   }
   updateWaterCalculations();
@@ -1610,6 +1611,7 @@ async function confirmSettlement() {
   if (!RentalBilling.reconcile(settlementReview).canConfirm) { showToast('배분 합계와 공실·월 중 변경의 비용 부담 정책을 확인해주세요.'); return; }
   const key=mk();
   if(settlementReview.rows.some(row=>bills[key]?.[row.id]?.receiptLedger)){showToast('입금 원장이 있는 고지서의 청구액은 재정산할 수 없습니다. 원장과 기존 정산을 유지했습니다.');return;}
+  if(RentalBilling.isSameAllocation(settInputs[key],settlementReview)){showToast('같은 입력과 배분으로 이미 확정된 정산입니다. 중복 저장하지 않습니다.');return;}
   if(settInputs[key]?.confirmed && !confirm('확정된 정산을 새 배분액으로 바꿀까요? 기존 자료는 복원 지점에 보관합니다.'))return;
   if(!makeRecovery('정산 확정 전'))return;
   bills[key] ??= {};
@@ -1641,7 +1643,7 @@ async function confirmSettlement() {
     auditChargeChange(tenant,before,bill,key);
     addBillAudit(bill,'정산 확정',`${key} 비용 배분`);
   }
-  settInputs[key]={...settlementReview.inputs,usagePeriods:settlementReview.usagePeriods,confirmed:true,confirmedAt:new Date().toISOString(),allocationMode:'exact-gross-v2'};
+  settInputs[key]={...settlementReview.inputs,usagePeriods:settlementReview.usagePeriods,confirmed:true,confirmedAt:new Date().toISOString(),allocationMode:'exact-gross-v2',allocationSnapshot:RentalBilling.allocationSnapshot(settlementReview)};
   if(!await save())return;
   settlementReview=null;settCalcResult=null;renderAll();renderSettTab();showToast('정산 확정 완료 · 고지서에 반영했습니다.');
 }
