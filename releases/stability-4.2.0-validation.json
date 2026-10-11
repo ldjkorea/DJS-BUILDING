@@ -258,7 +258,7 @@
     "android/app/src/main/res/xml/update_paths.xml": "1f9140d317fa7bb329a39c6379603cdde16427a16f126f278c329bf193e24e81",
     "android/app/src/release/java/kr/henry/rental/independent/NativeOperationsTransport.kt": "e3d8d49baa7277691c89f3626ec129dd226a6fe4a2e98c2c8382b88fe9857ffc",
     "server/native-api/Code.gs": "fa2b765e03b3dad77b896127a8cf0bbb9f00bddac324bbffcb3071109b4a1240",
-    "server/native-api/appsscript.json": "c8596c86eac37d55d8a4c26ea4885ca1378fc7385e438822f9aeb9c02e289aed",
+    "server/native-api/appsscript.json": "074ebb3956d9a5089f0db7cac7e7753882d1756e7536656e143311d2727b9cd7",
     ".gitattributes": "3b65d238039baf78cf5f9890b569d500e2931417d28a5d33499fbcec10704309"
   },
   "external": {
@@ -669,5 +669,10 @@
       }
     ]
   },
-  "checkoutLineEndings": "LF pinned for validation source, including license text and workflow"
+  "checkoutLineEndings": "LF pinned for validation source, including license text and workflow",
+  "deploymentConfiguration": {
+    "libraryVersion": 15,
+    "authorized": true,
+    "operatingDataWrites": false
+  }
 }

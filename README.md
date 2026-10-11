@@ -1,6 +1,6 @@
-# NEW RENT STORE — Android 4.1.2 / 웹 2.3.1
+# NEW RENT STORE — Android 4.2.0 / 웹 2.4.0
 
-현재 Android는 Pretendard 기반 Kotlin 네이티브 앱 **4.1.2 / versionCode 7**, 웹은 **2.3.1**입니다. Drive 디자인 자료를 반영한 흑연색·오프화이트·파란 포인트의 건물/N 심벌을 PWA·Apple·APK 적응형/테마 아이콘과 웹 브랜드에 적용했습니다. 계약·정산·PDF·백업과 4.1.1의 로딩 개선은 유지합니다. [아이콘 변경·검증 기록](docs/ICON_UPDATE_4.1.2.md) · [Drive APK](https://drive.google.com/file/d/1RLFgXBfE4wbh8ZPMC4w-OnkKN-Jy4Xjh/view?usp=drivesdk). 기존 앱의 설정 → 앱 업데이트에서 설치할 수 있습니다. 소유자 GAS·라이브러리 버전 14, Android API 버전 7입니다. 아래 이전 안내는 배포 이력입니다.
+현재 Android는 **4.2.0 / versionCode 8**, 웹은 **2.4.0**입니다. 공실 정산 검토, 세금계산서 확인 의미, 익월 납기, 사유 있는 입금 정정과 기존 기록 보호를 개선했습니다. 기존 앱 설정 → 앱 업데이트에서 서명된 APK를 내려받고 Android 설치 확인으로 이어집니다. [Drive APK](https://drive.google.com/file/d/1FrDTkQiLCW8faCzBGZnlJtYUkIpNqhhh/view?usp=drivesdk) · [안정화 설명](docs/BUILDING_STABILITY_4.2.0.md) · [4.2.0 배포 기록](docs/RELEASE_4.2.0.md). 소유자 GAS·라이브러리 버전 15, Android API 버전 8이며, 주소·권한 범위·운영 자료는 보존했습니다. 아래 이전 안내는 배포 이력입니다.
 
 현재 독립 프로젝트의 공식 명칭은 **NEW RENT STORE**이며, GitHub 저장소는 [`ldjkorea/NEW-RENT-STORE`](https://github.com/ldjkorea/NEW-RENT-STORE)입니다. 기존 1.4 앱은 **RENT STORE**, 오래된 앱은 **2025 RENT STORE**로 구분합니다. [저장소 이름과 연결 주소](docs/REPOSITORY_NAMES.md)에 변경 전후 대응 관계와 확인 결과를 기록했습니다.
 
