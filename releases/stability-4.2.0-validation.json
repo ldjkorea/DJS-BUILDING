@@ -215,15 +215,15 @@
     "tests/operations.test.cjs": "b3335bae51d6b13bb4efba1ba9af9459f1cfef8acafb851a81a5b641d3684418",
     "tests/operations-browser.cjs": "ceb8998fe51d1a119a222db06c5467f00ee0412289579869c475cc07d4c75ea9",
     "tests/basis-review.test.cjs": "aaf98fbb5629d49fc9a681c9ba39b6548139e21650ff26471f32c4f03fc64a95",
-    "tests/server.test.cjs": "c393bd19b2daefeb4fd0d17edb41758a6389a21d859a69c182d09529fbb634f1",
+    "tests/server.test.cjs": "89cb07b2e491bb8c9c876734479e0eb1309cd47f6d81f18a8b77b097015a00a1",
     "scripts/prepare-basis-review.cjs": "ea320362adc6eab8760fe25498afa80f43febdc347f951745c8c3c65e558fbb0",
-    ".github/workflows/regression.yml": "c1fdc385a02b800684acb5213b6a4182b5cfbc8f966168c5e43055a7d9340a84",
-    "tests/audit-browser.cjs": "6185b4d8484c55a1db78a0ec1045532cce463de9511b7ad9682fc910f979a855",
+    ".github/workflows/regression.yml": "841fdc64a598ae7779e7e701369639ede5adb94a93b888b96aa1dea094754a09",
+    "tests/audit-browser.cjs": "618e50ad0358cc3a80ab757d5ad5e34851081f256a71a929a339bb36edbda164",
     "manifest.json": "2fa2e7168658975e65ccfe75e867fe83d974a8cc999096f2a1885d5cbd75eccf",
     "tests/update.test.cjs": "34fcbf5b8d8bdd77dbca0401c1d79e66f07414edea1b855fe296b7449a3cd56c",
     "tests/update-browser.cjs": "6cd4f84c5deae4a0e2955b873b32c2a7cb35f055d62c14e36d49e560c88ea6a7",
     "scripts/prepare-android-update-fixture.cjs": "de8ab1bc9a872a8bac17cb0c5e85c4525629764d593c5d88bcde9333b5ac4528",
-    "tests/native-api.test.cjs": "066a7c0c5fd5d7eaa72e8f84457c1a55a67ce1055012678785d868f801fa9163",
+    "tests/native-api.test.cjs": "02e92634f568c56f6ed7acd7134bcc2624750c46ba393e024748228bfe9ad94d",
     "tests/building-stability.test.cjs": "165f56ed0ba503cc1bdd78f5d3e081c93a54eca66fd628bb34df9ea8d24eb1df",
     "tests/service-worker.test.cjs": "3f4c2745eb3e823d37976393d5fdb528847874ca5f57e2f76b1d2842b6e3549f",
     "tests/pwa-browser.cjs": "aa9066312216d5e304709913d949c72b6b1486073e05a980153c8344c4a0e389",
@@ -251,14 +251,15 @@
     "android/app/src/main/res/drawable/launcher_themed.xml": "e508a7b5623899d19141b1b5248a7961fc3807851aca98dad57f1971a9fbbdce",
     "android/app/src/main/res/values-v27/styles.xml": "dd887d1bf72332fdaf98d8f13e5fb4c3c29811f060a6a145cb471ad90e851c9a",
     "android/app/src/main/res/values/launcher_colors.xml": "961332505da7743eda6c1b80807a4a2d262a65d3859ba7ba335b4c14293fee5f",
-    "android/app/src/main/res/values/strings.xml": "e6807790b050baf6421865e0445c503186601d829624340b2f205800c947873e",
+    "android/app/src/main/res/values/strings.xml": "489c6f1ab48fde4d7226bdff2acd186de21b232690af9ed5e7a66ba8b4abc265",
     "android/app/src/main/res/values/styles.xml": "53f34336fcbbfa41a72755277d27127d2f931a32ead8a7954b6d020a3e3f03c8",
     "android/app/src/main/res/xml/backup_rules.xml": "1faadbc664a4ab8a82436ab3a167afaa0c294b1a0e7782f5e36a14d7b6bdcd6f",
     "android/app/src/main/res/xml/data_extraction_rules.xml": "8e56951e85f2ca961ef8951d66793acac34a98ff7b189fb5dba7573f798ddf73",
     "android/app/src/main/res/xml/update_paths.xml": "1f9140d317fa7bb329a39c6379603cdde16427a16f126f278c329bf193e24e81",
     "android/app/src/release/java/kr/henry/rental/independent/NativeOperationsTransport.kt": "e3d8d49baa7277691c89f3626ec129dd226a6fe4a2e98c2c8382b88fe9857ffc",
     "server/native-api/Code.gs": "fa2b765e03b3dad77b896127a8cf0bbb9f00bddac324bbffcb3071109b4a1240",
-    "server/native-api/appsscript.json": "c8596c86eac37d55d8a4c26ea4885ca1378fc7385e438822f9aeb9c02e289aed"
+    "server/native-api/appsscript.json": "c8596c86eac37d55d8a4c26ea4885ca1378fc7385e438822f9aeb9c02e289aed",
+    ".gitattributes": "3b65d238039baf78cf5f9890b569d500e2931417d28a5d33499fbcec10704309"
   },
   "external": {
     "realGoogleWrites": false,
@@ -667,5 +668,6 @@
         "sha256": "c8596c86eac37d55d8a4c26ea4885ca1378fc7385e438822f9aeb9c02e289aed"
       }
     ]
-  }
+  },
+  "checkoutLineEndings": "LF pinned for validation source, including license text and workflow"
 }
